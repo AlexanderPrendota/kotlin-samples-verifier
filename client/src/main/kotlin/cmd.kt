@@ -1,6 +1,7 @@
 import org.apache.log4j.BasicConfigurator
 import java.net.MalformedURLException
 import org.eclipse.jgit.transport.URIish
+import com.samples.verifier.internal.SamplesParserInstance
 
 
 fun main(args: Array<String>) {
@@ -17,7 +18,5 @@ fun main(args: Array<String>) {
         println("Invalid repository URL")
         return
     }
-    MarkdownParser(repositoryURL) {
-        this.flags = flags
-    }.processGitRepository()
+    SamplesParserInstance(repositoryURL, flags).processGitRepository()
 }

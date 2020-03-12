@@ -1,2 +1,3 @@
-rootProject.name = "parse-md"
-
+rootProject.name = "kotlin-samples-verifier"
+include("core")
+include("client")

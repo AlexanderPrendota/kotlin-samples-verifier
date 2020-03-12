@@ -1,3 +1,5 @@
+package com.samples.verifier.internal
+
 import org.eclipse.jgit.transport.URIish
 
 class Config(var sourceDir: String) {

@@ -1,6 +1,9 @@
+package com.samples.verifier.internal
+
 import com.github.rjeschke.txtmark.BlockEmitter
 import com.github.rjeschke.txtmark.Configuration
 import com.github.rjeschke.txtmark.Processor
+import com.samples.verifier.SamplesParser
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.URIish
 import org.apache.commons.io.FileUtils
@@ -14,19 +17,28 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.lang.StringBuilder
 
-class MarkdownParser(private val config: Config) {
+class SamplesParserInstance(
+    override var sourceDir: String,
+    override var flags: List<String>,
+    override var targetDir: String = "${sourceDir}_snippets"
+) : SamplesParser {
+    override var repositoryURL: URIish? = null
     private val logger: Logger by lazy { LoggerFactory.getLogger(javaClass) }
 
-    constructor(sourceDir: String, block: Config.() -> Unit) : this(setConfiguration(sourceDir, block))
+    constructor(repositoryURL: URIish, flags: List<String>, targetDir: String = "${repositoryURL.humanishName}_snippets") : this(
+        sourceDir = repositoryURL.humanishName,
+        flags = flags,
+        targetDir = targetDir
+    ) {
+        this.repositoryURL = repositoryURL
+    }
 
-    constructor(repositoryURL: URIish, block: Config.() -> Unit) : this(setConfiguration(repositoryURL, block))
-
-    fun processGitRepository() {
+    override fun processGitRepository() {
         try {
             cloneRep()
         } catch (e: Exception) {
-            if (File(config.sourceDir).isDirectory) {
-                FileUtils.deleteDirectory(File(config.sourceDir))
+            if (File(sourceDir).isDirectory) {
+                FileUtils.deleteDirectory(File(sourceDir))
             }
             logger.error("${e.message}\n")
             return
@@ -34,8 +46,8 @@ class MarkdownParser(private val config: Config) {
         processDirectory()
     }
 
-    fun processDirectory() {
-        val sourceDirectory = File(config.sourceDir)
+    override fun processDirectory() {
+        val sourceDirectory = File(sourceDir)
         Files.walk(sourceDirectory.toPath()).use {
             it.forEach { path: Path ->
                 val file = path.toFile()
@@ -47,13 +59,13 @@ class MarkdownParser(private val config: Config) {
     }
 
     private fun cloneRep() {
-        if (config.repositoryURL == null) {
+        if (repositoryURL == null) {
             throw Exception("No repository URL provided")
         }
-        val dir = File(Paths.get(config.sourceDir).toAbsolutePath().toString())
+        val dir = File(Paths.get(sourceDir).toAbsolutePath().toString())
         dir.mkdirs()
         val git = Git.cloneRepository()
-            .setURI(config.repositoryURL.toString())
+            .setURI(repositoryURL.toString())
             .setDirectory(dir)
             .call()
         git.close()
@@ -64,9 +76,10 @@ class MarkdownParser(private val config: Config) {
             .forceExtentedProfile()
             .setCodeBlockEmitter(
                 CodeBlockEmitter(
-                    config,
+                    targetDir = targetDir,
+                    flags = flags,
                     filename = file.nameWithoutExtension,
-                    path = file.toString().substringAfter(config.sourceDir).substringBeforeLast('.')
+                    path = file.toString().substringAfter(sourceDir).substringBeforeLast('.')
                 )
             )
             .build()
@@ -79,12 +92,13 @@ class MarkdownParser(private val config: Config) {
     }
 }
 
-class CodeBlockEmitter(val config: Config, val filename: String, val path: String) : BlockEmitter {
+class CodeBlockEmitter(targetDir: String, val flags: List<String>, val filename: String, val path: String) :
+    BlockEmitter {
     private var counter = 1
-    private val dir = Paths.get("${config.targetDir}/${path}").toAbsolutePath().toString()
+    private val dir = Paths.get("${targetDir}/${path}").toAbsolutePath().toString()
 
     override fun emitBlock(out: StringBuilder, lines: MutableList<String>?, meta: String?) {
-        if (meta in config.flags && lines != null) {
+        if (meta in flags && lines != null) {
             File(dir).mkdirs()
             val ktFilename = "$dir/${filename}_$counter.kt"
             val fileWriter = FileWriter(ktFilename)
