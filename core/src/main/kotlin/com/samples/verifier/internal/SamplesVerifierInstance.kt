@@ -1,6 +1,8 @@
 package com.samples.verifier.internal
 
 import com.samples.verifier.SamplesVerifier
+import com.samples.verifier.internal.utils.ExecutionResult
+import com.samples.verifier.internal.utils.RequestHelper
 import com.samples.verifier.internal.utils.processFile
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.Git
@@ -14,30 +16,39 @@ import java.nio.file.Paths
 
 class SamplesVerifierInstance(override var config: Config) : SamplesVerifier {
     private val logger: Logger by lazy { LoggerFactory.getLogger(javaClass) }
+    private val requestHelper = RequestHelper(config.baseUrl)
 
-    override fun run() {
+    override fun run(): Map<String, ExecutionResult?> {
+        if (config.repositoryURL != null) {
+            try {
+                cloneRep()
+            } catch (e: Exception) {
+                if (File(config.sourceDir).isDirectory) {
+                    FileUtils.deleteDirectory(File(config.sourceDir))
+                }
+                logger.error("${e.message}\n")
+                return emptyMap()
+            }
+        }
         processFiles()
-        TODO("files execution")
+        return try {
+            requestHelper.responses.mapValues { it.value.body() }
+        } catch (e: Exception) {
+            logger.error("${e.message}\n")
+            return emptyMap()
+        }
     }
 
-    override fun run(repositoryURL: URIish) {
+    override fun run(repositoryURL: URIish): Map<String, ExecutionResult?> {
         config.repositoryURL = repositoryURL
         config.sourceDir = repositoryURL.humanishName
-        try {
-            cloneRep()
-        } catch (e: Exception) {
-            if (File(config.sourceDir).isDirectory) {
-                FileUtils.deleteDirectory(File(config.sourceDir))
-            }
-            logger.error("${e.message}\n")
-            return
-        }
-        run()
+        return run()
     }
 
-    override fun run(sourceDir: String) {
+    override fun run(sourceDir: String): Map<String, ExecutionResult?> {
         config.sourceDir = sourceDir
-        run()
+        config.repositoryURL = null
+        return run()
     }
 
     private fun processFiles() {
@@ -45,11 +56,14 @@ class SamplesVerifierInstance(override var config: Config) : SamplesVerifier {
         Files.walk(sourceDirectory.toPath()).use {
             it.forEach { path: Path ->
                 val file = path.toFile()
-                TODO("files execution")
                 if (file.extension == "md") {
-                    processFile(file, flags = config.flags,
+                    processFile(
+                        file, flags = config.flags,
                         sourceDir = config.sourceDir,
-                        targetDir = config.targetDir)
+                        targetDir = config.targetDir,
+                        execute = true,
+                        requestHelper = requestHelper
+                    )
                 }
             }
         }

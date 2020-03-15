@@ -6,6 +6,7 @@ class Config(var sourceDir: String) {
     var flags: List<String> = emptyList()
     var repositoryURL: URIish? = null
     var targetDir: String = "${sourceDir}_snippets"
+    val baseUrl: String = "http://localhost:8080/"
 
     constructor(repositoryURL: URIish)
             : this(repositoryURL.humanishName) {

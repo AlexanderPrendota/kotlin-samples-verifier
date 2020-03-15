@@ -1,7 +1,8 @@
+import com.samples.verifier.SamplesVerifierFactory
+import com.samples.verifier.internal.setConfiguration
 import org.apache.log4j.BasicConfigurator
 import java.net.MalformedURLException
 import org.eclipse.jgit.transport.URIish
-import com.samples.verifier.internal.SamplesParserInstance
 
 
 fun main(args: Array<String>) {
@@ -18,5 +19,8 @@ fun main(args: Array<String>) {
         println("Invalid repository URL")
         return
     }
-    SamplesParserInstance(repositoryURL, flags).processGitRepository()
+    val config = setConfiguration(repositoryURL) {
+        this.flags = flags
+    }
+    print(SamplesVerifierFactory.create(config).run().entries.joinToString { "${it.key} -----to----- ${it.value}\n" })
 }

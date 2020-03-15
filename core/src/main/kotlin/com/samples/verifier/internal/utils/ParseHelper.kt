@@ -13,7 +13,14 @@ import java.nio.file.Paths
 
 private val logger = LoggerFactory.getLogger(SamplesVerifier::class.java)
 
-internal fun processFile(file: File, targetDir: String, sourceDir: String, flags: List<String>) {
+internal fun processFile(
+    file: File,
+    targetDir: String,
+    sourceDir: String,
+    flags: List<String>,
+    execute: Boolean = false,
+    requestHelper: RequestHelper? = null
+) {
     val txtmarkConfiguration = Configuration.builder()
         .forceExtentedProfile()
         .setCodeBlockEmitter(
@@ -21,7 +28,9 @@ internal fun processFile(file: File, targetDir: String, sourceDir: String, flags
                 targetDir = targetDir,
                 flags = flags,
                 filename = file.nameWithoutExtension,
-                path = file.toString().substringAfter(sourceDir).substringBeforeLast('.')
+                path = file.toString().substringAfter(sourceDir).substringBeforeLast('.'),
+                execute = execute,
+                requestHelper = requestHelper
             )
         )
         .build()
@@ -29,11 +38,17 @@ internal fun processFile(file: File, targetDir: String, sourceDir: String, flags
         Processor.process(file, txtmarkConfiguration)
     } catch (e: Exception) {
         logger.error("${e.message}\n")
-        logger.error("Unable to parse $file\n")
     }
 }
 
-private class CodeBlockEmitter(targetDir: String, val flags: List<String>, val filename: String, val path: String) :
+private class CodeBlockEmitter(
+    targetDir: String,
+    val flags: List<String>,
+    val filename: String,
+    val path: String,
+    val execute: Boolean,
+    val requestHelper: RequestHelper? = null
+) :
     BlockEmitter {
     private var counter = 1
     private val dir = Paths.get("${targetDir}/${path}").toAbsolutePath().toString()
@@ -42,6 +57,17 @@ private class CodeBlockEmitter(targetDir: String, val flags: List<String>, val f
         if (meta in flags && lines != null) {
             File(dir).mkdirs()
             val ktFilename = "$dir/${filename}_$counter.kt"
+
+            if (execute && requestHelper != null) {
+                requestHelper.compileCodeRequest(
+                    project = Project(
+                        "",
+                        listOf(KotlinFile(ktFilename, lines.joinToString("\n")))
+                    ),
+                    filename = ktFilename
+                )
+            }
+
             val fileWriter = FileWriter(ktFilename)
             val bufferedWriter = BufferedWriter(fileWriter)
             for (line in lines) {
