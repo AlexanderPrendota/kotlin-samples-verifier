@@ -31,12 +31,7 @@ class SamplesVerifierInstance(override var config: Config) : SamplesVerifier {
             }
         }
         processFiles()
-        return try {
-            requestHelper.responses.mapValues { it.value.body() }
-        } catch (e: Exception) {
-            logger.error("${e.message}\n")
-            return emptyMap()
-        }
+        return requestHelper.responses.mapValues { it.value.body() }
     }
 
     override fun run(repositoryURL: URIish): Map<String, ExecutionResult?> {

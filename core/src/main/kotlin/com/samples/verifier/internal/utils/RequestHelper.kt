@@ -80,6 +80,7 @@ internal class RequestHelper(private val baseUrl: String) {
                         retry.enqueue(this)
                         calls.add(call)
                     } else {
+                        response.body()?.run { numberOfCalls = cnt.get() + 1 }
                         _responses[filename] = response
                     }
                 } finally {

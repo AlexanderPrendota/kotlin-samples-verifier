@@ -1,5 +1,7 @@
 package com.samples.verifier.internal.utils
 
+import com.fasterxml.jackson.annotation.JsonIgnore
+
 data class KotlinFile(val name: String, val text: String)
 
 data class Project(val args: String, val files: List<KotlinFile>)
@@ -39,5 +41,6 @@ data class ExceptionDescriptor(
 data class ExecutionResult(
     val errors: Map<String, List<ErrorDescriptor>> = emptyMap(),
     val exception: ExceptionDescriptor? = null,
-    val text: String = ""
+    val text: String = "",
+    @JsonIgnore var numberOfCalls: Int = 1
 )
