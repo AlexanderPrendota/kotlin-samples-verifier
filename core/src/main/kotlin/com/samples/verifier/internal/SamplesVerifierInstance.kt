@@ -1,9 +1,9 @@
 package com.samples.verifier.internal
 
 import com.samples.verifier.SamplesVerifier
-import com.samples.verifier.internal.utils.ExecutionResult
 import com.samples.verifier.internal.utils.RequestHelper
 import com.samples.verifier.internal.utils.processFile
+import com.samples.verifier.model.ExecutionResults
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.URIish
@@ -18,7 +18,7 @@ class SamplesVerifierInstance(override var config: Config) : SamplesVerifier {
     private val logger: Logger by lazy { LoggerFactory.getLogger(javaClass) }
     private val requestHelper = RequestHelper(config.baseUrl)
 
-    override fun run(): Map<String, ExecutionResult?> {
+    override fun run(): ExecutionResults {
         if (config.repositoryURL != null) {
             try {
                 cloneRep()
@@ -27,20 +27,20 @@ class SamplesVerifierInstance(override var config: Config) : SamplesVerifier {
                     FileUtils.deleteDirectory(File(config.sourceDir))
                 }
                 logger.error("${e.message}\n")
-                return emptyMap()
+                return ExecutionResults(emptyMap(), e)
             }
         }
         processFiles()
-        return requestHelper.responses.mapValues { it.value.body() }
+        return requestHelper.responses
     }
 
-    override fun run(repositoryURL: URIish): Map<String, ExecutionResult?> {
+    override fun run(repositoryURL: URIish): ExecutionResults {
         config.repositoryURL = repositoryURL
         config.sourceDir = repositoryURL.humanishName
         return run()
     }
 
-    override fun run(sourceDir: String): Map<String, ExecutionResult?> {
+    override fun run(sourceDir: String): ExecutionResults {
         config.sourceDir = sourceDir
         config.repositoryURL = null
         return run()

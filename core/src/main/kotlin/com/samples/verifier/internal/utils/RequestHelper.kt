@@ -2,6 +2,7 @@ package com.samples.verifier.internal.utils
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.samples.verifier.internal.api.SamplesVerifierService
+import com.samples.verifier.model.ExecutionResults
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -27,7 +28,7 @@ internal class RequestHelper(private val baseUrl: String) {
         .build()
         .create(SamplesVerifierService::class.java)
 
-    val responses: Map<String, Response<ExecutionResult>>
+    val responses: ExecutionResults
         get() {
             while (finished.get() != calls.size) {
                 if (Thread.interrupted()) {
@@ -57,7 +58,7 @@ internal class RequestHelper(private val baseUrl: String) {
                 }
                 throw exception
             }
-            return _responses
+            return ExecutionResults(_responses.mapValues { it.value.body() })
         }
 
 

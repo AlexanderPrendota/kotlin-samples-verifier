@@ -22,5 +22,7 @@ fun main(args: Array<String>) {
     val config = setConfiguration(repositoryURL) {
         this.flags = flags
     }
-    print(SamplesVerifierFactory.create(config).run().entries.joinToString { "${it.key} -----to----- ${it.value}\n" })
+    print(
+        SamplesVerifierFactory.create(config)
+            .run().results.entries.joinToString { "${it.key} -----to----- ${it.value}\n" })
 }
