@@ -4,13 +4,10 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.samples.verifier.internal.api.SamplesVerifierService
 import com.samples.verifier.model.ExecutionResults
 import kotlinx.coroutines.*
-import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
 import retrofit2.converter.jaxb.JaxbConverterFactory
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicInteger
 
 const val NUMBER_OF_REQUESTS = 5
 
