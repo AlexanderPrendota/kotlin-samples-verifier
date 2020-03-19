@@ -10,5 +10,5 @@ import retrofit2.http.POST
 interface SamplesVerifierService {
     @POST("/api/compiler/run")
     @Headers("Content-Type: application/json")
-    fun compileCode(@Body body: Project): Call<ExecutionResult>
+    suspend fun compileCode(@Body body: Project): ExecutionResult
 }
