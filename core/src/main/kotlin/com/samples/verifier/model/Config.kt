@@ -1,4 +1,4 @@
-package com.samples.verifier.internal
+package com.samples.verifier.model
 
 import org.eclipse.jgit.transport.URIish
 

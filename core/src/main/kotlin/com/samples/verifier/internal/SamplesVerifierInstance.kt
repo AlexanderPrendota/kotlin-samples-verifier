@@ -3,6 +3,7 @@ package com.samples.verifier.internal
 import com.samples.verifier.SamplesVerifier
 import com.samples.verifier.internal.utils.RequestHelper
 import com.samples.verifier.internal.utils.processFile
+import com.samples.verifier.model.Config
 import com.samples.verifier.model.ExecutionResults
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.Git

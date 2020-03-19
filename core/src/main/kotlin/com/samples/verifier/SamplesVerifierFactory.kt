@@ -1,7 +1,7 @@
 package com.samples.verifier
 
 import com.samples.verifier.internal.SamplesVerifierInstance
-import com.samples.verifier.internal.Config
+import com.samples.verifier.model.Config
 
 object SamplesVerifierFactory {
     @JvmStatic

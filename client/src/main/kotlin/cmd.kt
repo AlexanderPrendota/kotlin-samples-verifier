@@ -1,5 +1,5 @@
 import com.samples.verifier.SamplesVerifierFactory
-import com.samples.verifier.internal.setConfiguration
+import com.samples.verifier.model.setConfiguration
 import org.apache.log4j.BasicConfigurator
 import java.net.MalformedURLException
 import org.eclipse.jgit.transport.URIish
