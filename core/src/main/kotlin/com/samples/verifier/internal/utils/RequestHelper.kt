@@ -1,19 +1,23 @@
 package com.samples.verifier.internal.utils
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.samples.verifier.CallException
+import com.samples.verifier.Code
+import com.samples.verifier.CompilerType
 import com.samples.verifier.internal.api.SamplesVerifierService
-import com.samples.verifier.model.ExecutionResults
-import kotlinx.coroutines.*
+import com.samples.verifier.model.ExecutionResult
+import com.samples.verifier.model.KotlinFile
+import com.samples.verifier.model.Project
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
 import retrofit2.converter.jaxb.JaxbConverterFactory
-import java.util.concurrent.ConcurrentHashMap
+import java.io.IOException
 
-const val NUMBER_OF_REQUESTS = 5
+const val NUMBER_OF_REQUESTS = 3
 
-internal class RequestHelper(private val baseUrl: String) {
-    private val requests = hashMapOf<String, Deferred<ExecutionResult>>()
-    private val _responses = ConcurrentHashMap<String, ExecutionResult>()
+internal class RequestHelper(baseUrl: String, private val compilerType: CompilerType) {
+    val results = hashMapOf<ExecutionResult, Code>()
 
     private val service: SamplesVerifierService = Retrofit.Builder()
         .baseUrl(baseUrl)
@@ -22,27 +26,32 @@ internal class RequestHelper(private val baseUrl: String) {
         .build()
         .create(SamplesVerifierService::class.java)
 
-    val responses: ExecutionResults
-        get() {
-            runBlocking {
-                requests.map {
-                    val m = it.value.await()
-                    _responses[it.key] = m
+    fun executeCode(kotlinFile: KotlinFile) {
+        val result = when (compilerType) {
+            CompilerType.JVM -> executeCodeJVM(kotlinFile)
+            CompilerType.JS -> executeCodeJS(kotlinFile)
+        }
+        results[result] = kotlinFile.text
+    }
+
+    private fun executeCodeJVM(kotlinFile: KotlinFile): ExecutionResult {
+        val project = Project("", listOf(kotlinFile))
+        var result: Response<ExecutionResult>? = null
+        for (i in 1..NUMBER_OF_REQUESTS) {
+            try {
+                result = service.executeCodeJVM(project).execute()
+                if (result!!.isSuccessful) {
+                    break
                 }
+            } catch (e: IOException) {
+                if (i == NUMBER_OF_REQUESTS) throw e
             }
-            return ExecutionResults(_responses)
         }
+        return if (result!!.isSuccessful) result.body()!!
+            else throw CallException(result.errorBody()!!.string())
+    }
 
-    fun compileCodeRequest(project: Project, filename: String) {
-        requests[filename]?.cancel()
-
-        requests[filename] = GlobalScope.async {
-            var result = service.compileCode(project)
-            for (i in 1..NUMBER_OF_REQUESTS) {
-                if (result.exception == null) break
-                result = service.compileCode(project)
-            }
-            result
-        }
+    private fun executeCodeJS(kotlinFile: KotlinFile): ExecutionResult {
+        TODO("Not yet implemented")
     }
 }

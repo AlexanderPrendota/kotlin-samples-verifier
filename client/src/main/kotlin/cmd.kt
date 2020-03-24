@@ -1,9 +1,6 @@
+import com.samples.verifier.FileType
 import com.samples.verifier.SamplesVerifierFactory
-import com.samples.verifier.model.setConfiguration
 import org.apache.log4j.BasicConfigurator
-import java.net.MalformedURLException
-import org.eclipse.jgit.transport.URIish
-
 
 fun main(args: Array<String>) {
     BasicConfigurator.configure()
@@ -11,18 +8,12 @@ fun main(args: Array<String>) {
         print("Invalid arguments")
         return
     }
-    val flags = mutableListOf<String>()
-    for (i in 1 until args.size) flags.add(args[i])
-    val repositoryURL = try {
-        URIish(args[0])
-    } catch (e: MalformedURLException) {
-        println("Invalid repository URL")
-        return
-    }
-    val config = setConfiguration(repositoryURL) {
-        this.flags = flags
-    }
+    val attributes = mutableListOf<String>()
+    for (i in 1 until args.size) attributes.add(args[i])
     print(
-        SamplesVerifierFactory.create(config)
-            .run().results.entries.joinToString { "${it.key} -----to----- ${it.value}\n" })
+        SamplesVerifierFactory.create().collect(
+            args[0],
+            attributes,
+            FileType.MARKDOWN
+        ).entries.joinToString { "${it.key} -----to----- ${it.value}\n" })
 }

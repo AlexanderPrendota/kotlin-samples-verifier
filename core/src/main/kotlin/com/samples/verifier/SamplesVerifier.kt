@@ -1,15 +1,16 @@
 package com.samples.verifier
 
-import com.samples.verifier.model.Config
-import com.samples.verifier.model.ExecutionResults
-import org.eclipse.jgit.transport.URIish
+import com.samples.verifier.model.ExecutionResult
 
 interface SamplesVerifier {
-    val config: Config
+    fun collect(url: String, attributes: List<String>, type: FileType): Map<ExecutionResult, Code>
 
-    fun run(): ExecutionResults
-
-    fun run(repositoryURL: URIish): ExecutionResults
-
-    fun run(sourceDir: String): ExecutionResults
+    fun check(url: String, attributes: List<String>, type: FileType)
 }
+
+enum class FileType {
+    MARKDOWN,
+    HTML
+}
+
+typealias Code = String
