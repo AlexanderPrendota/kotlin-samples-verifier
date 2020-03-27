@@ -7,11 +7,11 @@ object SamplesVerifierFactory {
     @JvmStatic
     fun create(
         compilerUrl: String = "http://localhost:8080/",
-        compilerType: CompilerType = CompilerType.JVM
-    ): SamplesVerifier = SamplesVerifierInstance(compilerUrl, compilerType)
+        kotlinEnv: KotlinEnv = KotlinEnv.JVM
+    ): SamplesVerifier = SamplesVerifierInstance(compilerUrl, kotlinEnv)
 }
 
-enum class CompilerType {
+enum class KotlinEnv {
     JVM,
     JS
 }

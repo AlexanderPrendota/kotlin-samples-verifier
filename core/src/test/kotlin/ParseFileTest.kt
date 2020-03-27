@@ -1,4 +1,4 @@
-import com.samples.verifier.CompilerType
+import com.samples.verifier.KotlinEnv
 import com.samples.verifier.FileType
 import com.samples.verifier.internal.utils.RequestHelper
 import com.samples.verifier.internal.utils.processFile
@@ -14,7 +14,7 @@ class ParseFileTest {
 
     @Test
     fun `base md jvm test`() {
-        val requestHelper = RequestHelper("http://localhost:8080/", CompilerType.JVM, logger)
+        val requestHelper = RequestHelper("http://localhost:8080/", KotlinEnv.JVM, logger)
         processFile(
             File("src/test/resources/hello_world.md"),
             FileType.MD,

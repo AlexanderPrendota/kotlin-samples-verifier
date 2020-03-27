@@ -3,11 +3,9 @@ package com.samples.verifier.internal.utils
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.samples.verifier.CallException
 import com.samples.verifier.Code
-import com.samples.verifier.CompilerType
+import com.samples.verifier.KotlinEnv
 import com.samples.verifier.internal.api.SamplesVerifierService
-import com.samples.verifier.model.ExecutionResult
-import com.samples.verifier.model.KotlinFile
-import com.samples.verifier.model.Project
+import com.samples.verifier.model.*
 import org.slf4j.Logger
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -17,7 +15,7 @@ import java.io.IOException
 
 const val NUMBER_OF_REQUESTS = 3
 
-internal class RequestHelper(baseUrl: String, private val compilerType: CompilerType, private val logger: Logger) {
+internal class RequestHelper(baseUrl: String, private val kotlinEnv: KotlinEnv, private val logger: Logger) {
     val results = hashMapOf<ExecutionResult, Code>()
 
     private val service: SamplesVerifierService = Retrofit.Builder()
@@ -28,9 +26,9 @@ internal class RequestHelper(baseUrl: String, private val compilerType: Compiler
         .create(SamplesVerifierService::class.java)
 
     fun executeCode(kotlinFile: KotlinFile) {
-        val result = when (compilerType) {
-            CompilerType.JVM -> executeCodeJVM(kotlinFile)
-            CompilerType.JS -> executeCodeJS(kotlinFile)
+        val result = when (kotlinEnv) {
+            KotlinEnv.JVM -> executeCodeJVM(kotlinFile)
+            KotlinEnv.JS -> executeCodeJS(kotlinFile)
         }
         val errors = result.errors.values.flatten()
         if (errors.isNotEmpty()) {
@@ -40,7 +38,7 @@ internal class RequestHelper(baseUrl: String, private val compilerType: Compiler
                 ?: logger.info("Output: \n${result.text}")
         } else if (result.exception != null) {
             logger.info("Code: \n${kotlinFile.text}")
-            logger.info("Exception: \n${result.exception.localizedMessage}")
+            logger.info("Exception: \n${result.exception.message}")
         }
         results[result] = kotlinFile.text
     }

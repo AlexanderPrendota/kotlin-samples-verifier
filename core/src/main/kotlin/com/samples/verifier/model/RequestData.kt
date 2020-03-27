@@ -1,5 +1,7 @@
 package com.samples.verifier.model
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+
 data class KotlinFile(val name: String, val text: String)
 
 data class Project(val args: String, val files: List<KotlinFile>)
@@ -21,19 +23,12 @@ data class ErrorDescriptor(
     val className: String?
 )
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class StackTraceElement(
-    val className: String,
-    val methodName: String,
-    val fileName: String,
-    val lineNumber: Int
-)
-
-data class ExceptionDescriptor(
-    val message: String?,
-    val fullName: String?,
-    val stackTrace: List<StackTraceElement>,
-    val cause: ExceptionDescriptor?,
-    val localizedMessage: String?
+    val className: String = "",
+    val methodName: String = "",
+    val fileName: String = "",
+    val lineNumber: Int = 0
 )
 
 data class ExecutionResult(

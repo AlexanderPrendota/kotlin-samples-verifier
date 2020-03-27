@@ -12,9 +12,9 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 
-internal class SamplesVerifierInstance(compilerUrl: String, compilerType: CompilerType) : SamplesVerifier {
+internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv) : SamplesVerifier {
     private val logger = LoggerFactory.getLogger("Samples Verifier")
-    private val requestHelper = RequestHelper(compilerUrl, compilerType, logger)
+    private val requestHelper = RequestHelper(compilerUrl, kotlinEnv, logger)
 
     override fun collect(url: String, attributes: List<String>, type: FileType): Map<ExecutionResult, Code> {
         check(url, attributes, type)
@@ -29,12 +29,10 @@ internal class SamplesVerifierInstance(compilerUrl: String, compilerType: Compil
             processFiles(dir, attributes, type)
         } catch (e: GitException) {
             //TODO
-            logger.error("${e.message}\n")
-        } catch (e: CallException) {
-            //TODO
+            logger.error("${e.message}")
         } catch (e: IOException) {
             //TODO
-            logger.error("${e.message}\n")
+            logger.error("${e.message}")
         } finally {
             if (dir.isDirectory) {
                 FileUtils.deleteDirectory(dir)
