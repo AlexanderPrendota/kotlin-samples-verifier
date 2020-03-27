@@ -9,7 +9,7 @@ interface SamplesVerifier {
 }
 
 enum class FileType {
-    MARKDOWN,
+    MD,
     HTML
 }
 

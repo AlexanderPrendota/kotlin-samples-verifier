@@ -8,6 +8,7 @@ import com.samples.verifier.internal.api.SamplesVerifierService
 import com.samples.verifier.model.ExecutionResult
 import com.samples.verifier.model.KotlinFile
 import com.samples.verifier.model.Project
+import org.slf4j.Logger
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
@@ -16,7 +17,7 @@ import java.io.IOException
 
 const val NUMBER_OF_REQUESTS = 3
 
-internal class RequestHelper(baseUrl: String, private val compilerType: CompilerType) {
+internal class RequestHelper(baseUrl: String, private val compilerType: CompilerType, private val logger: Logger) {
     val results = hashMapOf<ExecutionResult, Code>()
 
     private val service: SamplesVerifierService = Retrofit.Builder()
@@ -30,6 +31,16 @@ internal class RequestHelper(baseUrl: String, private val compilerType: Compiler
         val result = when (compilerType) {
             CompilerType.JVM -> executeCodeJVM(kotlinFile)
             CompilerType.JS -> executeCodeJS(kotlinFile)
+        }
+        val errors = result.errors.values.flatten()
+        if (errors.isNotEmpty()) {
+            logger.info("Code: \n${kotlinFile.text}")
+            logger.info("Errors: \n${errors.joinToString("\n")}")
+            result.exception?.let { logger.info("Exception: \n${it.localizedMessage}") }
+                ?: logger.info("Output: \n${result.text}")
+        } else if (result.exception != null) {
+            logger.info("Code: \n${kotlinFile.text}")
+            logger.info("Exception: \n${result.exception.localizedMessage}")
         }
         results[result] = kotlinFile.text
     }
@@ -48,7 +59,7 @@ internal class RequestHelper(baseUrl: String, private val compilerType: Compiler
             }
         }
         return if (result!!.isSuccessful) result.body()!!
-            else throw CallException(result.errorBody()!!.string())
+        else throw CallException(result.errorBody()!!.string())
     }
 
     private fun executeCodeJS(kotlinFile: KotlinFile): ExecutionResult {

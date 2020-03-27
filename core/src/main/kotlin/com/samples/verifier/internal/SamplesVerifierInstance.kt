@@ -6,7 +6,6 @@ import com.samples.verifier.internal.utils.cloneRepository
 import com.samples.verifier.internal.utils.processFile
 import com.samples.verifier.model.ExecutionResult
 import org.apache.commons.io.FileUtils
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
@@ -14,8 +13,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 internal class SamplesVerifierInstance(compilerUrl: String, compilerType: CompilerType) : SamplesVerifier {
-    private val logger: Logger by lazy { LoggerFactory.getLogger(javaClass) }
-    private val requestHelper = RequestHelper(compilerUrl, compilerType)
+    private val logger = LoggerFactory.getLogger("Samples Verifier")
+    private val requestHelper = RequestHelper(compilerUrl, compilerType, logger)
 
     override fun collect(url: String, attributes: List<String>, type: FileType): Map<ExecutionResult, Code> {
         check(url, attributes, type)
@@ -23,8 +22,9 @@ internal class SamplesVerifierInstance(compilerUrl: String, compilerType: Compil
     }
 
     override fun check(url: String, attributes: List<String>, type: FileType) {
-        val dir = File("rep")
+        val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
         try {
+            logger.info("Cloning repository...")
             cloneRepository(dir, url)
             processFiles(dir, attributes, type)
         } catch (e: GitException) {
@@ -35,8 +35,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, compilerType: Compil
         } catch (e: IOException) {
             //TODO
             logger.error("${e.message}\n")
-        }
-        finally {
+        } finally {
             if (dir.isDirectory) {
                 FileUtils.deleteDirectory(dir)
             } else {
@@ -50,13 +49,15 @@ internal class SamplesVerifierInstance(compilerUrl: String, compilerType: Compil
             it.forEach { path: Path ->
                 val file = path.toFile()
                 when (type) {
-                    FileType.MARKDOWN -> {
+                    FileType.MD -> {
                         if (file.extension == "md") {
+                            logger.info("Processing ${file}...")
                             processFile(file, type, attributes, requestHelper)
                         }
                     }
                     FileType.HTML -> {
                         if (file.extension == "html") {
+                            logger.info("Processing ${file}...")
                             processFile(file, type, attributes, requestHelper)
                         }
                     }
