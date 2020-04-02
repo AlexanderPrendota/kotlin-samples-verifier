@@ -3,7 +3,7 @@
 
 name: Java CI with Gradle
 
-on:[push]
+on: [push]
 
 jobs:
   build:
