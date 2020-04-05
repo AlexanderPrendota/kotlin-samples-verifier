@@ -1,7 +1,7 @@
 package com.samples.verifier.internal
 
 import com.samples.verifier.*
-import com.samples.verifier.internal.utils.RequestHelper
+import com.samples.verifier.internal.utils.ExecutionHelper
 import com.samples.verifier.internal.utils.cloneRepository
 import com.samples.verifier.internal.utils.processFile
 import com.samples.verifier.model.ExecutionResult
@@ -14,11 +14,11 @@ import java.nio.file.Path
 
 internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv) : SamplesVerifier {
     private val logger = LoggerFactory.getLogger("Samples Verifier")
-    private val requestHelper = RequestHelper(compilerUrl, kotlinEnv, logger)
+    private val executionHelper = ExecutionHelper(compilerUrl, kotlinEnv, logger)
 
     override fun collect(url: String, attributes: List<String>, type: FileType): Map<ExecutionResult, Code> {
         check(url, attributes, type)
-        return requestHelper.results
+        return executionHelper.results
     }
 
     override fun check(url: String, attributes: List<String>, type: FileType) {
@@ -50,13 +50,13 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
                     FileType.MD -> {
                         if (file.extension == "md") {
                             logger.info("Processing ${file}...")
-                            processFile(file, type, attributes, requestHelper)
+                            processFile(file, type, attributes, executionHelper)
                         }
                     }
                     FileType.HTML -> {
                         if (file.extension == "html") {
                             logger.info("Processing ${file}...")
-                            processFile(file, type, attributes, requestHelper)
+                            processFile(file, type, attributes, executionHelper)
                         }
                     }
                 }

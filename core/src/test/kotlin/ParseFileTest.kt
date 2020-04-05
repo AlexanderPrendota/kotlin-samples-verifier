@@ -1,6 +1,6 @@
 import com.samples.verifier.KotlinEnv
 import com.samples.verifier.FileType
-import com.samples.verifier.internal.utils.RequestHelper
+import com.samples.verifier.internal.utils.ExecutionHelper
 import com.samples.verifier.internal.utils.processFile
 import com.samples.verifier.model.ExecutionResult
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -14,14 +14,14 @@ class ParseFileTest {
 
     @Test
     fun `base md jvm test`() {
-        val requestHelper = RequestHelper("http://localhost:8080/", KotlinEnv.JVM, logger)
+        val executionHelper = ExecutionHelper("http://localhost:8080/", KotlinEnv.JVM, logger)
         processFile(
             File("src/test/resources/hello_world.md"),
             FileType.MD,
             listOf("run-kotlin"),
-            requestHelper
+            executionHelper
         )
-        val result = requestHelper.results.entries.toList()[0]
+        val result = executionHelper.results.entries.toList()[0]
         val expectedCode = "fun main() {\n    println(\"Hello world!\")\n}"
         val expectedResult = ExecutionResult(
             mapOf("hello_world_1.kt" to emptyList()),

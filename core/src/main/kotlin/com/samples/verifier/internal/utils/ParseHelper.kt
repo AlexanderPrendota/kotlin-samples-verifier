@@ -15,14 +15,14 @@ internal fun processFile(
     file: File,
     type: FileType,
     flags: List<String>,
-    requestHelper: RequestHelper
+    executionHelper: ExecutionHelper
 ) {
     when (type) {
         FileType.MD -> {
-            processMarkdownFile(file, flags, requestHelper)
+            processMarkdownFile(file, flags, executionHelper)
         }
         FileType.HTML -> {
-            processHTMLFile(file, flags, requestHelper)
+            processHTMLFile(file, flags, executionHelper)
         }
     }
 }
@@ -30,7 +30,7 @@ internal fun processFile(
 private fun processHTMLFile(
     file: File,
     flags: List<String>,
-    requestHelper: RequestHelper
+    executionHelper: ExecutionHelper
 ) {
     TODO("Not yet implemented")
 }
@@ -38,7 +38,7 @@ private fun processHTMLFile(
 private fun processMarkdownFile(
     file: File,
     flags: List<String>,
-    requestHelper: RequestHelper
+    executionHelper: ExecutionHelper
 ) {
     val txtmarkConfiguration = Configuration.builder()
         .forceExtentedProfile()
@@ -46,7 +46,7 @@ private fun processMarkdownFile(
             CodeBlockEmitter(
                 flags = flags,
                 filename = file.nameWithoutExtension,
-                requestHelper = requestHelper
+                executionHelper = executionHelper
             )
         )
         .build()
@@ -62,7 +62,7 @@ private fun processMarkdownFile(
 private class CodeBlockEmitter(
     val flags: List<String>,
     val filename: String,
-    val requestHelper: RequestHelper
+    val executionHelper: ExecutionHelper
 ) :
     BlockEmitter {
     private var counter = 1
@@ -70,7 +70,7 @@ private class CodeBlockEmitter(
     override fun emitBlock(out: StringBuilder, lines: MutableList<String>?, meta: String?) {
         if (meta in flags && lines != null) {
             val ktFilename = "${filename}_$counter.kt"
-            requestHelper.executeCode(
+            executionHelper.executeCode(
                 KotlinFile(
                     ktFilename,
                     lines.joinToString("\n")

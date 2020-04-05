@@ -15,7 +15,7 @@ import java.io.IOException
 
 const val NUMBER_OF_REQUESTS = 3
 
-internal class RequestHelper(baseUrl: String, private val kotlinEnv: KotlinEnv, private val logger: Logger) {
+internal class ExecutionHelper(baseUrl: String, private val kotlinEnv: KotlinEnv, private val logger: Logger) {
     val results = hashMapOf<ExecutionResult, Code>()
 
     private val service: SamplesVerifierService = Retrofit.Builder()
