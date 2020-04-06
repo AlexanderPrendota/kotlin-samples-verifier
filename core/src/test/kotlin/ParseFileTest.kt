@@ -3,6 +3,7 @@ import com.samples.verifier.FileType
 import com.samples.verifier.internal.utils.ExecutionHelper
 import com.samples.verifier.internal.utils.processFile
 import com.samples.verifier.model.ExecutionResult
+import org.apache.log4j.BasicConfigurator
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
@@ -14,6 +15,7 @@ class ParseFileTest {
 
     @Test
     fun `base md jvm test`() {
+        BasicConfigurator.configure()
         val executionHelper = ExecutionHelper("http://localhost:8080/", KotlinEnv.JVM, logger)
         processFile(
             File("src/test/resources/hello_world.md"),
