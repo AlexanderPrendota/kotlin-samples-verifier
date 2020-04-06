@@ -1,5 +1,9 @@
+import java.lang.Thread.sleep
+
 plugins {
     kotlin("jvm") version "1.3.70"
+    id("com.palantir.docker") version "0.25.0"
+    id("com.palantir.docker-run") version "0.25.0"
 }
 
 group = "org.example"
@@ -37,6 +41,28 @@ tasks {
     }
 }
 
+val dockerImageName = "prendota/kotlin-compiler-server:latest"
+
+docker {
+    name = dockerImageName
+    pull(true)
+}
+
+dockerRun {
+    name = "kotlin-compiler-server"
+    image = dockerImageName
+    arguments("--network=host")
+    clean = false
+}
+
+tasks.dockerRun {
+    doLast {
+        sleep(10 * 1000)
+    }
+}
+
 tasks.test {
+    dependsOn("dockerRun")
     useJUnitPlatform()
+    finalizedBy("dockerStop", "dockerRemoveContainer")
 }
