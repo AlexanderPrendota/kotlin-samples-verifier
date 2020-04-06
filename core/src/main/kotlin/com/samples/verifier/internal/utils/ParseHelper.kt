@@ -3,6 +3,7 @@ package com.samples.verifier.internal.utils
 import com.github.rjeschke.txtmark.BlockEmitter
 import com.github.rjeschke.txtmark.Configuration
 import com.github.rjeschke.txtmark.Processor
+import org.jsoup.Jsoup
 import com.samples.verifier.FileType
 import com.samples.verifier.model.KotlinFile
 import org.slf4j.LoggerFactory
@@ -32,7 +33,23 @@ private fun processHTMLFile(
     flags: List<String>,
     executionHelper: ExecutionHelper
 ) {
-    TODO("Not yet implemented")
+    var counter = 1
+    val document = Jsoup.parse(file, null)
+    for (elem in document.allElements) {
+        for (flag in flags) {
+            if (elem.hasClass(flag)) {
+                val ktFilename = "${file.nameWithoutExtension}_$counter.kt"
+                executionHelper.executeCode(
+                    KotlinFile(
+                        ktFilename,
+                        elem.wholeText().trimIndent()
+                    )
+                )
+                counter++
+                break
+            }
+        }
+    }
 }
 
 private fun processMarkdownFile(
