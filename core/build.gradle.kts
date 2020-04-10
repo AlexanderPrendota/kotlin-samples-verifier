@@ -1,8 +1,13 @@
+import org.gradle.jvm.tasks.Jar
+
 plugins {
     kotlin("jvm") version "1.3.70"
+    id("org.jetbrains.dokka") version "0.10.0"
+    `maven-publish`
+    signing
 }
 
-group = "org.example"
+group = "io.github.AlexanderPrendota"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -41,4 +46,74 @@ tasks {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.dokka {
+    outputFormat = "html"
+    outputDirectory = "$buildDir/javadoc"
+}
+
+val dokkaJar by tasks.creating(Jar::class) {
+    group = JavaBasePlugin.DOCUMENTATION_GROUP
+    description = "Assembles Kotlin docs with Dokka"
+    archiveClassifier.set("javadoc")
+    from(tasks.dokka)
+}
+
+val sourcesJar by tasks.creating(Jar::class) {
+    group = JavaBasePlugin.DOCUMENTATION_GROUP
+    archiveClassifier.set("sources")
+    from(sourceSets.main.get().allSource)
+}
+
+
+val MAVEN_UPLOAD_USER: String by project
+val MAVEN_UPLOAD_PWD: String by project
+
+publishing {
+    repositories {
+        maven {
+            name = "MavenCentral"
+            val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+            val snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+            url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+            credentials {
+                username = MAVEN_UPLOAD_USER
+                password = MAVEN_UPLOAD_PWD
+            }
+        }
+    }
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+            artifact(dokkaJar)
+            artifact(sourcesJar)
+
+            pom {
+                name.set("Kotlin Samples Verifier")
+                url.set("https://github.com/AlexanderPrendota/kotlin-samples-verifier")
+                developers {
+                    developer {
+                        id.set("myannyax")
+                        name.set("Mariia Filipanova")
+                        email.set("myannyax@gmail.com")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:https://github.com/AlexanderPrendota/kotlin-samples-verifier.git")
+                    developerConnection.set("scm:git:https://github.com/AlexanderPrendota/kotlin-samples-verifier.git")
+                    url.set("https://github.com/AlexanderPrendota/kotlin-samples-verifier")
+                }
+
+            }
+        }
+    }
+}
+
+
+signing {
+    val PGP_SIGNING_KEY: String? by project
+    val PGP_SIGNING_PASSWORD: String? by project
+    useInMemoryPgpKeys(PGP_SIGNING_KEY, PGP_SIGNING_PASSWORD)
+    sign(publishing.publications["mavenJava"])
 }
