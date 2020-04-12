@@ -36,3 +36,10 @@ data class ExecutionResult(
     val exception: ExceptionDescriptor?,
     val text: String
 )
+
+data class TranslationJSResult(
+    val jsCode: String? = null,
+    var exception: ExceptionDescriptor? = null,
+    var errors: Map<String, List<ErrorDescriptor>> = emptyMap(),
+    val text: String
+)

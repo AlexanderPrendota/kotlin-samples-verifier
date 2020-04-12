@@ -51,6 +51,26 @@ internal class ExecutionHelper(baseUrl: String, private val kotlinEnv: KotlinEnv
     }
 
     private fun executeCodeJS(kotlinFile: KotlinFile): ExecutionResult {
-        TODO("Not yet implemented")
+        val project = Project("", listOf(kotlinFile))
+        var result: Response<TranslationJSResult>? = null
+        for (i in 1..NUMBER_OF_REQUESTS) {
+            try {
+                result = service.translateCodeJS(project).execute()
+                if (result!!.isSuccessful) {
+                    break
+                }
+            } catch (e: IOException) {
+                if (i == NUMBER_OF_REQUESTS) throw e
+            }
+        }
+        if (result!!.isSuccessful) {
+            val translationJSResult = result.body()!!
+            return if (translationJSResult.jsCode == null) {
+                translationJSResult.let { ExecutionResult(it.errors, it.exception, "") }
+            } else {
+                executeJS(translationJSResult)
+            }
+        } else throw CallException(result.errorBody()!!.string())
     }
 }
+

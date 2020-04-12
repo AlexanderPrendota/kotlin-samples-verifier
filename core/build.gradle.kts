@@ -9,6 +9,13 @@ plugins {
 group = "org.example"
 version = "1.0-SNAPSHOT"
 
+val kotlinJsDependency: Configuration by configurations.creating
+
+val copyJSDependencies by tasks.creating(Copy::class) {
+    from(files(Callable { kotlinJsDependency.map { zipTree(it)} }))
+    into("build/kotlin-js")
+}
+
 repositories {
     mavenCentral()
 }
@@ -17,7 +24,10 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.3.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.3.1")
 
+    kotlinJsDependency("org.jetbrains.kotlin:kotlin-stdlib-js:1.3.70")
+
     implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlin("stdlib-js"))
     implementation("com.github.rjeschke:txtmark:0.13")
     implementation("org.jsoup:jsoup:1.13.1")
     implementation("org.eclipse.jgit:org.eclipse.jgit:5.6.1.202002131546-r")
@@ -29,6 +39,10 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.3")
     implementation("com.squareup.okhttp3:okhttp:4.4.1")
 
+    implementation("org.graalvm.js:js:20.0.0")
+    implementation("org.graalvm.js:js-scriptengine:20.0.0")
+    implementation("org.graalvm.truffle:truffle-api:20.0.0")
+
     implementation("org.slf4j:slf4j-api:2.0.0-alpha1")
     implementation("org.slf4j:slf4j-log4j12:2.0.0-alpha1")
 }
@@ -36,6 +50,7 @@ dependencies {
 tasks {
     compileKotlin {
         kotlinOptions.jvmTarget = "1.8"
+        dependsOn(copyJSDependencies)
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
