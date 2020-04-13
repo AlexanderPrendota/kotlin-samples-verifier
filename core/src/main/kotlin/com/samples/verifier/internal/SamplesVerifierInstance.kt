@@ -1,80 +1,66 @@
 package com.samples.verifier.internal
 
-import com.samples.verifier.SamplesVerifier
-import com.samples.verifier.internal.utils.RequestHelper
+import com.samples.verifier.*
+import com.samples.verifier.internal.utils.ExecutionHelper
+import com.samples.verifier.internal.utils.cloneRepository
 import com.samples.verifier.internal.utils.processFile
-import com.samples.verifier.model.Config
-import com.samples.verifier.model.ExecutionResults
+import com.samples.verifier.model.ExecutionResult
 import org.apache.commons.io.FileUtils
-import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.transport.URIish
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 
-class SamplesVerifierInstance(override var config: Config) : SamplesVerifier {
-    private val logger: Logger by lazy { LoggerFactory.getLogger(javaClass) }
-    private val requestHelper = RequestHelper(config.baseUrl)
+internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv) : SamplesVerifier {
+    private val logger = LoggerFactory.getLogger("Samples Verifier")
+    private val executionHelper = ExecutionHelper(compilerUrl, kotlinEnv, logger)
 
-    override fun run(): ExecutionResults {
-        if (config.repositoryURL != null) {
-            try {
-                cloneRep()
-            } catch (e: Exception) {
-                if (File(config.sourceDir).isDirectory) {
-                    FileUtils.deleteDirectory(File(config.sourceDir))
-                }
-                logger.error("${e.message}\n")
-                return ExecutionResults(emptyMap(), e)
+    override fun collect(url: String, attributes: List<String>, type: FileType): Map<ExecutionResult, Code> {
+        check(url, attributes, type)
+        return executionHelper.results
+    }
+
+    override fun check(url: String, attributes: List<String>, type: FileType) {
+        val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
+        try {
+            logger.info("Cloning repository...")
+            cloneRepository(dir, url)
+            processFiles(dir, attributes, type)
+        } catch (e: GitException) {
+            //TODO
+            logger.error("${e.message}")
+        } catch (e: IOException) {
+            //TODO
+            logger.error("${e.message}")
+        } finally {
+            if (dir.isDirectory) {
+                FileUtils.deleteDirectory(dir)
+            } else {
+                dir.delete()
             }
         }
-        processFiles()
-        return requestHelper.responses
     }
 
-    override fun run(repositoryURL: URIish): ExecutionResults {
-        config.repositoryURL = repositoryURL
-        config.sourceDir = repositoryURL.humanishName
-        return run()
-    }
-
-    override fun run(sourceDir: String): ExecutionResults {
-        config.sourceDir = sourceDir
-        config.repositoryURL = null
-        return run()
-    }
-
-    private fun processFiles() {
-        val sourceDirectory = File(config.sourceDir)
-        Files.walk(sourceDirectory.toPath()).use {
+    private fun processFiles(directory: File, attributes: List<String>, type: FileType) {
+        Files.walk(directory.toPath()).use {
             it.forEach { path: Path ->
                 val file = path.toFile()
-                if (file.extension == "md") {
-                    processFile(
-                        file, flags = config.flags,
-                        sourceDir = config.sourceDir,
-                        targetDir = config.targetDir,
-                        execute = true,
-                        requestHelper = requestHelper
-                    )
+                when (type) {
+                    FileType.MD -> {
+                        if (file.extension == "md") {
+                            logger.info("Processing ${file}...")
+                            processFile(file, type, attributes, executionHelper)
+                        }
+                    }
+                    FileType.HTML -> {
+                        if (file.extension == "html") {
+                            logger.info("Processing ${file}...")
+                            processFile(file, type, attributes, executionHelper)
+                        }
+                    }
                 }
             }
         }
-    }
-
-    private fun cloneRep() {
-        if (config.repositoryURL == null) {
-            throw Exception("No repository URL provided")
-        }
-        val dir = File(Paths.get(config.sourceDir).toAbsolutePath().toString())
-        dir.mkdirs()
-        val git = Git.cloneRepository()
-            .setURI(config.repositoryURL.toString())
-            .setDirectory(dir)
-            .call()
-        git.close()
     }
 }
