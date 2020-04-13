@@ -24,7 +24,7 @@ dependencies {
     implementation("org.apache.directory.studio:org.apache.commons.io:2.4")
 
     implementation("com.squareup.retrofit2:retrofit:2.7.2")
-    implementation("com.squareup.retrofit2:converter-jaxb:2.7.0")
+    implementation("com.squareup.retrofit2:converter-jaxb:2.8.1")
     implementation("com.squareup.retrofit2:converter-jackson:2.7.2")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.3")
     implementation("com.squareup.okhttp3:okhttp:4.4.1")
