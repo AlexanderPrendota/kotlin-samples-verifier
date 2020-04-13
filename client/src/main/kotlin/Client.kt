@@ -5,8 +5,6 @@ import com.samples.verifier.SamplesVerifierFactory
 import com.sampullara.cli.Args
 import com.sampullara.cli.Argument
 import org.apache.log4j.BasicConfigurator
-import org.apache.log4j.Level
-import org.apache.log4j.Logger
 import java.io.FileWriter
 import kotlin.system.exitProcess
 
@@ -47,8 +45,6 @@ class Client {
         }
 
         private fun collect(args: Array<String>) {
-            Logger.getRootLogger().level = Level.ERROR
-
             val options = CollectOptions()
             try {
                 Args.parse(options, args)

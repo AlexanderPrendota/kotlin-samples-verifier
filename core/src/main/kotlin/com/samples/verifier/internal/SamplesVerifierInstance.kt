@@ -5,6 +5,7 @@ import com.samples.verifier.internal.utils.ExecutionHelper
 import com.samples.verifier.internal.utils.cloneRepository
 import com.samples.verifier.internal.utils.processFile
 import com.samples.verifier.model.ExecutionResult
+import com.samples.verifier.model.KotlinFile
 import org.apache.commons.io.FileUtils
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -14,19 +15,40 @@ import java.nio.file.Path
 
 internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv) : SamplesVerifier {
     private val logger = LoggerFactory.getLogger("Samples Verifier")
-    private val executionHelper = ExecutionHelper(compilerUrl, kotlinEnv, logger)
+    private val executionHelper = ExecutionHelper(compilerUrl, kotlinEnv)
 
     override fun collect(url: String, attributes: List<String>, type: FileType): Map<ExecutionResult, Code> {
-        check(url, attributes, type)
-        return executionHelper.results
+        val results = hashMapOf<ExecutionResult, Code>()
+        processRepository(url, attributes, type) { result, file -> results[result] = file.text }
+        return results
     }
 
     override fun check(url: String, attributes: List<String>, type: FileType) {
+        processRepository(url, attributes, type) { result, file ->
+            val errors = result.errors.values.flatten()
+            if (errors.isNotEmpty()) {
+                logger.info("Code: \n${file.text}")
+                logger.info("Errors: \n${errors.joinToString("\n")}")
+                result.exception?.let { logger.info("Exception: \n${it.localizedMessage}") }
+                    ?: logger.info("Output: \n${result.text}")
+            } else if (result.exception != null) {
+                logger.info("Code: \n${file.text}")
+                logger.info("Exception: \n${result.exception.message}")
+            }
+        }
+    }
+
+    private fun processRepository(
+        url: String,
+        attributes: List<String>,
+        type: FileType,
+        processResult: (ExecutionResult, KotlinFile) -> Unit
+    ) {
         val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
         try {
             logger.info("Cloning repository...")
             cloneRepository(dir, url)
-            processFiles(dir, attributes, type)
+            processFiles(dir, attributes, type, processResult)
         } catch (e: GitException) {
             //TODO
             logger.error("${e.message}")
@@ -42,7 +64,12 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         }
     }
 
-    private fun processFiles(directory: File, attributes: List<String>, type: FileType) {
+    private fun processFiles(
+        directory: File,
+        attributes: List<String>,
+        type: FileType,
+        processResult: (ExecutionResult, KotlinFile) -> Unit
+    ) {
         Files.walk(directory.toPath()).use {
             it.forEach { path: Path ->
                 val file = path.toFile()
@@ -50,13 +77,13 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
                     FileType.MD -> {
                         if (file.extension == "md") {
                             logger.info("Processing ${file}...")
-                            processFile(file, type, attributes, executionHelper)
+                            processFile(file, type, attributes, executionHelper, processResult)
                         }
                     }
                     FileType.HTML -> {
                         if (file.extension == "html") {
                             logger.info("Processing ${file}...")
-                            processFile(file, type, attributes, executionHelper)
+                            processFile(file, type, attributes, executionHelper, processResult)
                         }
                     }
                 }

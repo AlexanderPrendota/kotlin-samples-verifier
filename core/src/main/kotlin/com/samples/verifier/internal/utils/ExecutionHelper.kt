@@ -2,11 +2,9 @@ package com.samples.verifier.internal.utils
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.samples.verifier.CallException
-import com.samples.verifier.Code
 import com.samples.verifier.KotlinEnv
 import com.samples.verifier.internal.api.SamplesVerifierService
 import com.samples.verifier.model.*
-import org.slf4j.Logger
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
@@ -15,8 +13,7 @@ import java.io.IOException
 
 const val NUMBER_OF_REQUESTS = 3
 
-internal class ExecutionHelper(baseUrl: String, private val kotlinEnv: KotlinEnv, private val logger: Logger) {
-    val results = hashMapOf<ExecutionResult, Code>()
+internal class ExecutionHelper(baseUrl: String, private val kotlinEnv: KotlinEnv) {
 
     private val service: SamplesVerifierService = Retrofit.Builder()
         .baseUrl(baseUrl)
@@ -25,22 +22,15 @@ internal class ExecutionHelper(baseUrl: String, private val kotlinEnv: KotlinEnv
         .build()
         .create(SamplesVerifierService::class.java)
 
-    fun executeCode(kotlinFile: KotlinFile) {
+    fun executeCode(
+        kotlinFile: KotlinFile,
+        processResult: (ExecutionResult, KotlinFile) -> Unit
+    ) {
         val result = when (kotlinEnv) {
             KotlinEnv.JVM -> executeCodeJVM(kotlinFile)
             KotlinEnv.JS -> executeCodeJS(kotlinFile)
         }
-        val errors = result.errors.values.flatten()
-        if (errors.isNotEmpty()) {
-            logger.info("Code: \n${kotlinFile.text}")
-            logger.info("Errors: \n${errors.joinToString("\n")}")
-            result.exception?.let { logger.info("Exception: \n${it.localizedMessage}") }
-                ?: logger.info("Output: \n${result.text}")
-        } else if (result.exception != null) {
-            logger.info("Code: \n${kotlinFile.text}")
-            logger.info("Exception: \n${result.exception.message}")
-        }
-        results[result] = kotlinFile.text
+        processResult(result, kotlinFile)
     }
 
     private fun executeCodeJVM(kotlinFile: KotlinFile): ExecutionResult {

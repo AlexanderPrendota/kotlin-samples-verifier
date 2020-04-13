@@ -5,6 +5,7 @@ import com.github.rjeschke.txtmark.Configuration
 import com.github.rjeschke.txtmark.Processor
 import org.jsoup.Jsoup
 import com.samples.verifier.FileType
+import com.samples.verifier.model.ExecutionResult
 import com.samples.verifier.model.KotlinFile
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -16,14 +17,15 @@ internal fun processFile(
     file: File,
     type: FileType,
     flags: List<String>,
-    executionHelper: ExecutionHelper
+    executionHelper: ExecutionHelper,
+    processResult: (ExecutionResult, KotlinFile) -> Unit
 ) {
     when (type) {
         FileType.MD -> {
-            processMarkdownFile(file, flags, executionHelper)
+            processMarkdownFile(file, flags, executionHelper, processResult)
         }
         FileType.HTML -> {
-            processHTMLFile(file, flags, executionHelper)
+            processHTMLFile(file, flags, executionHelper, processResult)
         }
     }
 }
@@ -31,7 +33,8 @@ internal fun processFile(
 private fun processHTMLFile(
     file: File,
     flags: List<String>,
-    executionHelper: ExecutionHelper
+    executionHelper: ExecutionHelper,
+    processResult: (ExecutionResult, KotlinFile) -> Unit
 ) {
     var counter = 1
     val document = Jsoup.parse(file, null)
@@ -43,7 +46,8 @@ private fun processHTMLFile(
                     KotlinFile(
                         ktFilename,
                         elem.wholeText().trimIndent()
-                    )
+                    ),
+                    processResult
                 )
                 counter++
                 break
@@ -55,7 +59,8 @@ private fun processHTMLFile(
 private fun processMarkdownFile(
     file: File,
     flags: List<String>,
-    executionHelper: ExecutionHelper
+    executionHelper: ExecutionHelper,
+    processResult: (ExecutionResult, KotlinFile) -> Unit
 ) {
     val txtmarkConfiguration = Configuration.builder()
         .forceExtentedProfile()
@@ -63,7 +68,8 @@ private fun processMarkdownFile(
             CodeBlockEmitter(
                 flags = flags,
                 filename = file.nameWithoutExtension,
-                executionHelper = executionHelper
+                executionHelper = executionHelper,
+                processResult = processResult
             )
         )
         .build()
@@ -79,7 +85,8 @@ private fun processMarkdownFile(
 private class CodeBlockEmitter(
     val flags: List<String>,
     val filename: String,
-    val executionHelper: ExecutionHelper
+    val executionHelper: ExecutionHelper,
+    val processResult: (ExecutionResult, KotlinFile) -> Unit
 ) :
     BlockEmitter {
     private var counter = 1
@@ -91,7 +98,8 @@ private class CodeBlockEmitter(
                 KotlinFile(
                     ktFilename,
                     lines.joinToString("\n")
-                )
+                ),
+                processResult
             )
             counter++
         }
