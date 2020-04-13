@@ -8,7 +8,7 @@ interface SamplesVerifier {
      *
      * @param url git repository url
      * @param attributes list of attributes (classes for HTML or meta-information for MD)
-     * @param type MD/HTML
+     * @param type [FileType]
      * @return map with results as keys and code as values
      * @throws CallException
      */
@@ -19,7 +19,7 @@ interface SamplesVerifier {
      *
      * @param url git repository url
      * @param attributes list of attributes (classes for HTML or meta-information for MD)
-     * @param type MD/HTML
+     * @param type [FileType]
      * @throws CallException
      */
     fun check(url: String, attributes: List<String>, type: FileType)

@@ -5,7 +5,7 @@ import com.samples.verifier.internal.SamplesVerifierInstance
 object SamplesVerifierFactory {
     /**
      * @param compilerUrl kotlin-compiler-server url
-     * @param kotlinEnv JVM/JS
+     * @param kotlinEnv [KotlinEnv]
      */
     @JvmOverloads
     @JvmStatic
