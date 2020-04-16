@@ -32,15 +32,12 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
             snippets.map { code ->
                 val result = executionHelper.executeCode(code)
                 val errors = result.errors
+                logger.info("Code: \n${code}")
                 if (errors.isNotEmpty()) {
-                    logger.info("Code: \n${code}")
                     logger.info("Errors: \n${errors.joinToString("\n")}")
-                    result.exception?.let { logger.info("Exception: \n${it.localizedMessage}") }
-                        ?: logger.info("Output: \n${result.text}")
-                } else if (result.exception != null) {
-                    logger.info("Code: \n${code}")
-                    logger.info("Exception: \n${result.exception.message}")
                 }
+                result.exception?.let { logger.info("Exception: \n${it.message}") }
+                    ?: logger.info("Output: \n${result.text}")
             }
         }
     }
