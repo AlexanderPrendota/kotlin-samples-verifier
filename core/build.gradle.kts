@@ -1,12 +1,16 @@
+import org.gradle.jvm.tasks.Jar
 import java.lang.Thread.sleep
 
 plugins {
     kotlin("jvm") version "1.3.70"
     id("com.palantir.docker") version "0.25.0"
     id("com.palantir.docker-run") version "0.25.0"
+    id("org.jetbrains.dokka") version "0.10.0"
+    `maven-publish`
+    signing
 }
 
-group = "org.example"
+group = "io.github.AlexanderPrendota"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -66,4 +70,74 @@ tasks.test {
     dependsOn("dockerRun")
     useJUnitPlatform()
     finalizedBy("dockerStop", "dockerRemoveContainer")
+}
+
+tasks.dokka {
+    outputFormat = "html"
+    outputDirectory = "$buildDir/javadoc"
+}
+
+val dokkaJar by tasks.creating(Jar::class) {
+    group = JavaBasePlugin.DOCUMENTATION_GROUP
+    description = "Assembles Kotlin docs with Dokka"
+    archiveClassifier.set("javadoc")
+    from(tasks.dokka)
+}
+
+val sourcesJar by tasks.creating(Jar::class) {
+    group = JavaBasePlugin.DOCUMENTATION_GROUP
+    archiveClassifier.set("sources")
+    from(sourceSets.main.get().allSource)
+}
+
+
+val MAVEN_UPLOAD_USER: String by project
+val MAVEN_UPLOAD_PWD: String by project
+
+publishing {
+    repositories {
+        maven {
+            name = "MavenCentral"
+            val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+            val snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+            url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+            credentials {
+                username = MAVEN_UPLOAD_USER
+                password = MAVEN_UPLOAD_PWD
+            }
+        }
+    }
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+            artifact(dokkaJar)
+            artifact(sourcesJar)
+
+            pom {
+                name.set("Kotlin Samples Verifier")
+                url.set("https://github.com/AlexanderPrendota/kotlin-samples-verifier")
+                developers {
+                    developer {
+                        id.set("myannyax")
+                        name.set("Mariia Filipanova")
+                        email.set("myannyax@gmail.com")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:https://github.com/AlexanderPrendota/kotlin-samples-verifier.git")
+                    developerConnection.set("scm:git:https://github.com/AlexanderPrendota/kotlin-samples-verifier.git")
+                    url.set("https://github.com/AlexanderPrendota/kotlin-samples-verifier")
+                }
+
+            }
+        }
+    }
+}
+
+
+signing {
+    val signingKey: String? by project
+    val signingPassword: String? by project
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign(publishing.publications["mavenJava"])
 }
