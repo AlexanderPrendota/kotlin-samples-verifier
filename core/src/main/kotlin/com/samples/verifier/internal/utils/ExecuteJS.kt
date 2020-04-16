@@ -9,6 +9,7 @@ import org.graalvm.polyglot.Context
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.io.PrintStream
+import java.nio.file.Paths
 
 internal fun executeJS(translationJSResult: TranslationJSResult): ExecutionResult {
     val outputStream = ByteArrayOutputStream()
@@ -17,7 +18,11 @@ internal fun executeJS(translationJSResult: TranslationJSResult): ExecutionResul
     val translationResult = captureOutErr(capturedOutput, capturedErr) {
         //TODO alert is not defined
         Context.newBuilder("js").allowIO(true).build().use {
-            it.eval("js", "load('core/build/kotlin-js/kotlin.js');")
+            val kotlinJsPath = when (Paths.get("").toAbsolutePath().fileName.toString()) {
+                "core" -> "build/kotlin-js/kotlin.js"
+                else -> "core/build/kotlin-js/kotlin.js"
+            }
+            it.eval("js", "load('$kotlinJsPath');")
             try {
                 it.eval("js", translationJSResult.jsCode)
             } catch (e: Exception) {
@@ -37,6 +42,8 @@ internal fun <T> captureOutErr(newOut: OutputStream, newErr: OutputStream, block
     val systemErr = System.err
     val strOutput = PrintStream(newOut)
     val strErr = PrintStream(newErr)
+    System.out.flush()
+    System.err.flush()
     System.setOut(strOutput)
     System.setErr(strErr)
 
