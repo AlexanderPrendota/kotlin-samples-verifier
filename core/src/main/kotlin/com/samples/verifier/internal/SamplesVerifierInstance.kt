@@ -26,15 +26,10 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     override fun check(url: String, attributes: List<String>, type: FileType) {
         processRepository(url, attributes, type) { result, file ->
             val errors = result.errors.values.flatten()
-            if (errors.isNotEmpty()) {
-                logger.info("Code: \n${file.text}")
-                logger.info("Errors: \n${errors.joinToString("\n")}")
-                result.exception?.let { logger.info("Exception: \n${it.localizedMessage}") }
-                    ?: logger.info("Output: \n${result.text}")
-            } else if (result.exception != null) {
-                logger.info("Code: \n${file.text}")
-                logger.info("Exception: \n${result.exception.message}")
-            }
+            logger.info("Code: \n${file.text}")
+            if (errors.isNotEmpty()) logger.info("Errors: \n${errors.joinToString("\n")}")
+            result.exception?.let { logger.info("Exception: \n${result.exception.message}") }
+                ?: logger.info("Output: \n${result.text}")
         }
     }
 
