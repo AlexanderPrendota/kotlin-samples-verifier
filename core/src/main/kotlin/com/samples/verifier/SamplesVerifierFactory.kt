@@ -1,9 +1,21 @@
 package com.samples.verifier
 
 import com.samples.verifier.internal.SamplesVerifierInstance
-import com.samples.verifier.model.Config
 
 object SamplesVerifierFactory {
+    /**
+     * @param compilerUrl kotlin-compiler-server url
+     * @param kotlinEnv [KotlinEnv]
+     */
+    @JvmOverloads
     @JvmStatic
-    fun create(config: Config): SamplesVerifier = SamplesVerifierInstance(config)
+    fun create(
+        compilerUrl: String = "http://localhost:8080/",
+        kotlinEnv: KotlinEnv = KotlinEnv.JVM
+    ): SamplesVerifier = SamplesVerifierInstance(compilerUrl, kotlinEnv)
+}
+
+enum class KotlinEnv {
+    JVM,
+    JS
 }

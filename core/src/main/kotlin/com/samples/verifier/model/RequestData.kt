@@ -1,6 +1,6 @@
-package com.samples.verifier.internal.utils
+package com.samples.verifier.model
 
-import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 data class KotlinFile(val name: String, val text: String)
 
@@ -20,9 +20,10 @@ data class ErrorDescriptor(
     val interval: TextInterval,
     val message: String,
     val severity: ProjectSeveriry,
-    val className: String? = null
+    val className: String?
 )
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class StackTraceElement(
     val className: String = "",
     val methodName: String = "",
@@ -30,17 +31,8 @@ data class StackTraceElement(
     val lineNumber: Int = 0
 )
 
-data class ExceptionDescriptor(
-    val message: String? = null,
-    val fullName: String? = null,
-    val stackTrace: List<StackTraceElement> = emptyList(),
-    val cause: ExceptionDescriptor? = null,
-    val localizedMessage: String? = null
-)
-
 data class ExecutionResult(
-    val errors: Map<String, List<ErrorDescriptor>> = emptyMap(),
-    val exception: ExceptionDescriptor? = null,
-    val text: String = "",
-    @JsonIgnore var numberOfCalls: Int = 1
+    val errors: Map<String, List<ErrorDescriptor>>,
+    val exception: ExceptionDescriptor?,
+    val text: String
 )

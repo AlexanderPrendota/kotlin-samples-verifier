@@ -10,7 +10,9 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("org.eclipse.jgit:org.eclipse.jgit:5.6.1.202002131546-r")
+
+    implementation("com.github.spullara.cli-parser:cli-parser:1.1.5")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.3")
 
     implementation("org.slf4j:slf4j-api:2.0.0-alpha1")
     implementation("org.slf4j:slf4j-log4j12:2.0.0-alpha1")
