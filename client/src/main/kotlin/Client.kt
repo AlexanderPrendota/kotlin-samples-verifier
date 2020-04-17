@@ -87,7 +87,7 @@ class Client {
             alias = "a",
             required = true,
             delimiter = ",",
-            description = "Attributes for code snippets"
+            description = "Attributes for code snippets, separated by \",\" like so: \"attr1,attr2\""
         )
         lateinit var attributes: Array<String>
 
