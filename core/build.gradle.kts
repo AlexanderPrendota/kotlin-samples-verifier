@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.3.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.3.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")
 
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.github.rjeschke:txtmark:0.13")
