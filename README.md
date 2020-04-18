@@ -24,24 +24,49 @@ URL is passed as an argument to the factory create method and set to "http://loc
 
 `./gradlew build`
 
-* Start Kotlin application, main class: Client
+### Collect options:
+  -attributes (-a) [String[,]] Attributes for code snippets, separated by "," like so: "attr1,attr2"
+  
+  -compiler-url [String] Kotlin compiler URL (http://localhost:8080/)
+  
+  -file-type [FileType] MD or HTML (type of files to be processed) (MD)
+   
+  -kotlin-env [KotlinEnv] JS or JVM (JVM)
+   
+  -out (-o) [String] Filename to store results
+  
+  -repository (-r) [String] Git repository URL with samples to execute
+  
+### Check options:
+  -attributes (-a) [String[,]] Attributes for code snippets, separated by "," like so: "attr1,attr2"
+  
+  -compiler-url [String] Kotlin compiler URL (http://localhost:8080/)
+  
+  -file-type [FileType] MD or HTML (type of files to be processed) (MD)
+    
+  -kotlin-env [KotlinEnv] JS or JVM (JVM)
+    
+  -repository (-r) [String] Git repository URL with samples to execute
+  
+  
+### Example:
 
-provides command-line interface
+./gradlew run --args="check -r https://github.com/AlexanderPrendota/kotlin-samples-verifier.git -a run-kotlin"
+
 
 # Configure Gradle Dependencies
 
 ```
 repositories {
-    mavenCentral()
     maven {
-        url = uri("http://oss.sonatype.org/content/repositories/snapshots")
+        url = uri("https://dl.bintray.com/myannyax/kotlin-samples-verifier")
     }
 }
 ```
 ```
 dependencies {
     ...
-    implementation("io.github.AlexanderPrendota:core:1.0-SNAPSHOT")
+    implementation("com.kotlin.samples.verifier:core:1.0.0")
 }
 ```
 
