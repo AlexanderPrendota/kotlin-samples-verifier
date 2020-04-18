@@ -23,6 +23,22 @@ interface SamplesVerifier {
      * @throws CallException
      */
     fun check(url: String, attributes: List<String>, type: FileType)
+
+    /**
+     * Parse code snippets from a git repository and process them using [processResult] function.
+     *
+     * @param url git repository url
+     * @param attributes list of attributes (classes for HTML or meta-information for MD)
+     * @param type [FileType]
+     * @param processResult function to process list of code snippets, should not change list size
+     * @throws CallException
+     */
+    fun <T> parse(
+        url: String,
+        attributes: List<String>,
+        type: FileType,
+        processResult: (List<Code>) -> List<T>
+    ): Map<T, Code>
 }
 
 enum class FileType {

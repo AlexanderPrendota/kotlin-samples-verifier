@@ -2,6 +2,7 @@ package com.samples.verifier.internal.utils
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.samples.verifier.CallException
+import com.samples.verifier.Code
 import com.samples.verifier.KotlinEnv
 import com.samples.verifier.internal.api.SamplesVerifierService
 import com.samples.verifier.model.*
@@ -23,14 +24,12 @@ internal class ExecutionHelper(baseUrl: String, private val kotlinEnv: KotlinEnv
         .create(SamplesVerifierService::class.java)
 
     fun executeCode(
-        kotlinFile: KotlinFile,
-        processResult: (ExecutionResult, KotlinFile) -> Unit
-    ) {
-        val result = when (kotlinEnv) {
-            KotlinEnv.JVM -> executeCodeJVM(kotlinFile)
-            KotlinEnv.JS -> executeCodeJS(kotlinFile)
+        code: Code
+    ): ExecutionResult {
+        return when (kotlinEnv) {
+            KotlinEnv.JVM -> executeCodeJVM(KotlinFile("filename.kt", code))
+            KotlinEnv.JS -> executeCodeJS(KotlinFile("filename.kt", code))
         }
-        processResult(result, kotlinFile)
     }
 
     private fun executeCodeJVM(kotlinFile: KotlinFile): ExecutionResult {
