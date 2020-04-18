@@ -6,12 +6,12 @@ plugins {
     id("com.palantir.docker") version "0.25.0"
     id("com.palantir.docker-run") version "0.25.0"
     id("org.jetbrains.dokka") version "0.10.0"
+    id("com.jfrog.bintray") version "1.8.5"
     `maven-publish`
-    signing
 }
 
-group = "io.github.AlexanderPrendota"
-version = "1.0-SNAPSHOT"
+group = "com.kotlin.samples.verifier"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
@@ -90,23 +90,7 @@ val sourcesJar by tasks.creating(Jar::class) {
     from(sourceSets.main.get().allSource)
 }
 
-
-val MAVEN_UPLOAD_USER: String? by project
-val MAVEN_UPLOAD_PWD: String? by project
-
 publishing {
-    repositories {
-        maven {
-            name = "MavenCentral"
-            val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-            val snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
-            url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
-            credentials {
-                username = MAVEN_UPLOAD_USER
-                password = MAVEN_UPLOAD_PWD
-            }
-        }
-    }
     publications {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
@@ -114,7 +98,7 @@ publishing {
             artifact(sourcesJar)
 
             pom {
-                name.set("Kotlin Samples Verifier")
+                name.set("kotlin-samples-verifier")
                 url.set("https://github.com/AlexanderPrendota/kotlin-samples-verifier")
                 developers {
                     developer {
@@ -134,10 +118,16 @@ publishing {
     }
 }
 
-
-signing {
-    val signingKey: String? by project
-    val signingPassword: String? by project
-    useInMemoryPgpKeys(signingKey, signingPassword)
-    sign(publishing.publications["mavenJava"])
+bintray {
+    val bintrayUser: String? by project
+    val bintrayApiKey: String? by project
+    user = bintrayUser
+    key = bintrayApiKey
+    setPublications("mavenJava")
+    pkg.apply {
+        repo = "kotlin-samples-verifier"
+        name = "kotlin-samples-verifier"
+        setLicenses("Apache-2.0")
+        vcsUrl = "https://github.com/AlexanderPrendota/kotlin-samples-verifier.git"
+    }
 }
