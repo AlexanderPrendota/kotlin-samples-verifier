@@ -16,7 +16,7 @@ internal fun processFile(
     file: File,
     type: FileType,
     flags: List<String>,
-    processResult: (Code) -> Unit
+    processResult: (List<Code>) -> Unit
 ) {
     when (type) {
         FileType.MD -> {
@@ -31,36 +31,40 @@ internal fun processFile(
 private fun processHTMLFile(
     file: File,
     flags: List<String>,
-    processResult: (Code) -> Unit
+    processResult: (List<Code>) -> Unit
 ) {
     val document = Jsoup.parse(file, null)
+    val snippets = mutableListOf<Code>()
     for (elem in document.allElements) {
         for (flag in flags) {
             if (elem.hasClass(flag)) {
                 val code = elem.wholeText().trimIndent()
-                processResult(code)
+                snippets.add(code)
                 break
             }
         }
     }
+    processResult(snippets)
 }
 
 private fun processMarkdownFile(
     file: File,
     flags: List<String>,
-    processResult: (Code) -> Unit
+    processResult: (List<Code>) -> Unit
 ) {
+    val snippets = mutableListOf<Code>()
     val txtmarkConfiguration = Configuration.builder()
         .forceExtentedProfile()
         .setCodeBlockEmitter(
             CodeBlockEmitter(
                 flags = flags,
-                processResult = processResult
+                snippets = snippets
             )
         )
         .build()
     try {
         Processor.process(file, txtmarkConfiguration)
+        processResult(snippets)
     } catch (e: Exception) {
         if (logger.isInfoEnabled) {
             logger.error("${e.message}\n")
@@ -70,13 +74,13 @@ private fun processMarkdownFile(
 
 private class CodeBlockEmitter(
     val flags: List<String>,
-    val processResult: (Code) -> Unit
+    val snippets: MutableList<Code>
 ) :
     BlockEmitter {
     override fun emitBlock(out: StringBuilder, lines: MutableList<String>?, meta: String?) {
         if (meta in flags && lines != null) {
             val code = lines.joinToString("\n")
-            processResult(code)
+            snippets.add(code)
         }
     }
 }

@@ -18,25 +18,29 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
 
     override fun collect(url: String, attributes: List<String>, type: FileType): Map<ExecutionResult, Code> {
         val results = hashMapOf<ExecutionResult, Code>()
-        processRepository(url, attributes, type) { code ->
-            val result = executionHelper.executeCode(code)
-            results[result] = code
+        processRepository(url, attributes, type) {
+            it.map { code ->
+                val result = executionHelper.executeCode(code)
+                results[result] = code
+            }
         }
         return results
     }
 
     override fun check(url: String, attributes: List<String>, type: FileType) {
-        processRepository(url, attributes, type) { code ->
-            val result = executionHelper.executeCode(code)
-            val errors = result.errors.values.flatten()
-            if (errors.isNotEmpty()) {
-                logger.info("Code: \n${code}")
-                logger.info("Errors: \n${errors.joinToString("\n")}")
-                result.exception?.let { logger.info("Exception: \n${it.localizedMessage}") }
-                    ?: logger.info("Output: \n${result.text}")
-            } else if (result.exception != null) {
-                logger.info("Code: \n${code}")
-                logger.info("Exception: \n${result.exception.message}")
+        processRepository(url, attributes, type) { snippets ->
+            snippets.map { code ->
+                val result = executionHelper.executeCode(code)
+                val errors = result.errors.values.flatten()
+                if (errors.isNotEmpty()) {
+                    logger.info("Code: \n${code}")
+                    logger.info("Errors: \n${errors.joinToString("\n")}")
+                    result.exception?.let { logger.info("Exception: \n${it.localizedMessage}") }
+                        ?: logger.info("Output: \n${result.text}")
+                } else if (result.exception != null) {
+                    logger.info("Code: \n${code}")
+                    logger.info("Exception: \n${result.exception.message}")
+                }
             }
         }
     }
@@ -45,20 +49,35 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         url: String,
         attributes: List<String>,
         type: FileType,
-        processResult: (List<Code>) -> List<T>
+        processResult: (Code) -> T
     ): Map<T, Code> {
-        val codeSnippets = mutableListOf<Code>()
-        processRepository(url, attributes, type) { code ->
-            codeSnippets.add(code)
+        val results = mutableMapOf<T, Code>()
+        processRepository(url, attributes, type) {
+            it.map { code ->
+                results[processResult(code)] = code
+            }
         }
-        return processResult(codeSnippets).zip(codeSnippets).toMap()
+        return results
+    }
+
+    override fun <T> parse(
+        url: String,
+        attributes: List<String>,
+        type: FileType,
+        processResult: (List<List<Code>>) -> T
+    ): T {
+        val codeSnippets = mutableListOf<List<Code>>()
+        processRepository(url, attributes, type) { snippets ->
+            codeSnippets.add(snippets)
+        }
+        return processResult(codeSnippets)
     }
 
     private fun processRepository(
         url: String,
         attributes: List<String>,
         type: FileType,
-        processResult: (Code) -> Unit
+        processResult: (List<Code>) -> Unit
     ) {
         val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
         try {
@@ -84,7 +103,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         directory: File,
         attributes: List<String>,
         type: FileType,
-        processResult: (Code) -> Unit
+        processResult: (List<Code>) -> Unit
     ) {
         Files.walk(directory.toPath()).use {
             it.forEach { path: Path ->

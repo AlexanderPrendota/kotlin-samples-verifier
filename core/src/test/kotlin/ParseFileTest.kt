@@ -19,9 +19,11 @@ class ParseFileTest {
             File("src/test/resources/hello_world.md"),
             FileType.MD,
             listOf("run-kotlin")
-        ) {
-            val res = executionHelper.executeCode(it)
-            result = res to it
+        ) { snippets ->
+            snippets.map {
+                val res = executionHelper.executeCode(it)
+                result = res to it
+            }
         }
         val expectedCode = "fun main() {\n    println(\"Hello world!\")\n}"
         val expectedResult = ExecutionResult(
@@ -40,9 +42,11 @@ class ParseFileTest {
             File("src/test/resources/hello_world.html"),
             FileType.HTML,
             listOf("run-kotlin")
-        ) {
-            val res = executionHelper.executeCode(it)
-            result = res to it
+        ) { snippets ->
+            snippets.map {
+                val res = executionHelper.executeCode(it)
+                result = res to it
+            }
         }
         val expectedCode = "fun main() {\n    println(\"Hello world!\")\n}"
         val expectedResult = ExecutionResult(
