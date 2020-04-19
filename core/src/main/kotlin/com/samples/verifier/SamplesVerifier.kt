@@ -9,10 +9,10 @@ interface SamplesVerifier {
      * @param url git repository url
      * @param attributes list of attributes (classes for HTML or meta-information for MD)
      * @param type [FileType]
-     * @return map with results as keys and code as values
+     * @return map with code as keys and results as values
      * @throws CallException
      */
-    fun collect(url: String, attributes: List<String>, type: FileType): Map<ExecutionResult, Code>
+    fun collect(url: String, attributes: List<String>, type: FileType): Map<Code, ExecutionResult>
 
     /**
      * Execute code snippets from a git repository
@@ -31,7 +31,7 @@ interface SamplesVerifier {
      * @param attributes list of attributes (classes for HTML or meta-information for MD)
      * @param type [FileType]
      * @param processResult function to process snippet of code
-     * @return map with results from [processResult] as keys and code snippets as values
+     * @return map with code snippets as keys and results from [processResult] as values
      * @throws CallException
      */
     fun <T> parse(
@@ -39,7 +39,7 @@ interface SamplesVerifier {
         attributes: List<String>,
         type: FileType,
         processResult: (Code) -> T
-    ): Map<T, Code>
+    ): Map<Code, T>
 
     /**
      * Parse code snippets from a git repository and process them using [processResult] function.

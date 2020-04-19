@@ -16,12 +16,12 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     private val logger = LoggerFactory.getLogger("Samples Verifier")
     private val executionHelper = ExecutionHelper(compilerUrl, kotlinEnv)
 
-    override fun collect(url: String, attributes: List<String>, type: FileType): Map<ExecutionResult, Code> {
-        val results = hashMapOf<ExecutionResult, Code>()
+    override fun collect(url: String, attributes: List<String>, type: FileType): Map<Code, ExecutionResult> {
+        val results = hashMapOf<Code, ExecutionResult>()
         processRepository(url, attributes, type) {
             it.map { code ->
                 val result = executionHelper.executeCode(code)
-                results[result] = code
+                results[code] = result
             }
         }
         return results
@@ -31,7 +31,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         processRepository(url, attributes, type) { snippets ->
             snippets.map { code ->
                 val result = executionHelper.executeCode(code)
-                val errors = result.errors.values.flatten()
+                val errors = result.errors
                 if (errors.isNotEmpty()) {
                     logger.info("Code: \n${code}")
                     logger.info("Errors: \n${errors.joinToString("\n")}")
@@ -50,11 +50,11 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         attributes: List<String>,
         type: FileType,
         processResult: (Code) -> T
-    ): Map<T, Code> {
-        val results = mutableMapOf<T, Code>()
+    ): Map<Code, T> {
+        val results = hashMapOf<Code, T>()
         processRepository(url, attributes, type) {
             it.map { code ->
-                results[processResult(code)] = code
+                results[code] = processResult(code)
             }
         }
         return results

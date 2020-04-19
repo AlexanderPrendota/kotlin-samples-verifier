@@ -27,7 +27,7 @@ class ParseFileTest {
         }
         val expectedCode = "fun main() {\n    println(\"Hello world!\")\n}"
         val expectedResult = ExecutionResult(
-            mapOf("filename.kt" to emptyList()),
+            emptyList(),
             null, "<outStream>Hello world!\n</outStream>"
         )
         assertEquals(expectedResult, result.first)
@@ -50,7 +50,7 @@ class ParseFileTest {
         }
         val expectedCode = "fun main() {\n    println(\"Hello world!\")\n}"
         val expectedResult = ExecutionResult(
-            mapOf("filename.kt" to emptyList()),
+            emptyList(),
             null, "<outStream>Hello world!\n</outStream>"
         )
         assertEquals(expectedResult, result.first)

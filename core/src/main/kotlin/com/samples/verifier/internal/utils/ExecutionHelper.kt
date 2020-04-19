@@ -34,22 +34,30 @@ internal class ExecutionHelper(baseUrl: String, private val kotlinEnv: KotlinEnv
 
     private fun executeCodeJVM(kotlinFile: KotlinFile): ExecutionResult {
         val project = Project("", listOf(kotlinFile))
-        var result: Response<ExecutionResult>? = null
+        var response: Response<ExecutionResponse>? = null
         for (i in 1..NUMBER_OF_REQUESTS) {
             try {
-                result = service.executeCodeJVM(project).execute()
-                if (result!!.isSuccessful) {
+                response = service.executeCodeJVM(project).execute()
+                if (response!!.isSuccessful) {
                     break
                 }
             } catch (e: IOException) {
                 if (i == NUMBER_OF_REQUESTS) throw e
             }
         }
-        return if (result!!.isSuccessful) result.body()!!
-        else throw CallException(result.errorBody()!!.string())
+        return if (response!!.isSuccessful) {
+            val r = response.body()!!
+            ExecutionResult(r.errors["filename.kt"] ?: error("unexpected response structure"), r.exception, r.text)
+        } else throw CallException(response.errorBody()!!.string())
     }
 
     private fun executeCodeJS(kotlinFile: KotlinFile): ExecutionResult {
         TODO("Not yet implemented")
     }
 }
+
+internal data class ExecutionResponse(
+    val errors: Map<String, List<ErrorDescriptor>>,
+    val exception: ExceptionDescriptor?,
+    val text: String
+)
