@@ -6,7 +6,7 @@ import org.apache.log4j.Logger
 import org.eclipse.jgit.api.Git
 import java.io.File
 
-internal fun cloneRepository(dir: File, repositoryURL: String) {
+internal fun cloneRepository(dir: File, repositoryURL: String, branch: String) {
     val level = Logger.getRootLogger().level
 
     Logger.getRootLogger().level = Level.OFF
@@ -15,6 +15,7 @@ internal fun cloneRepository(dir: File, repositoryURL: String) {
         val git = Git.cloneRepository()
             .setDirectory(dir)
             .setURI(repositoryURL)
+            .setBranch(branch)
             .call()
         git.close()
     } catch (e: Exception) {

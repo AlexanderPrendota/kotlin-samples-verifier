@@ -7,8 +7,6 @@ import com.samples.verifier.SamplesVerifierFactory
 import com.sampullara.cli.Args
 import com.sampullara.cli.Argument
 import org.apache.log4j.BasicConfigurator
-import org.apache.log4j.Level
-import org.apache.log4j.Logger
 import java.io.FileWriter
 import kotlin.system.exitProcess
 
@@ -45,12 +43,15 @@ class Client {
             val samplesVerifier =
                 SamplesVerifierFactory.create(compilerUrl = options.compilerUrl, kotlinEnv = options.kotlinEnv)
 
-            samplesVerifier.check(options.repositoryUrl, options.attributes.toList(), options.fileType)
+            samplesVerifier.check(
+                options.repositoryUrl,
+                options.branch,
+                options.attributes.toList(),
+                options.fileType
+            )
         }
 
         private fun collect(args: Array<String>) {
-            Logger.getRootLogger().level = Level.ERROR
-
             val options = CollectOptions()
             try {
                 Args.parse(options, args)
@@ -64,7 +65,12 @@ class Client {
             FileWriter(options.out).use {
                 val mapper = jacksonObjectMapper()
                 val results =
-                    samplesVerifier.collect(options.repositoryUrl, options.attributes.toList(), options.fileType)
+                    samplesVerifier.collect(
+                        options.repositoryUrl,
+                        options.branch,
+                        options.attributes.toList(),
+                        options.fileType
+                    )
                 it.write(mapper.writeValueAsString(results))
             }
         }
@@ -83,6 +89,13 @@ class Client {
             description = "Git repository URL with samples to execute"
         )
         lateinit var repositoryUrl: String
+
+        @set:Argument(
+            "branch",
+            alias = "br",
+            description = "git branch"
+        )
+        var branch: String = "master"
 
         @set:Argument(
             "attributes",

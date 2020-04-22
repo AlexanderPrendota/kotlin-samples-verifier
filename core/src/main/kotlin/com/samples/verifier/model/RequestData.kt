@@ -32,7 +32,7 @@ data class StackTraceElement(
 )
 
 data class ExecutionResult(
-    val errors: Map<String, List<ErrorDescriptor>>,
+    val errors: List<ErrorDescriptor>,
     val exception: ExceptionDescriptor?,
     val text: String
 )
