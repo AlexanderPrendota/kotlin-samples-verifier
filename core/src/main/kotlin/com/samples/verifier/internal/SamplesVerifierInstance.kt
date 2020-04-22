@@ -74,15 +74,16 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         type: FileType
     ): List<List<Code>> {
         val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
-        lateinit var snippets: List<List<Code>>
-        try {
+        return try {
             logger.info("Cloning repository...")
             cloneRepository(dir, url, branch)
-            snippets = processFiles(dir, attributes, type)
+            return processFiles(dir, attributes, type)
         } catch (e: GitException) {
             logger.error("${e.message}")
+            emptyList()
         } catch (e: IOException) {
             logger.error("${e.message}")
+            emptyList()
         } finally {
             if (dir.isDirectory) {
                 FileUtils.deleteDirectory(dir)
@@ -90,7 +91,6 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
                 dir.delete()
             }
         }
-        return snippets
     }
 
     private fun processFiles(
