@@ -23,27 +23,25 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         type: FileType
     ): Map<Code, ExecutionResult> {
         val results = hashMapOf<Code, ExecutionResult>()
-        processRepository(url, branch, attributes, type) {
-            it.map { code ->
-                val result = executionHelper.executeCode(code)
-                results[code] = result
-            }
+        val snippets = processRepository(url, branch, attributes, type)
+        for (code in snippets.flatten()) {
+            val result = executionHelper.executeCode(code)
+            results[code] = result
         }
         return results
     }
 
     override fun check(url: String, branch: String, attributes: List<String>, type: FileType) {
-        processRepository(url, branch, attributes, type) { snippets ->
-            snippets.map { code ->
-                val result = executionHelper.executeCode(code)
-                val errors = result.errors
-                logger.info("Code: \n${code}")
-                if (errors.isNotEmpty()) {
-                    logger.info("Errors: \n${errors.joinToString("\n")}")
-                }
-                result.exception?.let { logger.info("Exception: \n${it.message}") }
-                    ?: logger.info("Output: \n${result.text}")
+        val snippets = processRepository(url, branch, attributes, type)
+        for (code in snippets.flatten()) {
+            val result = executionHelper.executeCode(code)
+            val errors = result.errors
+            logger.info("Code: \n${code}")
+            if (errors.isNotEmpty()) {
+                logger.info("Errors: \n${errors.joinToString("\n")}")
             }
+            result.exception?.let { logger.info("Exception: \n${it.message}") }
+                ?: logger.info("Output: \n${result.text}")
         }
     }
 
@@ -54,13 +52,8 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         type: FileType,
         processResult: (Code) -> T
     ): Map<Code, T> {
-        val results = hashMapOf<Code, T>()
-        processRepository(url, branch, attributes, type) {
-            it.map { code ->
-                results[code] = processResult(code)
-            }
-        }
-        return results
+        val snippets = processRepository(url, branch, attributes, type)
+        return snippets.flatMap { lst -> lst.map { it to processResult(it) } }.toMap()
     }
 
     override fun <T> parse(
@@ -70,30 +63,25 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         type: FileType,
         processResult: (List<List<Code>>) -> T
     ): T {
-        val codeSnippets = mutableListOf<List<Code>>()
-        processRepository(url, branch, attributes, type) { snippets ->
-            if (snippets.isNotEmpty()) codeSnippets.add(snippets)
-        }
-        return processResult(codeSnippets)
+        val snippets = processRepository(url, branch, attributes, type)
+        return processResult(snippets)
     }
 
     private fun processRepository(
         url: String,
         branch: String,
         attributes: List<String>,
-        type: FileType,
-        processResult: (List<Code>) -> Unit
-    ) {
+        type: FileType
+    ): List<List<Code>> {
         val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
+        lateinit var snippets: List<List<Code>>
         try {
             logger.info("Cloning repository...")
             cloneRepository(dir, url, branch)
-            processFiles(dir, attributes, type, processResult)
+            snippets = processFiles(dir, attributes, type)
         } catch (e: GitException) {
-            //TODO
             logger.error("${e.message}")
         } catch (e: IOException) {
-            //TODO
             logger.error("${e.message}")
         } finally {
             if (dir.isDirectory) {
@@ -102,32 +90,35 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
                 dir.delete()
             }
         }
+        return snippets
     }
 
     private fun processFiles(
         directory: File,
         attributes: List<String>,
-        type: FileType,
-        processResult: (List<Code>) -> Unit
-    ) {
+        type: FileType
+    ): List<List<Code>> {
+        val snippets = mutableListOf<List<Code>>()
         Files.walk(directory.toPath()).use {
             it.forEach { path: Path ->
                 val file = path.toFile()
-                when (type) {
+                val fileSnippets = when (type) {
                     FileType.MD -> {
                         if (file.extension == "md") {
                             logger.info("Processing ${file}...")
-                            processFile(file, type, attributes, processResult)
-                        }
+                            processFile(file, type, attributes)
+                        } else emptyList()
                     }
                     FileType.HTML -> {
                         if (file.extension == "html") {
                             logger.info("Processing ${file}...")
-                            processFile(file, type, attributes, processResult)
-                        }
+                            processFile(file, type, attributes)
+                        } else emptyList()
                     }
                 }
+                if (fileSnippets.isNotEmpty()) snippets.add(fileSnippets)
             }
         }
+        return snippets
     }
 }

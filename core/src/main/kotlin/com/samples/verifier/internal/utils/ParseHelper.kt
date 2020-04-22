@@ -15,24 +15,22 @@ private val logger = LoggerFactory.getLogger("Samples Verifier")
 internal fun processFile(
     file: File,
     type: FileType,
-    flags: List<String>,
-    processResult: (List<Code>) -> Unit
-) {
-    when (type) {
+    flags: List<String>
+): List<Code> {
+    return when (type) {
         FileType.MD -> {
-            processMarkdownFile(file, flags, processResult)
+            processMarkdownFile(file, flags)
         }
         FileType.HTML -> {
-            processHTMLFile(file, flags, processResult)
+            processHTMLFile(file, flags)
         }
     }
 }
 
 private fun processHTMLFile(
     file: File,
-    flags: List<String>,
-    processResult: (List<Code>) -> Unit
-) {
+    flags: List<String>
+): List<Code> {
     val document = Jsoup.parse(file, null)
     val snippets = mutableListOf<Code>()
     for (elem in document.allElements) {
@@ -44,14 +42,13 @@ private fun processHTMLFile(
             }
         }
     }
-    processResult(snippets)
+    return snippets
 }
 
 private fun processMarkdownFile(
     file: File,
-    flags: List<String>,
-    processResult: (List<Code>) -> Unit
-) {
+    flags: List<String>
+): List<Code> {
     val snippets = mutableListOf<Code>()
     val txtmarkConfiguration = Configuration.builder()
         .forceExtentedProfile()
@@ -64,12 +61,12 @@ private fun processMarkdownFile(
         .build()
     try {
         Processor.process(file, txtmarkConfiguration)
-        processResult(snippets)
     } catch (e: Exception) {
         if (logger.isInfoEnabled) {
             logger.error("${e.message}\n")
         } else logger.error("${e.message} while processing ${file}\n")
     }
+    return snippets
 }
 
 private class CodeBlockEmitter(

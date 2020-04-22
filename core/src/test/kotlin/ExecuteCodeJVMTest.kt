@@ -47,15 +47,14 @@ class ExecuteCodeJVMTest {
     ): List<Pair<T, Code>> {
         val executionHelper = ExecutionHelper("http://localhost:8080/", KotlinEnv.JVM)
         val result = mutableListOf<Pair<T, Code>>()
-        processFile(
+        val snippets = processFile(
             file,
             fileType,
             listOf("run-kotlin")
-        ) { snippets ->
-            snippets.map {
-                val res = executionHelper.block(it)
-                result.add(res to it)
-            }
+        )
+        for (code in snippets) {
+            val res = executionHelper.block(code)
+            result.add(res to code)
         }
         return result
     }
