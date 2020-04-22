@@ -47,7 +47,7 @@ dependencies {
 * Download Kotlin dependencies and build project:
 
 ```shell
-./gradlew build
+./gradlew build -x test
 ```
 
 ### Collect options:
