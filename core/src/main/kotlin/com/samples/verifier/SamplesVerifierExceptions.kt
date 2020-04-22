@@ -17,3 +17,5 @@ class CallException : Exception {
 
     constructor(message: String, cause: Throwable) : super(message, cause)
 }
+
+class SamplesVerifierExceptions(message: String): Exception(message)

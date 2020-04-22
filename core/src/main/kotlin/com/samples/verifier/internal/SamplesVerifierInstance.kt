@@ -25,17 +25,18 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         .associateWith { executionHelper.executeCode(it) }
 
     override fun check(url: String, branch: String, attributes: List<String>, type: FileType) {
+        var fail = false
         val snippets = processRepository(url, branch, attributes, type)
         for (code in snippets) {
             val result = executionHelper.executeCode(code)
             val errors = result.errors
-            logger.info("Code: \n${code}")
             if (errors.isNotEmpty()) {
-                logger.info("Errors: \n${errors.joinToString("\n")}")
+                fail = true
+                logger.error("Code: \n${code}")
+                logger.error("Errors: \n${errors.joinToString("\n")}")
             }
-            result.exception?.let { logger.info("Exception: \n${it.message}") }
-                ?: logger.info("Output: \n${result.text}")
         }
+        if (fail) throw SamplesVerifierExceptions("Verification failed. Please see errors logs.")
     }
 
     override fun <T> parse(
