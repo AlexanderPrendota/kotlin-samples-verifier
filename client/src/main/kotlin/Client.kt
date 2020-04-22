@@ -1,3 +1,5 @@
+package com.samples.verifier.client
+
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.samples.verifier.KotlinEnv
 import com.samples.verifier.FileType
@@ -91,8 +93,8 @@ class Client {
         )
         lateinit var attributes: Array<String>
 
-        @set:Argument("file-type", required = true, description = "MD or HTML (type of files to be processed)")
-        lateinit var fileType: FileType
+        @set:Argument("file-type", description = "MD or HTML (type of files to be processed)")
+        var fileType: FileType = FileType.MD
     }
 
     open class CompilerOptions {

@@ -1,8 +1,13 @@
 plugins {
     kotlin("jvm") version "1.3.70"
+    application
 }
 
 version = "unspecified"
+
+application {
+    mainClassName = "com.samples.verifier.client.Client"
+}
 
 repositories {
     mavenCentral()
