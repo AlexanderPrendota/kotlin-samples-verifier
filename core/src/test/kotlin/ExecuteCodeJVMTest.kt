@@ -18,10 +18,11 @@ class ExecuteCodeJVMTest {
         ) {
             executeCode(it)
         }
-        val expectedResult = listOf(ExecutionResult(
-            emptyList(),
-            null, "<outStream>Hello world!\n</outStream>"
-        ) to "fun main() {\n    println(\"Hello world!\")\n}")
+        val expectedResult = mapOf(
+            "fun main() {\n    println(\"Hello world!\")\n}" to
+            ExecutionResult(
+                emptyList(),
+                null, "<outStream>Hello world!\n</outStream>"))
         assertEquals(expectedResult, result)
     }
 
@@ -33,10 +34,11 @@ class ExecuteCodeJVMTest {
         ) {
             executeCode(it)
         }
-        val expectedResult = listOf(ExecutionResult(
+        val expectedResult = mapOf(
+            "fun main() {\n    println(\"Hello world!\")\n}" to
+            ExecutionResult(
             emptyList(),
-            null, "<outStream>Hello world!\n</outStream>"
-        ) to "fun main() {\n    println(\"Hello world!\")\n}")
+            null, "<outStream>Hello world!\n</outStream>"))
         assertEquals(expectedResult, result)
     }
 
@@ -44,18 +46,13 @@ class ExecuteCodeJVMTest {
         file: File,
         fileType: FileType,
         block: ExecutionHelper.(Code) -> T
-    ): List<Pair<T, Code>> {
+    ): Map<Code, T> {
         val executionHelper = ExecutionHelper("http://localhost:8080/", KotlinEnv.JVM)
-        val result = mutableListOf<Pair<T, Code>>()
         val snippets = processFile(
             file,
             fileType,
             listOf("run-kotlin")
         )
-        for (code in snippets) {
-            val res = executionHelper.block(code)
-            result.add(res to code)
-        }
-        return result
+        return snippets.associateWith { executionHelper.block(it) }
     }
 }

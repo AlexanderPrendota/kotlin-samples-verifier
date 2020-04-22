@@ -46,7 +46,7 @@ class ParseTest {
                 it
             ) { code: Code ->
                 code
-            }.entries.map { it.key to it.value }
+            }.toList()
         }
         val expectedResult =
             codeSnippetsFromRepo.sorted().map { it to it }
