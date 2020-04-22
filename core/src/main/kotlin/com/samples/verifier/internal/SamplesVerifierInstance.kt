@@ -45,8 +45,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         attributes: List<String>,
         type: FileType,
         processResult: (Code) -> T
-    ): Map<Code, T> = processRepository(url, branch, attributes, type)
-        .associateWith { processResult(it) }
+    ): Map<Code, T> = processRepository(url, branch, attributes, type).associateWith { processResult(it) }
 
     override fun <T> parse(
         url: String,

@@ -16,15 +16,9 @@ internal fun processFile(
     file: File,
     type: FileType,
     flags: List<String>
-): List<Code> {
-    return when (type) {
-        FileType.MD -> {
-            processMarkdownFile(file, flags)
-        }
-        FileType.HTML -> {
-            processHTMLFile(file, flags)
-        }
-    }
+): List<Code> = when (type) {
+    FileType.MD -> processMarkdownFile(file, flags)
+    FileType.HTML -> processHTMLFile(file, flags)
 }
 
 private fun processHTMLFile(
@@ -72,8 +66,7 @@ private fun processMarkdownFile(
 private class CodeBlockEmitter(
     val flags: List<String>,
     val snippets: MutableList<Code>
-) :
-    BlockEmitter {
+) : BlockEmitter {
     override fun emitBlock(out: StringBuilder, lines: MutableList<String>?, meta: String?) {
         if (meta in flags && lines != null) {
             val code = lines.joinToString("\n")
