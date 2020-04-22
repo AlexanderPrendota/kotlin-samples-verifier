@@ -16,9 +16,14 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     private val logger = LoggerFactory.getLogger("Samples Verifier")
     private val executionHelper = ExecutionHelper(compilerUrl, kotlinEnv)
 
-    override fun collect(url: String, attributes: List<String>, type: FileType): Map<Code, ExecutionResult> {
+    override fun collect(
+        url: String,
+        branch: String,
+        attributes: List<String>,
+        type: FileType
+    ): Map<Code, ExecutionResult> {
         val results = hashMapOf<Code, ExecutionResult>()
-        processRepository(url, attributes, type) {
+        processRepository(url, branch, attributes, type) {
             it.map { code ->
                 val result = executionHelper.executeCode(code)
                 results[code] = result
@@ -27,8 +32,8 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         return results
     }
 
-    override fun check(url: String, attributes: List<String>, type: FileType) {
-        processRepository(url, attributes, type) { snippets ->
+    override fun check(url: String, branch: String, attributes: List<String>, type: FileType) {
+        processRepository(url, branch, attributes, type) { snippets ->
             snippets.map { code ->
                 val result = executionHelper.executeCode(code)
                 val errors = result.errors
@@ -44,12 +49,13 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
 
     override fun <T> parse(
         url: String,
+        branch: String,
         attributes: List<String>,
         type: FileType,
         processResult: (Code) -> T
     ): Map<Code, T> {
         val results = hashMapOf<Code, T>()
-        processRepository(url, attributes, type) {
+        processRepository(url, branch, attributes, type) {
             it.map { code ->
                 results[code] = processResult(code)
             }
@@ -59,19 +65,21 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
 
     override fun <T> parse(
         url: String,
+        branch: String,
         attributes: List<String>,
         type: FileType,
         processResult: (List<List<Code>>) -> T
     ): T {
         val codeSnippets = mutableListOf<List<Code>>()
-        processRepository(url, attributes, type) { snippets ->
-            codeSnippets.add(snippets)
+        processRepository(url, branch, attributes, type) { snippets ->
+            if (snippets.isNotEmpty()) codeSnippets.add(snippets)
         }
         return processResult(codeSnippets)
     }
 
     private fun processRepository(
         url: String,
+        branch: String,
         attributes: List<String>,
         type: FileType,
         processResult: (List<Code>) -> Unit
@@ -79,7 +87,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
         try {
             logger.info("Cloning repository...")
-            cloneRepository(dir, url)
+            cloneRepository(dir, url, branch)
             processFiles(dir, attributes, type, processResult)
         } catch (e: GitException) {
             //TODO
