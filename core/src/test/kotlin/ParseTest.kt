@@ -6,16 +6,14 @@ import org.junit.jupiter.api.Test
 
 class ParseTest {
     private val codeSnippetsFromRepo = run {
-        val expectedResult = mutableSetOf(
-            listOf("fun main() {\n    println(\"Hello world!\")\n}")
+        val expectedResult = mutableListOf(
+            "fun main() {\n    println(\"Hello world!\")\n}"
         )
         for (i in 2..5) {
-            expectedResult.add(
-                listOf(
-                    "fun main() {\n    println(\"Hello world!$i.1\")\n}",
-                    "fun main() {\n    println(\"Hello world!$i.2\")\n}"
-                )
-            )
+            with(expectedResult) {
+                add("fun main() {\n    println(\"Hello world!$i.1\")\n}")
+                add("fun main() {\n    println(\"Hello world!$i.2\")\n}")
+            }
         }
         expectedResult
     }
@@ -29,11 +27,11 @@ class ParseTest {
                 "tests",
                 listOf("run-kotlin"),
                 it
-            ) { snippets: List<List<Code>> ->
-                snippets.map { it.sorted() }.sortedWith(compareBy { it.firstOrNull() })
+            ) { snippets: List<Code> ->
+                snippets.sorted()
             }
         }
-        val expectedResult = codeSnippetsFromRepo.map { it.sorted() }.sortedWith(compareBy { it.firstOrNull() })
+        val expectedResult = codeSnippetsFromRepo.sorted()
         Assertions.assertEquals(listOf(expectedResult, expectedResult), results)
     }
 
@@ -51,9 +49,10 @@ class ParseTest {
             }.entries.map { it.key to it.value }
         }
         val expectedResult =
-            codeSnippetsFromRepo.flatten().map { it to it }.sortedWith(compareBy({ it.first }, { it.second }))
+            codeSnippetsFromRepo.sorted().map { it to it }
         Assertions.assertEquals(
             listOf(1, 2).map { expectedResult },
-            results.map { it.sortedWith(compareBy({ it.first }, { it.second })) })
+            results.map { it.sortedWith(compareBy{ it.first }) }
+        )
     }
 }

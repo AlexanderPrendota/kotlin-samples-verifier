@@ -56,7 +56,7 @@ interface SamplesVerifier {
      *               branch name (master) or tag name (v1.2.3).
      * @param attributes list of attributes (classes for HTML or meta-information for MD)
      * @param type [FileType]
-     * @param processResult takes a list of all code snippets from repository grouped by their source files
+     * @param processResult function to process list of code snippets
      * @return result of [processResult]
      * @throws CallException
      */
@@ -65,7 +65,7 @@ interface SamplesVerifier {
         branch: String,
         attributes: List<String>,
         type: FileType,
-        processResult: (List<List<Code>>) -> T
+        processResult: (List<Code>) -> T
     ): T
 }
 

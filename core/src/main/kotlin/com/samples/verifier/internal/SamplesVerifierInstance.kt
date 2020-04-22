@@ -22,12 +22,11 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         attributes: List<String>,
         type: FileType
     ): Map<Code, ExecutionResult> = processRepository(url, branch, attributes, type)
-        .flatten()
         .associateWith { executionHelper.executeCode(it) }
 
     override fun check(url: String, branch: String, attributes: List<String>, type: FileType) {
         val snippets = processRepository(url, branch, attributes, type)
-        for (code in snippets.flatten()) {
+        for (code in snippets) {
             val result = executionHelper.executeCode(code)
             val errors = result.errors
             logger.info("Code: \n${code}")
@@ -45,17 +44,15 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         attributes: List<String>,
         type: FileType,
         processResult: (Code) -> T
-    ): Map<Code, T> {
-        val snippets = processRepository(url, branch, attributes, type)
-        return snippets.flatMap { lst -> lst.map { it to processResult(it) } }.toMap()
-    }
+    ): Map<Code, T> = processRepository(url, branch, attributes, type)
+        .associateWith { processResult(it) }
 
     override fun <T> parse(
         url: String,
         branch: String,
         attributes: List<String>,
         type: FileType,
-        processResult: (List<List<Code>>) -> T
+        processResult: (List<Code>) -> T
     ): T {
         val snippets = processRepository(url, branch, attributes, type)
         return processResult(snippets)
@@ -66,7 +63,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         branch: String,
         attributes: List<String>,
         type: FileType
-    ): List<List<Code>> {
+    ): List<Code> {
         val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
         return try {
             logger.info("Cloning repository...")
@@ -91,8 +88,8 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         directory: File,
         attributes: List<String>,
         type: FileType
-    ): List<List<Code>> {
-        val snippets = mutableListOf<List<Code>>()
+    ): List<Code> {
+        val snippets = mutableListOf<Code>()
         Files.walk(directory.toPath()).use {
             it.forEach { path: Path ->
                 val file = path.toFile()
@@ -110,7 +107,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
                         } else emptyList()
                     }
                 }
-                if (fileSnippets.isNotEmpty()) snippets.add(fileSnippets)
+                snippets.addAll(fileSnippets)
             }
         }
         return snippets
