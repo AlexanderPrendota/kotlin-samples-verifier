@@ -16,14 +16,19 @@ Gradle tasks to run server using docker:
 
 * Pull server docker image and start it as a docker container:
 
-`./gradlew dockerRun`
+```shell
+./gradlew dockerRun
+```
 
 * Stop and remove docker container:
 
-`./gradlew dockerStop dockerRemoveContainer`
+```shell
+./gradlew dockerStop dockerRemoveContainer
+```
 
 ## Gradle
-```
+
+```groovy
 repositories {
     maven {
         url = uri("https://dl.bintray.com/myannyax/kotlin-samples-verifier")
@@ -41,7 +46,9 @@ dependencies {
 
 * Download Kotlin dependencies and build project:
 
-`./gradlew build`
+```shell
+./gradlew build
+```
 
 ### Collect options:
   | Name (alias) | Format | Description | Default |
@@ -65,11 +72,13 @@ dependencies {
   
 ### Example:
 
-`./gradlew run --args="check -r https://github.com/AlexanderPrendota/kotlin-samples-verifier.git -a run-kotlin"`
+```shell
+./gradlew run --args="check -r https://github.com/AlexanderPrendota/kotlin-samples-verifier.git -a run-kotlin"
+```
 
 # Usage Example
 
-```
+```kotlin
 val samplesVerifier = SamplesVerifierFactory.create()
 
 val repositoryURL = "https://github.com/AlexanderPrendota/kotlin-samples-verifier.git"
