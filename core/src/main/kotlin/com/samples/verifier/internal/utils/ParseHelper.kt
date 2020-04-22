@@ -12,19 +12,12 @@ import java.lang.StringBuilder
 
 private val logger = LoggerFactory.getLogger("Samples Verifier")
 
-internal fun processFile(
-    file: File,
-    type: FileType,
-    flags: List<String>
-): List<Code> = when (type) {
+internal fun processFile(file: File, type: FileType, flags: List<String>): List<Code> = when (type) {
     FileType.MD -> processMarkdownFile(file, flags)
     FileType.HTML -> processHTMLFile(file, flags)
 }
 
-private fun processHTMLFile(
-    file: File,
-    flags: List<String>
-): List<Code> {
+private fun processHTMLFile(file: File, flags: List<String>): List<Code> {
     val document = Jsoup.parse(file, null)
     val snippets = mutableListOf<Code>()
     for (elem in document.allElements) {
@@ -39,10 +32,7 @@ private fun processHTMLFile(
     return snippets
 }
 
-private fun processMarkdownFile(
-    file: File,
-    flags: List<String>
-): List<Code> {
+private fun processMarkdownFile(file: File, flags: List<String>): List<Code> {
     val snippets = mutableListOf<Code>()
     val txtmarkConfiguration = Configuration.builder()
         .forceExtentedProfile()
@@ -63,10 +53,7 @@ private fun processMarkdownFile(
     return snippets
 }
 
-private class CodeBlockEmitter(
-    val flags: List<String>,
-    val snippets: MutableList<Code>
-) : BlockEmitter {
+private class CodeBlockEmitter(val flags: List<String>, val snippets: MutableList<Code>) : BlockEmitter {
     override fun emitBlock(out: StringBuilder, lines: MutableList<String>?, meta: String?) {
         if (meta in flags && lines != null) {
             val code = lines.joinToString("\n")

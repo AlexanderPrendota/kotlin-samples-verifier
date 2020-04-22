@@ -84,11 +84,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         }
     }
 
-    private fun processFiles(
-        directory: File,
-        attributes: List<String>,
-        type: FileType
-    ): List<Code> {
+    private fun processFiles(directory: File, attributes: List<String>, type: FileType): List<Code> {
         val snippets = mutableListOf<Code>()
         Files.walk(directory.toPath()).use {
             it.forEach { path: Path ->
