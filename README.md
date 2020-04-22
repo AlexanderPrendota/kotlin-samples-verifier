@@ -7,8 +7,12 @@ Kotlin documentation testing tool.
 A library that extracts embedded code snippets from HTML and Markdown files from a remote git repository, runs them and collects results.
 
 # Setup
-The tool sends calls to [kotlin-compiler-server](https://github.com/AlexanderPrendota/kotlin-compiler-server),
-URL is passed as an argument to the factory create method and set to "http://localhost:8080/" by default.
+
+## Execution
+Check and Collect send calls to [kotlin-compiler-server](https://github.com/AlexanderPrendota/kotlin-compiler-server) to execute code,
+URL is passed as an argument to the factory create method and set to `http://localhost:8080/` by default.
+
+Gradle tasks to run server using docker:
 
 * Pull server docker image and start it as a docker container:
 
@@ -18,44 +22,7 @@ URL is passed as an argument to the factory create method and set to "http://loc
 
 `./gradlew dockerStop dockerRemoveContainer`
 
-# Console Client
-
-* Download Kotlin dependencies and build project:
-
-`./gradlew build`
-
-### Collect options:
-  -attributes (-a) [String[,]] Attributes for code snippets, separated by "," like so: "attr1,attr2"
-  
-  -compiler-url [String] Kotlin compiler URL (http://localhost:8080/)
-  
-  -file-type [FileType] MD or HTML (type of files to be processed) (MD)
-   
-  -kotlin-env [KotlinEnv] JS or JVM (JVM)
-   
-  -out (-o) [String] Filename to store results
-  
-  -repository (-r) [String] Git repository URL with samples to execute
-  
-### Check options:
-  -attributes (-a) [String[,]] Attributes for code snippets, separated by "," like so: "attr1,attr2"
-  
-  -compiler-url [String] Kotlin compiler URL (http://localhost:8080/)
-  
-  -file-type [FileType] MD or HTML (type of files to be processed) (MD)
-    
-  -kotlin-env [KotlinEnv] JS or JVM (JVM)
-    
-  -repository (-r) [String] Git repository URL with samples to execute
-  
-  
-### Example:
-
-./gradlew run --args="check -r https://github.com/AlexanderPrendota/kotlin-samples-verifier.git -a run-kotlin"
-
-
-# Configure Gradle Dependencies
-
+## Gradle
 ```
 repositories {
     maven {
@@ -70,8 +37,35 @@ dependencies {
 }
 ```
 
+# Console Client
 
+* Download Kotlin dependencies and build project:
 
+`./gradlew build`
+
+### Collect options:
+  | Name (alias) | Format | Description | Default |
+  | ------------- |:-------------:| :-----:|:-------------:|
+  |-attributes (-a) | [String[,]] | Attributes for code snippets, separated by "," like so: "attr1,attr2" | n/a |
+  |-compiler-url | [String] | Kotlin compiler URL | `http://localhost:8080/` |
+  |-file-type | [FileType] | MD or HTML (type of files to be processed) | MD |
+  |-kotlin-env | [KotlinEnv] | JS or JVM | JVM |
+  |-out (-o) | [String] | Filename to store results | n/a |
+  |-repository (-r) | [String] | Git repository URL with samples to execute | n/a |
+  
+### Check options:
+  | Name (alias) | Format | Description | Default |
+  | ------------- |:-------------:| :-----:|:-------------:|
+  |-attributes (-a) | [String[,]] | Attributes for code snippets, separated by "," like so: "attr1,attr2"|  n/a |
+  |-compiler-url | [String] | Kotlin compiler URL | `http://localhost:8080/` |
+  |-file-type | [FileType] | MD or HTML (type of files to be processed) | MD |
+  |-kotlin-env | [KotlinEnv] | JS or JVM | JVM |
+  |-repository (-r) | [String] | Git repository URL with samples to execute| n/a |
+  
+  
+### Example:
+
+`./gradlew run --args="check -r https://github.com/AlexanderPrendota/kotlin-samples-verifier.git -a run-kotlin"`
 
 # Usage Example
 
@@ -89,4 +83,3 @@ samplesVerifier.check(repositoryURL, attributes, FileType.MD)
 
 val results = samplesVerifier.collect(repositoryURL, attributes, FileType.MD)
 ```
-
