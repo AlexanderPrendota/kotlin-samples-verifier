@@ -21,15 +21,9 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         branch: String,
         attributes: List<String>,
         type: FileType
-    ): Map<Code, ExecutionResult> {
-        val results = hashMapOf<Code, ExecutionResult>()
-        val snippets = processRepository(url, branch, attributes, type)
-        for (code in snippets.flatten()) {
-            val result = executionHelper.executeCode(code)
-            results[code] = result
-        }
-        return results
-    }
+    ): Map<Code, ExecutionResult> = processRepository(url, branch, attributes, type)
+        .flatten()
+        .associateWith { executionHelper.executeCode(it) }
 
     override fun check(url: String, branch: String, attributes: List<String>, type: FileType) {
         val snippets = processRepository(url, branch, attributes, type)
