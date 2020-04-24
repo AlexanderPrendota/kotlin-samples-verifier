@@ -12,6 +12,8 @@ import java.lang.StringBuilder
 
 private val logger = LoggerFactory.getLogger("Samples Verifier")
 
+internal var TEST_PARSE = false
+
 internal fun processFile(file: File, type: FileType, flags: List<String>): List<Code> = when (type) {
     FileType.MD -> processMarkdownFile(file, flags)
     FileType.HTML -> processHTMLFile(file, flags)
@@ -33,6 +35,22 @@ private fun processHTMLFile(file: File, flags: List<String>): List<Code> {
 }
 
 private fun processMarkdownFile(file: File, flags: List<String>): List<Code> {
+    if (TEST_PARSE) {
+        val snippets = mutableListOf<Code>()
+        val text = file.readText().split("```")
+        for ((i,t) in text.withIndex()) {
+            if (i % 2 == 1) {
+                val tmp = t.split("\n", limit = 2)
+                if (tmp.size < 2) continue
+                val (meta, code) = tmp
+                if (meta.trim() in flags) {
+                    snippets.add(if (code.last() == '\n') code.dropLast(1) else code)
+                }
+            }
+        }
+        return snippets
+    }
+
     val snippets = mutableListOf<Code>()
     val txtmarkConfiguration = Configuration.builder()
         .forceExtentedProfile()
