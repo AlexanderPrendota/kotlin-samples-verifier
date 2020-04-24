@@ -45,7 +45,7 @@ interface SamplesVerifier {
         branch: String,
         attributes: List<String>,
         type: FileType,
-        processResult: (Code) -> T
+        processResult: (CodeSnippet) -> T
     ): Map<Code, T>
 
     /**
@@ -65,7 +65,7 @@ interface SamplesVerifier {
         branch: String,
         attributes: List<String>,
         type: FileType,
-        processResult: (List<Code>) -> T
+        processResult: (List<CodeSnippet>) -> T
     ): T
 }
 
@@ -75,3 +75,5 @@ enum class FileType {
 }
 
 typealias Code = String
+
+data class CodeSnippet(val filename: String, val code: Code)

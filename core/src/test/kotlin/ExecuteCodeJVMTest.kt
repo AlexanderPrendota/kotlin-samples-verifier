@@ -1,4 +1,5 @@
 import com.samples.verifier.Code
+import com.samples.verifier.CodeSnippet
 import com.samples.verifier.FileType
 import com.samples.verifier.KotlinEnv
 import com.samples.verifier.internal.utils.ExecutionHelper
@@ -22,7 +23,8 @@ class ExecuteCodeJVMTest {
             "fun main() {\n    println(\"Hello world!\")\n}" to
             ExecutionResult(
                 emptyList(),
-                null, "<outStream>Hello world!\n</outStream>"))
+                null, "<outStream>Hello world!\n</outStream>",
+                "hello_world"))
         assertEquals(expectedResult, result)
     }
 
@@ -37,15 +39,16 @@ class ExecuteCodeJVMTest {
         val expectedResult = mapOf(
             "fun main() {\n    println(\"Hello world!\")\n}" to
             ExecutionResult(
-            emptyList(),
-            null, "<outStream>Hello world!\n</outStream>"))
+                emptyList(),
+                null, "<outStream>Hello world!\n</outStream>",
+                "hello_world"))
         assertEquals(expectedResult, result)
     }
 
     private fun <T> withExecutionHelper(
         file: File,
         fileType: FileType,
-        block: ExecutionHelper.(Code) -> T
+        block: ExecutionHelper.(CodeSnippet) -> T
     ): Map<Code, T> {
         val executionHelper = ExecutionHelper("http://localhost:8080/", KotlinEnv.JVM)
         val snippets = processFile(
@@ -53,6 +56,6 @@ class ExecuteCodeJVMTest {
             fileType,
             listOf("run-kotlin")
         )
-        return snippets.associateWith { executionHelper.block(it) }
+        return snippets.associateWith { executionHelper.block(CodeSnippet(file.nameWithoutExtension, it)) }
     }
 }

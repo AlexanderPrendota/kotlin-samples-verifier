@@ -34,5 +34,6 @@ data class StackTraceElement(
 data class ExecutionResult(
     val errors: List<ErrorDescriptor>,
     val exception: ExceptionDescriptor?,
-    val text: String
+    val text: String,
+    val fileName: String = ""
 )
