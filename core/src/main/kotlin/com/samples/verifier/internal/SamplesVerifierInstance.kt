@@ -104,7 +104,9 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
                         } else emptyList()
                     }
                 }
-                snippets.addAll(fileSnippets.map { CodeSnippet(file.nameWithoutExtension, it) })
+                snippets.addAll(fileSnippets.withIndex().map {
+                    CodeSnippet("${file.nameWithoutExtension}_${it.index}", it.value)
+                })
             }
         }
         return snippets

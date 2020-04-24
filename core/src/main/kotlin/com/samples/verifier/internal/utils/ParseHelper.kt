@@ -12,7 +12,7 @@ import java.lang.StringBuilder
 
 private val logger = LoggerFactory.getLogger("Samples Verifier")
 
-internal var TEST_PARSE = false
+internal var TEST_PARSE = true
 
 internal fun processFile(file: File, type: FileType, flags: List<String>): List<Code> = when (type) {
     FileType.MD -> processMarkdownFile(file, flags)
