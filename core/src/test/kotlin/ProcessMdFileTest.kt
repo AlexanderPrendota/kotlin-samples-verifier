@@ -1,5 +1,4 @@
 import com.samples.verifier.FileType
-import com.samples.verifier.internal.utils.TEST_PARSE
 import com.samples.verifier.internal.utils.processFile
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -13,8 +12,7 @@ class ProcessMdFileTest {
           println("Hello world!")
       }
     """.trimIndent()
-    TEST_PARSE = true
-    val res = processFile(File("src/test/resources/md_test.md"), FileType.MD, listOf("kotlin"))
-    assertEquals(res, listOf(1,2,3,4).map { helloWorld })
+    val res = processFile(File("src/test/resources/md_test.md"), FileType.MD, listOf("kotlin", "run-kotlin"), listOf("data-highlight-only"))
+    assertEquals(listOf(1,2,3,4,5).map { helloWorld }, res)
   }
 }

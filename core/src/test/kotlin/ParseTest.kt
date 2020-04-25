@@ -26,6 +26,7 @@ class ParseTest {
                 "https://github.com/AlexanderPrendota/kotlin-samples-verifier.git",
                 "tests",
                 listOf("run-kotlin"),
+                emptyList(),
                 it
             ) { snippets: List<CodeSnippet> ->
                 snippets.map { it.code }.sorted()
@@ -43,6 +44,7 @@ class ParseTest {
                 "https://github.com/AlexanderPrendota/kotlin-samples-verifier.git",
                 "tests",
                 listOf("run-kotlin"),
+                emptyList(),
                 it
             ) { codeSnippet: CodeSnippet ->
                 codeSnippet.code

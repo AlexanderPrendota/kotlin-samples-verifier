@@ -20,13 +20,14 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         url: String,
         branch: String,
         attributes: List<String>,
+        ignoreHtmlAttributes: List<String>,
         type: FileType
-    ): Map<Code, ExecutionResult> = processRepository(url, branch, attributes, type)
+    ): Map<Code, ExecutionResult> = processRepository(url, branch, attributes, ignoreHtmlAttributes, type)
         .associateBy({ it.code }, { executionHelper.executeCode(it) })
 
-    override fun check(url: String, branch: String, attributes: List<String>, type: FileType) {
+    override fun check(url: String, branch: String, attributes: List<String>, ignoreHtmlAttributes: List<String>, type: FileType) {
         var fail = false
-        val snippets = processRepository(url, branch, attributes, type)
+        val snippets = processRepository(url, branch, attributes, ignoreHtmlAttributes, type)
         for (codeSnippet in snippets) {
             val result = executionHelper.executeCode(codeSnippet)
             val errors = result.errors
@@ -44,18 +45,21 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         url: String,
         branch: String,
         attributes: List<String>,
+        ignoreHtmlAttributes: List<String>,
         type: FileType,
         processResult: (CodeSnippet) -> T
-    ): Map<Code, T> = processRepository(url, branch, attributes, type).associateBy({it.code}, { processResult(it) })
+    ): Map<Code, T> = processRepository(url, branch, attributes, ignoreHtmlAttributes, type)
+        .associateBy({it.code}, { processResult(it) })
 
     override fun <T> parse(
         url: String,
         branch: String,
         attributes: List<String>,
+        ignoreHtmlAttributes: List<String>,
         type: FileType,
         processResult: (List<CodeSnippet>) -> T
     ): T {
-        val snippets = processRepository(url, branch, attributes, type)
+        val snippets = processRepository(url, branch, attributes, ignoreHtmlAttributes, type)
         return processResult(snippets)
     }
 
@@ -63,13 +67,14 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         url: String,
         branch: String,
         attributes: List<String>,
+        ignoreHtmlAttributes: List<String>,
         type: FileType
     ): List<CodeSnippet> {
         val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
         return try {
             logger.info("Cloning repository...")
             cloneRepository(dir, url, branch)
-            return processFiles(dir, attributes, type)
+            return processFiles(dir, attributes, ignoreHtmlAttributes, type)
         } catch (e: GitException) {
             logger.error("${e.message}")
             emptyList()
@@ -85,7 +90,12 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         }
     }
 
-    private fun processFiles(directory: File, attributes: List<String>, type: FileType): List<CodeSnippet> {
+    private fun processFiles(
+        directory: File,
+        attributes: List<String>,
+        ignoreHtmlAttributes: List<String>,
+        type: FileType
+    ): List<CodeSnippet> {
         val snippets = mutableListOf<CodeSnippet>()
         Files.walk(directory.toPath()).use {
             it.forEach { path: Path ->
@@ -94,13 +104,13 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
                     FileType.MD -> {
                         if (file.extension == "md") {
                             logger.info("Processing ${file}...")
-                            processFile(file, type, attributes)
+                            processFile(file, type, attributes, ignoreHtmlAttributes)
                         } else emptyList()
                     }
                     FileType.HTML -> {
                         if (file.extension == "html") {
                             logger.info("Processing ${file}...")
-                            processFile(file, type, attributes)
+                            processFile(file, type, attributes, ignoreHtmlAttributes)
                         } else emptyList()
                     }
                 }

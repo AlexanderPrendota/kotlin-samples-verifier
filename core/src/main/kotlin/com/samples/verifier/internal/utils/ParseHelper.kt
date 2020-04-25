@@ -1,30 +1,65 @@
 package com.samples.verifier.internal.utils
 
-import com.github.rjeschke.txtmark.BlockEmitter
-import com.github.rjeschke.txtmark.Configuration
-import com.github.rjeschke.txtmark.Processor
 import com.samples.verifier.Code
-import org.jsoup.Jsoup
 import com.samples.verifier.FileType
-import org.slf4j.LoggerFactory
+import com.vladsch.flexmark.html.HtmlRenderer
+import com.vladsch.flexmark.parser.Parser
+import com.vladsch.flexmark.util.ast.Node
+import com.vladsch.flexmark.util.data.MutableDataSet
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 import java.io.File
-import java.lang.StringBuilder
+import java.util.*
 
-private val logger = LoggerFactory.getLogger("Samples Verifier")
-
-internal var TEST_PARSE = true
-
-internal fun processFile(file: File, type: FileType, flags: List<String>): List<Code> = when (type) {
-    FileType.MD -> processMarkdownFile(file, flags)
-    FileType.HTML -> processHTMLFile(file, flags)
+internal fun processFile(
+    file: File,
+    type: FileType,
+    flags: List<String>,
+    ignoreAttributes: List<String> = emptyList()
+): List<Code> = when (type) {
+    FileType.MD -> processMarkdownFile(file, flags.map { "language-$it" }, ignoreAttributes)
+    FileType.HTML -> processHTMLFile(file, flags, ignoreAttributes)
 }
 
-private fun processHTMLFile(file: File, flags: List<String>): List<Code> {
-    val document = Jsoup.parse(file, null)
+private fun processHTMLFile(
+    file: File,
+    flags: List<String>,
+    ignoreAttributes: List<String>
+): List<Code> {
+    return processHTMLText(file.readText(), flags, ignoreAttributes)
+}
+
+private fun processMarkdownFile(
+    file: File,
+    flags: List<String>,
+    ignoreAttributes: List<String>
+): List<Code> {
+    val options = MutableDataSet()
+    val parser = Parser.builder(options).build()
+    val node: Node = parser.parse(file.readText())
+    val render = HtmlRenderer.builder(options).build()
+    val htmlText = render.render(node)
+    return processHTMLText(htmlText, flags, ignoreAttributes)
+}
+
+private fun processHTMLText(
+    text: String,
+    flags: List<String>,
+    ignoreAttributes: List<String>
+): List<Code> {
+    val document = Jsoup.parse(text)
     val snippets = mutableListOf<Code>()
-    for (elem in document.allElements) {
+    val queue = LinkedList<Element>()
+    queue.addFirst(document.body())
+    while (queue.isNotEmpty()) {
+        val elem = queue.remove()
+        val attrs = elem.attributes().asList().map { it.key }
+        if (attrs.intersect(ignoreAttributes).isNotEmpty()) continue
+        else {
+            queue.addAll(elem.children())
+        }
         for (flag in flags) {
-            if (elem.hasClass(flag)) {
+            if (elem.hasClass(flag.trim())) {
                 val code = elem.wholeText().trimIndent()
                 snippets.add(code)
                 break
@@ -32,50 +67,4 @@ private fun processHTMLFile(file: File, flags: List<String>): List<Code> {
         }
     }
     return snippets
-}
-
-private fun processMarkdownFile(file: File, flags: List<String>): List<Code> {
-    if (TEST_PARSE) {
-        val snippets = mutableListOf<Code>()
-        val text = file.readText().split("```")
-        for ((i,t) in text.withIndex()) {
-            if (i % 2 == 1) {
-                val tmp = t.split("\n", limit = 2)
-                if (tmp.size < 2) continue
-                val (meta, code) = tmp
-                if (meta.trim() in flags) {
-                    snippets.add(if (code.last() == '\n') code.dropLast(1) else code)
-                }
-            }
-        }
-        return snippets
-    }
-
-    val snippets = mutableListOf<Code>()
-    val txtmarkConfiguration = Configuration.builder()
-        .forceExtentedProfile()
-        .setCodeBlockEmitter(
-            CodeBlockEmitter(
-                flags = flags,
-                snippets = snippets
-            )
-        )
-        .build()
-    try {
-        Processor.process(file, txtmarkConfiguration)
-    } catch (e: Exception) {
-        if (logger.isInfoEnabled) {
-            logger.error("${e.message}\n")
-        } else logger.error("${e.message} while processing ${file}\n")
-    }
-    return snippets
-}
-
-private class CodeBlockEmitter(val flags: List<String>, val snippets: MutableList<Code>) : BlockEmitter {
-    override fun emitBlock(out: StringBuilder, lines: MutableList<String>?, meta: String?) {
-        if (meta in flags && lines != null) {
-            val code = lines.joinToString("\n")
-            snippets.add(code)
-        }
-    }
 }

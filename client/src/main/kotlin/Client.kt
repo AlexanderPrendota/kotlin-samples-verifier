@@ -47,6 +47,7 @@ class Client {
                 options.repositoryUrl,
                 options.branch,
                 options.attributes.toList(),
+                emptyList(),
                 options.fileType
             )
         }
@@ -69,6 +70,7 @@ class Client {
                         options.repositoryUrl,
                         options.branch,
                         options.attributes.toList(),
+                        emptyList(),
                         options.fileType
                     )
                 it.write(mapper.writeValueAsString(results))

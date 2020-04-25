@@ -10,11 +10,12 @@ interface SamplesVerifier {
      * @param branch can be specified as ref name (refs/heads/master),
      *               branch name (master) or tag name (v1.2.3).
      * @param attributes list of attributes (classes for HTML or meta-information for MD)
+     * @param ignoreHtmlAttributes list of html attributes so tags with them are ignored
      * @param type [FileType]
      * @return map with code as keys and results as values
      * @throws CallException
      */
-    fun collect(url: String, branch: String, attributes: List<String>, type: FileType): Map<Code, ExecutionResult>
+    fun collect(url: String, branch: String, attributes: List<String>, ignoreHtmlAttributes: List<String>, type: FileType): Map<Code, ExecutionResult>
 
     /**
      * Execute code snippets from a git repository
@@ -23,10 +24,11 @@ interface SamplesVerifier {
      * @param branch can be specified as ref name (refs/heads/master),
      *               branch name (master) or tag name (v1.2.3).
      * @param attributes list of attributes (classes for HTML or meta-information for MD)
+     * @param ignoreHtmlAttributes list of html attributes so tags with them are ignored
      * @param type [FileType]
      * @throws CallException
      */
-    fun check(url: String, branch: String, attributes: List<String>, type: FileType)
+    fun check(url: String, branch: String, attributes: List<String>, ignoreHtmlAttributes: List<String>, type: FileType)
 
     /**
      * Parse code snippets from a git repository and process them using [processResult] function.
@@ -35,6 +37,7 @@ interface SamplesVerifier {
      * @param branch can be specified as ref name (refs/heads/master),
      *               branch name (master) or tag name (v1.2.3).
      * @param attributes list of attributes (classes for HTML or meta-information for MD)
+     * @param ignoreHtmlAttributes list of html attributes so tags with them are ignored
      * @param type [FileType]
      * @param processResult function to process snippet of code
      * @return map with code snippets as keys and results from [processResult] as values
@@ -44,6 +47,7 @@ interface SamplesVerifier {
         url: String,
         branch: String,
         attributes: List<String>,
+        ignoreHtmlAttributes: List<String>,
         type: FileType,
         processResult: (CodeSnippet) -> T
     ): Map<Code, T>
@@ -55,6 +59,7 @@ interface SamplesVerifier {
      * @param branch can be specified as ref name (refs/heads/master),
      *               branch name (master) or tag name (v1.2.3).
      * @param attributes list of attributes (classes for HTML or meta-information for MD)
+     * @param ignoreHtmlAttributes list of html attributes so tags with them are ignored
      * @param type [FileType]
      * @param processResult function to process list of code snippets
      * @return result of [processResult]
@@ -64,6 +69,7 @@ interface SamplesVerifier {
         url: String,
         branch: String,
         attributes: List<String>,
+        ignoreHtmlAttributes: List<String>,
         type: FileType,
         processResult: (List<CodeSnippet>) -> T
     ): T
