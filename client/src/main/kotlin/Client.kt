@@ -46,8 +46,8 @@ class Client {
       samplesVerifier.check(
         options.repositoryUrl,
         options.branch,
-        options.attributes.toList(),
-        emptyList(),
+        options.attributes.toHashSet(),
+        hashSetOf(),
         options.fileType
       )
     }
@@ -69,8 +69,8 @@ class Client {
           samplesVerifier.collect(
             options.repositoryUrl,
             options.branch,
-            options.attributes.toList(),
-            emptyList(),
+            options.attributes.toHashSet(),
+            hashSetOf(),
             options.fileType
           )
         it.write(mapper.writeValueAsString(results))

@@ -3,8 +3,11 @@ package com.samples.verifier.internal
 import com.samples.verifier.*
 import com.samples.verifier.internal.utils.ExecutionHelper
 import com.samples.verifier.internal.utils.cloneRepository
-import com.samples.verifier.internal.utils.processFile
+import com.samples.verifier.internal.utils.processHTMLFile
+import com.samples.verifier.internal.utils.processMarkdownFile
+import com.samples.verifier.model.Attribute
 import com.samples.verifier.model.ExecutionResult
+import com.samples.verifier.model.ParseConfiguration
 import org.apache.commons.io.FileUtils
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -15,12 +18,11 @@ import java.nio.file.Path
 internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv) : SamplesVerifier {
   private val logger = LoggerFactory.getLogger("Samples Verifier")
   private val executionHelper = ExecutionHelper(compilerUrl, kotlinEnv)
-
   override fun collect(
     url: String,
     branch: String,
-    attributes: List<String>,
-    ignoreAttributes: List<String>,
+    attributes: HashSet<String>,
+    ignoreAttributes: HashSet<Attribute>,
     type: FileType
   ): Map<Code, ExecutionResult> = processRepository(url, branch, attributes, ignoreAttributes, type)
     .associate { it.code to executionHelper.executeCode(it) }
@@ -28,8 +30,8 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
   override fun check(
     url: String,
     branch: String,
-    attributes: List<String>,
-    ignoreAttributes: List<String>,
+    attributes: HashSet<String>,
+    ignoreAttributes: HashSet<Attribute>,
     type: FileType
   ) {
     var fail = false
@@ -50,8 +52,8 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
   override fun <T> parse(
     url: String,
     branch: String,
-    attributes: List<String>,
-    ignoreAttributes: List<String>,
+    attributes: HashSet<String>,
+    ignoreAttributes: HashSet<Attribute>,
     type: FileType,
     processResult: (CodeSnippet) -> T
   ): Map<Code, T> = processRepository(url, branch, attributes, ignoreAttributes, type)
@@ -60,8 +62,8 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
   override fun <T> parse(
     url: String,
     branch: String,
-    attributes: List<String>,
-    ignoreAttributes: List<String>,
+    attributes: HashSet<String>,
+    ignoreAttributes: HashSet<Attribute>,
     type: FileType,
     processResult: (List<CodeSnippet>) -> T
   ): T {
@@ -72,15 +74,21 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
   private fun processRepository(
     url: String,
     branch: String,
-    attributes: List<String>,
-    ignoreAttributes: List<String>,
+    attributes: HashSet<String>,
+    ignoreAttributes: HashSet<Attribute>,
     type: FileType
   ): List<CodeSnippet> {
     val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
     return try {
       logger.info("Cloning repository...")
       cloneRepository(dir, url, branch)
-      return processFiles(dir, attributes, ignoreAttributes, type)
+      return processFiles(
+        dir, type,
+        ParseConfiguration().apply {
+          snippetFlags = attributes
+          this.ignoreAttributes = ignoreAttributes
+        }
+      )
     } catch (e: GitException) {
       logger.error("${e.message}")
       emptyList()
@@ -98,11 +106,16 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
 
   private fun processFiles(
     directory: File,
-    attributes: List<String>,
-    ignoreAttributes: List<String>,
-    type: FileType
+    type: FileType,
+    parseConfiguration: ParseConfiguration
   ): List<CodeSnippet> {
     val snippets = mutableListOf<CodeSnippet>()
+    if (type == FileType.MD) {
+      parseConfiguration.apply {
+        snippetFlags = snippetFlags.map { "language-$it" }.toHashSet()
+        parseTags = parseTags?.plus("code")?.toHashSet() ?: hashSetOf(("code"))
+      }
+    }
     Files.walk(directory.toPath()).use {
       it.forEach { path: Path ->
         val file = path.toFile()
@@ -110,13 +123,13 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
           FileType.MD -> {
             if (file.extension == "md") {
               logger.info("Processing ${file}...")
-              processFile(file, type, attributes, ignoreAttributes)
+              processMarkdownFile(file, parseConfiguration)
             } else emptyList()
           }
           FileType.HTML -> {
             if (file.extension == "html") {
               logger.info("Processing ${file}...")
-              processFile(file, type, attributes, ignoreAttributes)
+              processHTMLFile(file, parseConfiguration)
             } else emptyList()
           }
         }

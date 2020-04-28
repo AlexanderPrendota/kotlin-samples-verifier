@@ -3,8 +3,10 @@ import com.samples.verifier.CodeSnippet
 import com.samples.verifier.FileType
 import com.samples.verifier.KotlinEnv
 import com.samples.verifier.internal.utils.ExecutionHelper
-import com.samples.verifier.internal.utils.processFile
+import com.samples.verifier.internal.utils.processHTMLFile
+import com.samples.verifier.internal.utils.processMarkdownFile
 import com.samples.verifier.model.ExecutionResult
+import com.samples.verifier.model.ParseConfiguration
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -55,11 +57,20 @@ class ExecuteCodeJVMTest {
     block: ExecutionHelper.(CodeSnippet) -> T
   ): Map<Code, T> {
     val executionHelper = ExecutionHelper("http://localhost:8080/", KotlinEnv.JVM)
-    val snippets = processFile(
-      file,
-      fileType,
-      listOf("run-kotlin")
-    )
+    val snippets = when (fileType) {
+      FileType.MD -> processMarkdownFile(
+        file,
+        ParseConfiguration().apply {
+          snippetFlags = hashSetOf("language-run-kotlin")
+        }
+      )
+      FileType.HTML -> processHTMLFile(
+        file,
+        ParseConfiguration().apply {
+          snippetFlags = hashSetOf("run-kotlin")
+        }
+      )
+    }
     return snippets.associateWith { executionHelper.block(CodeSnippet(file.nameWithoutExtension, it)) }
   }
 }
