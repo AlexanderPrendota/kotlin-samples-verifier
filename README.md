@@ -81,6 +81,8 @@ dependencies {
 ```kotlin
 val samplesVerifier = SamplesVerifierFactory.create().configure {
   snippetFlags = hashSetOf("run-kotlin")
+  ignoreAttributes = hashSetOf(Attribute("data-highlight-only", ""))
+  parseTags = hashSetOf("code", "div")
 }
 
 val repositoryURL = "https://github.com/AlexanderPrendota/kotlin-samples-verifier.git"
