@@ -1,6 +1,7 @@
 package com.samples.verifier.internal.utils
 
 import com.samples.verifier.Code
+import com.samples.verifier.FileType
 import com.samples.verifier.model.Attribute
 import com.samples.verifier.model.ParseConfiguration
 import com.vladsch.flexmark.html.HtmlRenderer
@@ -16,7 +17,7 @@ internal fun processHTMLFile(
   file: File,
   parseConfiguration: ParseConfiguration
 ): List<Code> {
-  return processHTMLText(file.readText(), parseConfiguration)
+  return processHTMLText(file.readText(), parseConfiguration, FileType.HTML)
 }
 
 internal fun processMarkdownFile(
@@ -28,16 +29,20 @@ internal fun processMarkdownFile(
   val node: Node = parser.parse(file.readText())
   val render = HtmlRenderer.builder(options).build()
   val htmlText = render.render(node)
-  return processHTMLText(htmlText, parseConfiguration)
+  return processHTMLText(htmlText, parseConfiguration, FileType.MD)
 }
 
 private fun processHTMLText(
   text: String,
-  parseConfiguration: ParseConfiguration
+  parseConfiguration: ParseConfiguration,
+  fileType: FileType
 ): List<Code> {
   val document = Jsoup.parse(text)
   val snippets = mutableListOf<Code>()
   val queue = LinkedList<Element>()
+  val flags = if (fileType == FileType.MD) {
+    parseConfiguration.snippetFlags.map { "language-$it" }
+  } else parseConfiguration.snippetFlags
   queue.addFirst(document.body())
   with(parseConfiguration) {
     while (queue.isNotEmpty()) {
@@ -49,9 +54,12 @@ private fun processHTMLText(
 
       queue.addAll(elem.children())
 
-      if (parseTags != null && elem.tagName() !in parseTags!!)
+      if ((parseTags != null && (elem.tagName() !in parseTags!!)) ||
+        ((elem.tagName() != "code") && fileType == FileType.MD)
+      ) {
         continue
-      if (elem.classNames().intersect(snippetFlags).isNotEmpty()) {
+      }
+      if (elem.classNames().intersect(flags).isNotEmpty()) {
         val code = elem.wholeText().trimIndent()
         snippets.add(code)
       }

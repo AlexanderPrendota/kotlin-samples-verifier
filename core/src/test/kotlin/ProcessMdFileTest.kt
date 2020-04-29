@@ -15,8 +15,8 @@ class ProcessMdFileTest {
     """.trimIndent()
     val res = processMarkdownFile(
       File("src/test/resources/md_test.md"),
-      ParseConfiguration().apply {
-        snippetFlags = hashSetOf("language-kotlin", "language-run-kotlin")
+      ParseConfiguration {
+        snippetFlags = hashSetOf("kotlin", "run-kotlin")
         ignoreAttributes = hashSetOf(Attribute("data-highlight-only", ""))
       })
     assertEquals(listOf(1, 2, 3, 4, 5).map { helloWorld }, res)

@@ -60,13 +60,13 @@ class ExecuteCodeJVMTest {
     val snippets = when (fileType) {
       FileType.MD -> processMarkdownFile(
         file,
-        ParseConfiguration().apply {
-          snippetFlags = hashSetOf("language-run-kotlin")
+        ParseConfiguration {
+          snippetFlags = hashSetOf("run-kotlin")
         }
       )
       FileType.HTML -> processHTMLFile(
         file,
-        ParseConfiguration().apply {
+        ParseConfiguration {
           snippetFlags = hashSetOf("run-kotlin")
         }
       )

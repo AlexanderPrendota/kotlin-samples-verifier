@@ -20,13 +20,13 @@ class ParseTest {
 
   @Test
   fun `parse with list test`() {
-    val samplesVerifier = SamplesVerifierFactory.create()
+    val samplesVerifier = SamplesVerifierFactory.create().configure {
+      snippetFlags = hashSetOf("run-kotlin")
+    }
     val results = listOf(FileType.MD, FileType.HTML).map {
       samplesVerifier.parse(
         "https://github.com/AlexanderPrendota/kotlin-samples-verifier.git",
         "tests",
-        hashSetOf("run-kotlin"),
-        hashSetOf(),
         it
       ) { snippets: List<CodeSnippet> ->
         snippets.map { it.code }.sorted()
@@ -38,18 +38,17 @@ class ParseTest {
 
   @Test
   fun `parse test`() {
-    val samplesVerifier = SamplesVerifierFactory.create()
+    val samplesVerifier = SamplesVerifierFactory.create().configure {
+      snippetFlags = hashSetOf("run-kotlin")
+    }
     val results = listOf(FileType.MD, FileType.HTML).map {
       samplesVerifier.parse(
         "https://github.com/AlexanderPrendota/kotlin-samples-verifier.git",
         "tests",
-        hashSetOf("run-kotlin"),
-        hashSetOf(),
         it
       ) { codeSnippet: CodeSnippet ->
         codeSnippet.code
       }.toList()
-
     }
     val expectedResult =
       codeSnippetsFromRepo.sorted().map { it to it }
