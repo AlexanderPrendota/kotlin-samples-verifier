@@ -30,7 +30,7 @@ private fun processHTMLText(text: String, parseConfiguration: ParseConfiguration
   val document = Jsoup.parse(text)
   val snippets = mutableListOf<Code>()
   val queue = LinkedList<Element>()
-  val flags = if (fileType == FileType.MD) {
+  val codeFlags = if (fileType == FileType.MD) {
     parseConfiguration.snippetFlags.map { "language-$it" }
   } else parseConfiguration.snippetFlags
   queue.addFirst(document.body())
@@ -45,13 +45,20 @@ private fun processHTMLText(text: String, parseConfiguration: ParseConfiguration
       queue.addAll(elem.children())
 
       if ((parseTags != null && (elem.tagName() !in parseTags!!)) ||
-        ((elem.tagName() != "code") && fileType == FileType.MD)
+        (parseTags == null && (elem.tagName() != "code") && fileType == FileType.MD)
       ) {
         continue
       }
-      if (elem.classNames().intersect(flags).isNotEmpty()) {
-        val code = elem.wholeText().trimIndent()
-        snippets.add(code)
+      if (elem.tagName() == "code") {
+        if (elem.classNames().intersect(codeFlags).isNotEmpty()) {
+          val code = elem.wholeText().trimIndent()
+          snippets.add(code)
+        }
+      } else {
+        if (elem.classNames().intersect(snippetFlags).isNotEmpty()) {
+          val code = elem.wholeText().trimIndent()
+          snippets.add(code)
+        }
       }
     }
   }
