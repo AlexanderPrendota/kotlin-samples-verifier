@@ -7,20 +7,20 @@ import org.eclipse.jgit.api.Git
 import java.io.File
 
 internal fun cloneRepository(dir: File, repositoryURL: String, branch: String) {
-    val level = Logger.getRootLogger().level
+  val level = Logger.getRootLogger().level
 
-    Logger.getRootLogger().level = Level.OFF
-    try {
-        dir.mkdirs()
-        val git = Git.cloneRepository()
-            .setDirectory(dir)
-            .setURI(repositoryURL)
-            .setBranch(branch)
-            .call()
-        git.close()
-    } catch (e: Exception) {
-        throw GitException(e)
-    } finally {
-        Logger.getRootLogger().level = level
-    }
+  Logger.getRootLogger().level = Level.OFF
+  try {
+    dir.mkdirs()
+    val git = Git.cloneRepository()
+      .setDirectory(dir)
+      .setURI(repositoryURL)
+      .setBranch(branch)
+      .call()
+    git.close()
+  } catch (e: Exception) {
+    throw GitException(e)
+  } finally {
+    Logger.getRootLogger().level = level
+  }
 }
