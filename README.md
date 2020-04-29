@@ -79,16 +79,17 @@ dependencies {
 # Usage Example
 
 ```kotlin
-val samplesVerifier = SamplesVerifierFactory.create()
+val samplesVerifier = SamplesVerifierFactory.create().configure {
+  snippetFlags = hashSetOf("run-kotlin")
+}
 
 val repositoryURL = "https://github.com/AlexanderPrendota/kotlin-samples-verifier.git"
-val attributes = listOf("run-kotlin")
 
 // log execution results
 
-samplesVerifier.check(repositoryURL, attributes, FileType.MD)
+samplesVerifier.check(repositoryURL, "master", FileType.MD)
 
 // get results as Map<ExecutionResult, Code>
 
-val results = samplesVerifier.collect(repositoryURL, attributes, FileType.MD)
+val results = samplesVerifier.collect(repositoryURL, "master", FileType.MD)
 ```
