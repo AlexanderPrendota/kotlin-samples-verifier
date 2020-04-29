@@ -24,11 +24,7 @@ interface SamplesVerifier {
    * @return map with code as keys and results as values
    * @throws CallException
    */
-  fun collect(
-    url: String,
-    branch: String,
-    type: FileType
-  ): Map<Code, ExecutionResult>
+  fun collect(url: String, branch: String, type: FileType): Map<Code, ExecutionResult>
 
   /**
    * Execute code snippets from a git repository
@@ -39,11 +35,7 @@ interface SamplesVerifier {
    * @param type [FileType]
    * @throws CallException
    */
-  fun check(
-    url: String,
-    branch: String,
-    type: FileType
-  )
+  fun check(url: String, branch: String, type: FileType)
 
   /**
    * Parse code snippets from a git repository and process them using [processResult] function.
@@ -56,12 +48,7 @@ interface SamplesVerifier {
    * @return map with code snippets as keys and results from [processResult] as values
    * @throws CallException
    */
-  fun <T> parse(
-    url: String,
-    branch: String,
-    type: FileType,
-    processResult: (CodeSnippet) -> T
-  ): Map<Code, T>
+  fun <T> parse(url: String, branch: String, type: FileType, processResult: (CodeSnippet) -> T): Map<Code, T>
 
   /**
    * Parse code snippets from a git repository and process them using [processResult] function.
@@ -74,12 +61,7 @@ interface SamplesVerifier {
    * @return result of [processResult]
    * @throws CallException
    */
-  fun <T> parse(
-    url: String,
-    branch: String,
-    type: FileType,
-    processResult: (List<CodeSnippet>) -> T
-  ): T
+  fun <T> parse(url: String, branch: String, type: FileType, processResult: (List<CodeSnippet>) -> T): T
 }
 
 enum class FileType {

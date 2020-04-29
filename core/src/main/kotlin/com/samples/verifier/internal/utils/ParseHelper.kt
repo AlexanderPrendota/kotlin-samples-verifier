@@ -13,17 +13,11 @@ import org.jsoup.nodes.Element
 import java.io.File
 import java.util.*
 
-internal fun processHTMLFile(
-  file: File,
-  parseConfiguration: ParseConfiguration
-): List<Code> {
+internal fun processHTMLFile(file: File, parseConfiguration: ParseConfiguration): List<Code> {
   return processHTMLText(file.readText(), parseConfiguration, FileType.HTML)
 }
 
-internal fun processMarkdownFile(
-  file: File,
-  parseConfiguration: ParseConfiguration
-): List<Code> {
+internal fun processMarkdownFile(file: File, parseConfiguration: ParseConfiguration): List<Code> {
   val options = MutableDataSet()
   val parser = Parser.builder(options).build()
   val node: Node = parser.parse(file.readText())
@@ -32,11 +26,7 @@ internal fun processMarkdownFile(
   return processHTMLText(htmlText, parseConfiguration, FileType.MD)
 }
 
-private fun processHTMLText(
-  text: String,
-  parseConfiguration: ParseConfiguration,
-  fileType: FileType
-): List<Code> {
+private fun processHTMLText(text: String, parseConfiguration: ParseConfiguration, fileType: FileType): List<Code> {
   val document = Jsoup.parse(text)
   val snippets = mutableListOf<Code>()
   val queue = LinkedList<Element>()

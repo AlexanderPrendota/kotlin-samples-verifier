@@ -25,18 +25,10 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     return this
   }
 
-  override fun collect(
-    url: String,
-    branch: String,
-    type: FileType
-  ): Map<Code, ExecutionResult> = processRepository(url, branch, type)
-    .associate { it.code to executionHelper.executeCode(it) }
+  override fun collect(url: String, branch: String, type: FileType): Map<Code, ExecutionResult> =
+    processRepository(url, branch, type).associate { it.code to executionHelper.executeCode(it) }
 
-  override fun check(
-    url: String,
-    branch: String,
-    type: FileType
-  ) {
+  override fun check(url: String, branch: String, type: FileType) {
     var fail = false
     val snippets = processRepository(url, branch, type)
     for (codeSnippet in snippets) {
@@ -52,29 +44,15 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     if (fail) throw SamplesVerifierExceptions("Verification failed. Please see errors logs.")
   }
 
-  override fun <T> parse(
-    url: String,
-    branch: String,
-    type: FileType,
-    processResult: (CodeSnippet) -> T
-  ): Map<Code, T> = processRepository(url, branch, type)
-    .associate { it.code to processResult(it) }
+  override fun <T> parse(url: String, branch: String, type: FileType, processResult: (CodeSnippet) -> T): Map<Code, T> =
+    processRepository(url, branch, type).associate { it.code to processResult(it) }
 
-  override fun <T> parse(
-    url: String,
-    branch: String,
-    type: FileType,
-    processResult: (List<CodeSnippet>) -> T
-  ): T {
+  override fun <T> parse(url: String, branch: String, type: FileType, processResult: (List<CodeSnippet>) -> T): T {
     val snippets = processRepository(url, branch, type)
     return processResult(snippets)
   }
 
-  private fun processRepository(
-    url: String,
-    branch: String,
-    type: FileType
-  ): List<CodeSnippet> {
+  private fun processRepository(url: String, branch: String, type: FileType): List<CodeSnippet> {
     val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
     return try {
       logger.info("Cloning repository...")
@@ -95,10 +73,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     }
   }
 
-  private fun processFiles(
-    directory: File,
-    type: FileType
-  ): List<CodeSnippet> {
+  private fun processFiles(directory: File, type: FileType): List<CodeSnippet> {
     val snippets = mutableListOf<CodeSnippet>()
     Files.walk(directory.toPath()).use {
       it.forEach { path: Path ->
@@ -117,8 +92,8 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
             } else emptyList()
           }
         }
-        snippets.addAll(fileSnippets.withIndex().map {
-          CodeSnippet("${file.nameWithoutExtension}_${it.index}", it.value)
+        snippets.addAll(fileSnippets.withIndex().map { code ->
+          CodeSnippet("${file.nameWithoutExtension}_${code.index}", code.value)
         })
       }
     }
