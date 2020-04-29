@@ -17,22 +17,24 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     private val executionHelper = ExecutionHelper(compilerUrl, kotlinEnv)
 
     override fun collect(
-        url: String,
-        branch: String,
-        attributes: List<String>,
-        type: FileType
-    ): Map<Code, ExecutionResult> = processRepository(url, branch, attributes, type)
-        .associateWith { executionHelper.executeCode(it) }
+      url: String,
+      branch: String,
+      attributes: List<String>,
+      ignoreAttributes: List<String>,
+      type: FileType
+    ): Map<Code, ExecutionResult> = processRepository(url, branch, attributes, ignoreAttributes, type)
+        .associate { it.code to executionHelper.executeCode(it) }
 
-    override fun check(url: String, branch: String, attributes: List<String>, type: FileType) {
+    override fun check(url: String, branch: String, attributes: List<String>, ignoreAttributes: List<String>, type: FileType) {
         var fail = false
-        val snippets = processRepository(url, branch, attributes, type)
-        for (code in snippets) {
-            val result = executionHelper.executeCode(code)
+        val snippets = processRepository(url, branch, attributes, ignoreAttributes, type)
+        for (codeSnippet in snippets) {
+            val result = executionHelper.executeCode(codeSnippet)
             val errors = result.errors
             if (errors.isNotEmpty()) {
                 fail = true
-                logger.error("Code: \n${code}")
+                logger.error("Filename: ${codeSnippet.filename}")
+                logger.error("Code: \n${codeSnippet.code}")
                 logger.error("Errors: \n${errors.joinToString("\n")}")
             }
         }
@@ -43,18 +45,21 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         url: String,
         branch: String,
         attributes: List<String>,
+        ignoreAttributes: List<String>,
         type: FileType,
-        processResult: (Code) -> T
-    ): Map<Code, T> = processRepository(url, branch, attributes, type).associateWith { processResult(it) }
+        processResult: (CodeSnippet) -> T
+    ): Map<Code, T> = processRepository(url, branch, attributes, ignoreAttributes, type)
+        .associate{ it.code to processResult(it) }
 
     override fun <T> parse(
         url: String,
         branch: String,
         attributes: List<String>,
+        ignoreAttributes: List<String>,
         type: FileType,
-        processResult: (List<Code>) -> T
+        processResult: (List<CodeSnippet>) -> T
     ): T {
-        val snippets = processRepository(url, branch, attributes, type)
+        val snippets = processRepository(url, branch, attributes, ignoreAttributes, type)
         return processResult(snippets)
     }
 
@@ -62,13 +67,14 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         url: String,
         branch: String,
         attributes: List<String>,
+        ignoreAttributes: List<String>,
         type: FileType
-    ): List<Code> {
+    ): List<CodeSnippet> {
         val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
         return try {
             logger.info("Cloning repository...")
             cloneRepository(dir, url, branch)
-            return processFiles(dir, attributes, type)
+            return processFiles(dir, attributes, ignoreAttributes, type)
         } catch (e: GitException) {
             logger.error("${e.message}")
             emptyList()
@@ -84,8 +90,13 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         }
     }
 
-    private fun processFiles(directory: File, attributes: List<String>, type: FileType): List<Code> {
-        val snippets = mutableListOf<Code>()
+    private fun processFiles(
+        directory: File,
+        attributes: List<String>,
+        ignoreAttributes: List<String>,
+        type: FileType
+    ): List<CodeSnippet> {
+        val snippets = mutableListOf<CodeSnippet>()
         Files.walk(directory.toPath()).use {
             it.forEach { path: Path ->
                 val file = path.toFile()
@@ -93,17 +104,19 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
                     FileType.MD -> {
                         if (file.extension == "md") {
                             logger.info("Processing ${file}...")
-                            processFile(file, type, attributes)
+                            processFile(file, type, attributes, ignoreAttributes)
                         } else emptyList()
                     }
                     FileType.HTML -> {
                         if (file.extension == "html") {
                             logger.info("Processing ${file}...")
-                            processFile(file, type, attributes)
+                            processFile(file, type, attributes, ignoreAttributes)
                         } else emptyList()
                     }
                 }
-                snippets.addAll(fileSnippets)
+                snippets.addAll(fileSnippets.withIndex().map {
+                    CodeSnippet("${file.nameWithoutExtension}_${it.index}", it.value)
+                })
             }
         }
         return snippets

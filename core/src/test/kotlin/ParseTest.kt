@@ -1,4 +1,4 @@
-import com.samples.verifier.Code
+import com.samples.verifier.CodeSnippet
 import com.samples.verifier.FileType
 import com.samples.verifier.SamplesVerifierFactory
 import org.junit.jupiter.api.Assertions
@@ -26,9 +26,10 @@ class ParseTest {
                 "https://github.com/AlexanderPrendota/kotlin-samples-verifier.git",
                 "tests",
                 listOf("run-kotlin"),
+                emptyList(),
                 it
-            ) { snippets: List<Code> ->
-                snippets.sorted()
+            ) { snippets: List<CodeSnippet> ->
+                snippets.map { it.code }.sorted()
             }
         }
         val expectedResult = codeSnippetsFromRepo.sorted()
@@ -43,9 +44,10 @@ class ParseTest {
                 "https://github.com/AlexanderPrendota/kotlin-samples-verifier.git",
                 "tests",
                 listOf("run-kotlin"),
+                emptyList(),
                 it
-            ) { code: Code ->
-                code
+            ) { codeSnippet: CodeSnippet ->
+                codeSnippet.code
             }.toList()
         }
         val expectedResult =

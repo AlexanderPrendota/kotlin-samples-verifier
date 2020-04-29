@@ -2,7 +2,7 @@ package com.samples.verifier.internal.utils
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.samples.verifier.CallException
-import com.samples.verifier.Code
+import com.samples.verifier.CodeSnippet
 import com.samples.verifier.KotlinEnv
 import com.samples.verifier.internal.api.SamplesVerifierService
 import com.samples.verifier.model.*
@@ -24,16 +24,16 @@ internal class ExecutionHelper(baseUrl: String, private val kotlinEnv: KotlinEnv
         .create(SamplesVerifierService::class.java)
 
     fun executeCode(
-        code: Code
+        codeSnippet: CodeSnippet
     ): ExecutionResult {
         return when (kotlinEnv) {
-            KotlinEnv.JVM -> executeCodeJVM(KotlinFile("filename.kt", code))
-            KotlinEnv.JS -> executeCodeJS(KotlinFile("filename.kt", code))
+            KotlinEnv.JVM -> executeCodeJVM(codeSnippet)
+            KotlinEnv.JS -> executeCodeJS(codeSnippet)
         }
     }
 
-    private fun executeCodeJVM(kotlinFile: KotlinFile): ExecutionResult {
-        val project = Project("", listOf(kotlinFile))
+    private fun executeCodeJVM(codeSnippet: CodeSnippet): ExecutionResult {
+        val project = Project("", listOf(KotlinFile("filename.kt", codeSnippet.code)))
         var response: Response<ExecutionResponse>? = null
         for (i in 1..NUMBER_OF_REQUESTS) {
             try {
@@ -47,11 +47,11 @@ internal class ExecutionHelper(baseUrl: String, private val kotlinEnv: KotlinEnv
         }
         return if (response!!.isSuccessful) {
             val r = response.body()!!
-            ExecutionResult(r.errors["filename.kt"] ?: error("unexpected response structure"), r.exception, r.text)
+            ExecutionResult(r.errors["filename.kt"] ?: error("unexpected response structure"), r.exception, r.text, codeSnippet.filename)
         } else throw CallException(response.errorBody()!!.string())
     }
 
-    private fun executeCodeJS(kotlinFile: KotlinFile): ExecutionResult {
+    private fun executeCodeJS(codeSnippet: CodeSnippet): ExecutionResult {
         TODO("Not yet implemented")
     }
 }
