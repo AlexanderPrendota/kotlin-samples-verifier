@@ -50,3 +50,13 @@ texttext
 ```kk
 ignore
 ```
+
+<p class="kotlin">
+    ignore
+</p>
+
+<div class="run-kotlin">
+    fun main() {
+        println("Hello world!")
+    }
+</div>

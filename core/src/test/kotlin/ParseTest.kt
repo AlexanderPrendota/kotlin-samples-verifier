@@ -1,6 +1,7 @@
 import com.samples.verifier.CodeSnippet
 import com.samples.verifier.FileType
 import com.samples.verifier.SamplesVerifierFactory
+import com.samples.verifier.model.Attribute
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -34,6 +35,11 @@ class ParseTest {
     }
     val expectedResult = codeSnippetsFromRepo.sorted()
     Assertions.assertEquals(listOf(expectedResult, expectedResult), results)
+  }
+
+  val samplesVerifier = SamplesVerifierFactory.create().configure {
+    snippetFlags = hashSetOf("run-kotlin")
+    ignoreAttributes = hashSetOf(Attribute("data-highlight-only", ""))
   }
 
   @Test
