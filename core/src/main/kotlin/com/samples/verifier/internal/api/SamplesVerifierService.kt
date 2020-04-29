@@ -8,7 +8,7 @@ import retrofit2.http.Headers
 import retrofit2.http.POST
 
 internal interface SamplesVerifierService {
-    @POST("/api/compiler/run")
-    @Headers("Content-Type: application/json")
-    fun executeCodeJVM(@Body body: Project): Call<ExecutionResponse>
+  @POST("/api/compiler/run")
+  @Headers("Content-Type: application/json")
+  fun executeCodeJVM(@Body body: Project): Call<ExecutionResponse>
 }
