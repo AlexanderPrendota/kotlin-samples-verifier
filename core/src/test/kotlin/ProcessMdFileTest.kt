@@ -17,9 +17,10 @@ class ProcessMdFileTest {
       File("src/test/resources/md_test.md"),
       ParseConfiguration {
         snippetFlags = hashSetOf("kotlin", "run-kotlin")
-        ignoreAttributes = hashSetOf(Attribute("data-highlight-only", ""))
+        ignoreAttributes = hashSetOf(Attribute("data-highlight-only", ""),
+          Attribute("another-ignore-attribute", "ignore"))
         parseTags = hashSetOf("code", "div")
       })
-    assertEquals(listOf(1, 2, 3, 4, 5, 6).map { helloWorld }, res)
+    assertEquals(listOf(1, 2, 3, 4, 5, 6, 7).map { helloWorld }, res)
   }
 }
