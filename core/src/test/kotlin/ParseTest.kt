@@ -23,6 +23,7 @@ class ParseTest {
   fun `parse with list test`() {
     val samplesVerifier = SamplesVerifierFactory.create().configure {
       snippetFlags = hashSetOf("run-kotlin")
+      parseDirectory = Regex("core/src/test")
     }
     val results = listOf(FileType.MD, FileType.HTML).map {
       samplesVerifier.parse(
@@ -46,6 +47,7 @@ class ParseTest {
   fun `parse test`() {
     val samplesVerifier = SamplesVerifierFactory.create().configure {
       snippetFlags = hashSetOf("run-kotlin")
+      parseDirectory = Regex("core/src/test")
     }
     val results = listOf(FileType.MD, FileType.HTML).map {
       samplesVerifier.parse(

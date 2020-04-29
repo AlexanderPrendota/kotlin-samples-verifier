@@ -75,26 +75,35 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
 
   private fun processFiles(directory: File, type: FileType): List<CodeSnippet> {
     val snippets = mutableListOf<CodeSnippet>()
+    var predicate: (String) -> Boolean = { true }
+    if (configuration.parseDirectory != null) {
+      predicate = { Regex(configuration.parseDirectory!!.pattern + File.separator + ".*").matches(it) }
+    }
+    val ignoreRegex = configuration.ignoreDirectory?.let { Regex(it.pattern + File.separator + ".*") }
     Files.walk(directory.toPath()).use {
       it.forEach { path: Path ->
-        val file = path.toFile()
-        val fileSnippets = when (type) {
-          FileType.MD -> {
-            if (file.extension == "md") {
-              logger.info("Processing ${file}...")
-              processMarkdownFile(file, configuration)
-            } else emptyList()
+        val dir = directory.toPath().relativize(path).toString()
+        if (predicate(dir) && (configuration.ignoreDirectory == null || ignoreRegex?.matches(dir) != true)) {
+          println(directory.toPath().relativize(path))
+          val file = path.toFile()
+          val fileSnippets = when (type) {
+            FileType.MD -> {
+              if (file.extension == "md") {
+                logger.info("Processing ${file}...")
+                processMarkdownFile(file, configuration)
+              } else emptyList()
+            }
+            FileType.HTML -> {
+              if (file.extension == "html") {
+                logger.info("Processing ${file}...")
+                processHTMLFile(file, configuration)
+              } else emptyList()
+            }
           }
-          FileType.HTML -> {
-            if (file.extension == "html") {
-              logger.info("Processing ${file}...")
-              processHTMLFile(file, configuration)
-            } else emptyList()
-          }
+          snippets.addAll(fileSnippets.withIndex().map { code ->
+            CodeSnippet("${file.nameWithoutExtension}_${code.index}", code.value)
+          })
         }
-        snippets.addAll(fileSnippets.withIndex().map { code ->
-          CodeSnippet("${file.nameWithoutExtension}_${code.index}", code.value)
-        })
       }
     }
     return snippets
