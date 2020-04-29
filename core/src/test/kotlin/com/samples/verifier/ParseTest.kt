@@ -1,11 +1,13 @@
-import com.samples.verifier.CodeSnippet
-import com.samples.verifier.FileType
-import com.samples.verifier.SamplesVerifierFactory
-import com.samples.verifier.model.Attribute
+package com.samples.verifier
+
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class ParseTest {
+  private val samplesVerifier = SamplesVerifierFactory.create().configure {
+    snippetFlags = hashSetOf("run-kotlin")
+  }
+
   private val codeSnippetsFromRepo = run {
     val expectedResult = mutableListOf(
       "fun main() {\n    println(\"Hello world!\")\n}"
@@ -21,8 +23,7 @@ class ParseTest {
 
   @Test
   fun `parse with list test`() {
-    val samplesVerifier = SamplesVerifierFactory.create().configure {
-      snippetFlags = hashSetOf("run-kotlin")
+    samplesVerifier.configure {
       parseDirectory = Regex("core/src/test")
       ignoreDirectory = Regex("core/src/test/resources/ignore_dir")
     }
@@ -39,15 +40,10 @@ class ParseTest {
     Assertions.assertEquals(listOf(expectedResult, expectedResult), results)
   }
 
-  val samplesVerifier = SamplesVerifierFactory.create().configure {
-    snippetFlags = hashSetOf("run-kotlin")
-    ignoreAttributes = hashSetOf(Attribute("data-highlight-only", ""))
-  }
-
   @Test
   fun `parse test`() {
-    val samplesVerifier = SamplesVerifierFactory.create().configure {
-      snippetFlags = hashSetOf("run-kotlin")
+    samplesVerifier.configure {
+      ignoreDirectory = null
       parseDirectory = Regex("core/src/test/resources/testdir")
     }
     val results = listOf(FileType.MD, FileType.HTML).map {
@@ -65,5 +61,6 @@ class ParseTest {
       listOf(1, 2).map { expectedResult },
       results.map { it.sortedWith(compareBy { it.first }) }
     )
+
   }
 }
