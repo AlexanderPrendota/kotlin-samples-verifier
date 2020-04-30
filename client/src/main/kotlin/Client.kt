@@ -42,12 +42,13 @@ class Client {
 
       val samplesVerifier =
         SamplesVerifierFactory.create(compilerUrl = options.compilerUrl, kotlinEnv = options.kotlinEnv)
+          .configure {
+            snippetFlags = options.attributes.toHashSet()
+          }
 
       samplesVerifier.check(
         options.repositoryUrl,
         options.branch,
-        options.attributes.toList(),
-        emptyList(),
         options.fileType
       )
     }
@@ -62,6 +63,9 @@ class Client {
       }
       val samplesVerifier =
         SamplesVerifierFactory.create(compilerUrl = options.compilerUrl, kotlinEnv = options.kotlinEnv)
+          .configure {
+            snippetFlags = options.attributes.toHashSet()
+          }
 
       FileWriter(options.out).use {
         val mapper = jacksonObjectMapper()
@@ -69,8 +73,6 @@ class Client {
           samplesVerifier.collect(
             options.repositoryUrl,
             options.branch,
-            options.attributes.toList(),
-            emptyList(),
             options.fileType
           )
         it.write(mapper.writeValueAsString(results))

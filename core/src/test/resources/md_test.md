@@ -50,3 +50,33 @@ texttext
 ```kk
 ignore
 ```
+
+<p class="kotlin">
+    ignore
+</p>
+
+<div class="run-kotlin">
+    fun main() {
+        println("Hello world!")
+    }
+</div>
+
+<div class="sample" markdown="1" theme="idea" another-ignore-attribute="ignore">
+
+```kotlin
+fun parseInt(str: String): Int? {
+    // ...
+}
+```
+
+</div>
+
+<div class="sample" markdown="1" theme="idea" another-ignore-attribute="txx">
+
+```kotlin
+fun main() {
+    println("Hello world!")
+}
+```
+
+</div>
