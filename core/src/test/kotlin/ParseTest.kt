@@ -24,6 +24,7 @@ class ParseTest {
     val samplesVerifier = SamplesVerifierFactory.create().configure {
       snippetFlags = hashSetOf("run-kotlin")
       parseDirectory = Regex("core/src/test")
+      ignoreDirectory = Regex("core/src/test/resources/ignore_dir")
     }
     val results = listOf(FileType.MD, FileType.HTML).map {
       samplesVerifier.parse(
@@ -47,7 +48,7 @@ class ParseTest {
   fun `parse test`() {
     val samplesVerifier = SamplesVerifierFactory.create().configure {
       snippetFlags = hashSetOf("run-kotlin")
-      parseDirectory = Regex("core/src/test")
+      parseDirectory = Regex("core/src/test/resources/testdir")
     }
     val results = listOf(FileType.MD, FileType.HTML).map {
       samplesVerifier.parse(
@@ -59,7 +60,7 @@ class ParseTest {
       }.toList()
     }
     val expectedResult =
-      codeSnippetsFromRepo.sorted().map { it to it }
+      codeSnippetsFromRepo.filter { it.contains("4") || it.contains("5") }.sorted().map { it to it }
     Assertions.assertEquals(
       listOf(1, 2).map { expectedResult },
       results.map { it.sortedWith(compareBy { it.first }) }
