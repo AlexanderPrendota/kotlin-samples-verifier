@@ -11,8 +11,6 @@ import org.apache.commons.io.FileUtils
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
-import java.nio.file.Files
-import java.nio.file.Path
 
 internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv) : SamplesVerifier {
   private val logger = LoggerFactory.getLogger("Samples Verifier")
@@ -75,27 +73,34 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
 
   private fun processFiles(directory: File, type: FileType): List<CodeSnippet> {
     val snippets = mutableListOf<CodeSnippet>()
-    Files.walk(directory.toPath()).use {
-      it.forEach { path: Path ->
-        val file = path.toFile()
-        val fileSnippets = when (type) {
-          FileType.MD -> {
-            if (file.extension == "md") {
-              logger.info("Processing ${file}...")
-              processMarkdownFile(file, configuration)
-            } else emptyList()
-          }
-          FileType.HTML -> {
-            if (file.extension == "html") {
-              logger.info("Processing ${file}...")
-              processHTMLFile(file, configuration)
-            } else emptyList()
-          }
-        }
-        snippets.addAll(fileSnippets.withIndex().map { code ->
-          CodeSnippet("${file.nameWithoutExtension}_${code.index}", code.value)
-        })
+    val fileRegex = configuration.parseDirectory?.let {
+      Regex(it.pattern + File.separator + ".*")
+    }
+    val fileTree = directory.walkTopDown()
+      .onEnter { (configuration.ignoreDirectory == null ||
+          configuration.ignoreDirectory?.matches(it.relativeTo(directory).toString()) != true)
       }
+    for (file in fileTree) {
+      val dir = file.relativeTo(directory).toString()
+      if (fileRegex?.matches(dir) == false) continue
+      val fileSnippets = when (type) {
+        FileType.MD -> {
+          if (file.extension == "md") {
+            logger.info("Processing ${file}...")
+            processMarkdownFile(file, configuration)
+          } else emptyList()
+        }
+        FileType.HTML -> {
+          if (file.extension == "html") {
+            logger.info("Processing ${file}...")
+            processHTMLFile(file, configuration)
+          } else emptyList()
+        }
+      }
+      snippets.addAll(fileSnippets.withIndex().map { code ->
+        CodeSnippet("${file.nameWithoutExtension}_${code.index}", code.value)
+      })
+
     }
     return snippets
   }
