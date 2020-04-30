@@ -73,10 +73,8 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
 
   private fun processFiles(directory: File, type: FileType): List<CodeSnippet> {
     val snippets = mutableListOf<CodeSnippet>()
-    val predicate: (String) -> Boolean = if (configuration.parseDirectory != null) {
-      { Regex(configuration.parseDirectory!!.pattern + File.separator + ".*").matches(it) }
-    } else {
-      { true }
+    val fileRegex = configuration.parseDirectory?.let {
+      Regex(it.pattern + File.separator + ".*")
     }
     val fileTree = directory.walkTopDown()
       .onEnter { (configuration.ignoreDirectory == null ||
@@ -84,7 +82,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
       }
     for (file in fileTree) {
       val dir = file.relativeTo(directory).toString()
-      if (!predicate(dir)) continue
+      if (fileRegex?.matches(dir) == false) continue
       val fileSnippets = when (type) {
         FileType.MD -> {
           if (file.extension == "md") {
