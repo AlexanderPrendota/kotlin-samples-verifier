@@ -1,3 +1,5 @@
+package com.samples.verifier
+
 import com.samples.verifier.internal.utils.processMarkdownFile
 import com.samples.verifier.model.Attribute
 import com.samples.verifier.model.ParseConfiguration
@@ -5,7 +7,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.File
 
-class ProcessMdFileTest {
+class ParseMdFileTest {
   @Test
   fun `process md test`() {
     val helloWorld = """
