@@ -57,6 +57,26 @@ interface SamplesVerifier {
    * @param branch can be specified as ref name (refs/heads/master),
    *               branch name (master) or tag name (v1.2.3).
    * @param type [FileType]
+   * @param files list of filenames to be processed
+   * @param processResult function to process snippet of code
+   * @return map with code snippets as keys and results from [processResult] as values
+   * @throws CallException
+   */
+  fun <T> parse(
+    url: String,
+    branch: String,
+    type: FileType,
+    files: List<String>,
+    processResult: (CodeSnippet) -> T
+  ): Map<Code, T>
+
+  /**
+   * Parse code snippets from a git repository and process them using [processResult] function.
+   *
+   * @param url git repository url
+   * @param branch can be specified as ref name (refs/heads/master),
+   *               branch name (master) or tag name (v1.2.3).
+   * @param type [FileType]
    * @param processResult function to process list of code snippets
    * @return result of [processResult]
    * @throws CallException
