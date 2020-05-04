@@ -104,15 +104,14 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
   }
 
   private fun processFiles(directory: File, filenames: List<String>, type: FileType): List<CodeSnippet> {
-    val snippets = mutableListOf<CodeSnippet>()
     val fileRegex = configuration.parseDirectory?.let { Regex(it.pattern + File.separator + ".*") }
     val ignoreRegex = configuration.ignoreDirectory?.let { Regex(it.pattern + File.separator + ".*") }
 
-    filenames.filter { fileRegex?.matches(it) != false && ignoreRegex?.matches(it) != true }.forEach { filename ->
-      val file = File(filename)
-      snippets.addAll(processFile(directory.resolve(file), type))
-    }
-    return snippets
+    return filenames.filter { fileRegex?.matches(it) != false && ignoreRegex?.matches(it) != true }
+      .flatMap { filename ->
+        val file = File(filename)
+        processFile(directory.resolve(file), type)
+      }
   }
 
   private fun processFile(file: File, type: FileType): List<CodeSnippet> {
