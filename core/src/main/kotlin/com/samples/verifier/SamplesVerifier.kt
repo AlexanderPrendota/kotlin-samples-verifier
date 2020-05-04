@@ -2,6 +2,7 @@ package com.samples.verifier
 
 import com.samples.verifier.model.ExecutionResult
 import com.samples.verifier.model.ParseConfiguration
+import java.io.File
 
 interface SamplesVerifier {
   /**
@@ -82,6 +83,13 @@ interface SamplesVerifier {
    * @throws CallException
    */
   fun <T> parse(url: String, branch: String, type: FileType, processResult: (List<CodeSnippet>) -> T): T
+
+  /**
+   * @param directory base directory for files
+   * @param filenames list of filenames to be processed
+   * @param type [FileType]
+   */
+  fun processFiles(directory: File, filenames: List<String>, type: FileType): List<CodeSnippet>
 }
 
 enum class FileType {

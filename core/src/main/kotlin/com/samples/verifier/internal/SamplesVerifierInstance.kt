@@ -103,7 +103,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     return snippets
   }
 
-  private fun processFiles(directory: File, filenames: List<String>, type: FileType): List<CodeSnippet> {
+  override fun processFiles(directory: File, filenames: List<String>, type: FileType): List<CodeSnippet> {
     val fileRegex = configuration.parseDirectory?.let { Regex(it.pattern + File.separator + ".*") }
     val ignoreRegex = configuration.ignoreDirectory?.let { Regex(it.pattern + File.separator + ".*") }
 
