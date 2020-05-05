@@ -1,6 +1,7 @@
 package com.samples.verifier
 
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class SamplesVerifierTest {
@@ -64,7 +65,7 @@ class SamplesVerifierTest {
   }
 
   @Test
-  fun `test collect with list`() {
+  fun `test parse with list`() {
     samplesVerifier.configure {
       ignoreDirectory = Regex("core/src/test/resources/testdir")
       parseDirectory = Regex("core/src/test/resources")
@@ -84,8 +85,22 @@ class SamplesVerifierTest {
     val expectedResult =
       codeSnippetsFromRepo.filter { it.contains("3") }.sorted().map { it to it }
     Assertions.assertEquals(
-      expectedResult ,
+      expectedResult,
       result.sortedBy { it.first }
     )
+  }
+
+  @Test
+  fun `test collect with list`() {
+    samplesVerifier.configure {
+      ignoreDirectory = Regex("src/test/resources/testdir")
+      parseDirectory = Regex("src/test/resources")
+    }
+
+    val result = samplesVerifier.collect(
+      listOf("src/test/resources/md_test.md"),
+      FileType.MD
+    ).map { it.key to it.value }
+    assertTrue(result.isNotEmpty())
   }
 }
