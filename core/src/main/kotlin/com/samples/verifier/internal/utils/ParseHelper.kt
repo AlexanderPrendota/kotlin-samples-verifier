@@ -13,16 +13,17 @@ import org.jsoup.nodes.Element
 import java.io.File
 import java.util.*
 
+private val parseOptions = MutableDataSet()
+private val htmlRenderer = HtmlRenderer.builder(parseOptions).build()
+private val htmlParser = Parser.builder(parseOptions).build()
+
 internal fun processHTMLFile(file: File, parseConfiguration: ParseConfiguration): List<Code> {
   return processHTMLText(file.readText(), parseConfiguration, FileType.HTML)
 }
 
 internal fun processMarkdownFile(file: File, parseConfiguration: ParseConfiguration): List<Code> {
-  val options = MutableDataSet()
-  val parser = Parser.builder(options).build()
-  val node: Node = parser.parse(file.readText())
-  val render = HtmlRenderer.builder(options).build()
-  val htmlText = render.render(node)
+  val node: Node = htmlParser.parse(file.readText())
+  val htmlText = htmlRenderer.render(node)
   return processHTMLText(htmlText, parseConfiguration, FileType.MD)
 }
 
