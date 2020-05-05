@@ -3,7 +3,7 @@ package com.samples.verifier
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-class ParseTest {
+class SamplesVerifierTest {
   private val samplesVerifier = SamplesVerifierFactory.create().configure {
     snippetFlags = hashSetOf("run-kotlin")
   }
@@ -59,8 +59,33 @@ class ParseTest {
       codeSnippetsFromRepo.filter { it.contains("4") || it.contains("5") }.sorted().map { it to it }
     Assertions.assertEquals(
       listOf(1, 2).map { expectedResult },
-      results.map { it.sortedWith(compareBy { it.first }) }
+      results.map { it.sortedBy { it.first } }
     )
+  }
 
+  @Test
+  fun `test collect with list`() {
+    samplesVerifier.configure {
+      ignoreDirectory = Regex("core/src/test/resources/testdir")
+      parseDirectory = Regex("core/src/test/resources")
+    }
+    val result = samplesVerifier.parse(
+      "https://github.com/AlexanderPrendota/kotlin-samples-verifier.git",
+      "tests",
+      FileType.MD,
+      listOf(
+        "core/src/test/resources/testfile_3.md",
+        "core/src/test/resources/testdir/testfile_4.md"
+      )
+    ) {
+      it.code
+    }.toList()
+
+    val expectedResult =
+      codeSnippetsFromRepo.filter { it.contains("3") }.sorted().map { it to it }
+    Assertions.assertEquals(
+      expectedResult ,
+      result.sortedBy { it.first }
+    )
   }
 }

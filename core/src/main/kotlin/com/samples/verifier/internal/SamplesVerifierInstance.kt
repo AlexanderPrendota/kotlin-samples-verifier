@@ -45,17 +45,31 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
   override fun <T> parse(url: String, branch: String, type: FileType, processResult: (CodeSnippet) -> T): Map<Code, T> =
     processRepository(url, branch, type).associate { it.code to processResult(it) }
 
+  override fun <T> parse(
+    url: String,
+    branch: String,
+    type: FileType,
+    files: List<String>,
+    processResult: (CodeSnippet) -> T
+  ): Map<Code, T> = processRepository(url, branch, type, files).associate { it.code to processResult(it) }
+
   override fun <T> parse(url: String, branch: String, type: FileType, processResult: (List<CodeSnippet>) -> T): T {
     val snippets = processRepository(url, branch, type)
     return processResult(snippets)
   }
 
-  private fun processRepository(url: String, branch: String, type: FileType): List<CodeSnippet> {
+  private fun processRepository(
+    url: String,
+    branch: String,
+    type: FileType,
+    filenames: List<String>? = null
+  ): List<CodeSnippet> {
     val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
     return try {
       logger.info("Cloning repository...")
       cloneRepository(dir, url, branch)
-      return processFiles(dir, type)
+      return if (filenames == null) processFiles(dir, type)
+      else processFiles(dir, filenames, type)
     } catch (e: GitException) {
       logger.error("${e.message}")
       emptyList()
@@ -77,31 +91,45 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
       Regex(it.pattern + File.separator + ".*")
     }
     val fileTree = directory.walkTopDown()
-      .onEnter { (configuration.ignoreDirectory == null ||
+      .onEnter {
+        (configuration.ignoreDirectory == null ||
           configuration.ignoreDirectory?.matches(it.relativeTo(directory).toString()) != true)
       }
     for (file in fileTree) {
       val dir = file.relativeTo(directory).toString()
       if (fileRegex?.matches(dir) == false) continue
-      val fileSnippets = when (type) {
-        FileType.MD -> {
-          if (file.extension == "md") {
-            logger.info("Processing ${file}...")
-            processMarkdownFile(file, configuration)
-          } else emptyList()
-        }
-        FileType.HTML -> {
-          if (file.extension == "html") {
-            logger.info("Processing ${file}...")
-            processHTMLFile(file, configuration)
-          } else emptyList()
-        }
-      }
-      snippets.addAll(fileSnippets.withIndex().map { code ->
-        CodeSnippet("${file.nameWithoutExtension}_${code.index}", code.value)
-      })
-
+      snippets.addAll(processFile(file, type))
     }
     return snippets
   }
+
+  override fun processFiles(directory: File, filenames: List<String>, type: FileType): List<CodeSnippet> {
+    val fileRegex = configuration.parseDirectory?.separatePattern()
+    val ignoreRegex = configuration.ignoreDirectory?.separatePattern()
+    return filenames
+      .filter { fileRegex?.matches(it) != false && ignoreRegex?.matches(it) != true }
+      .map { File(it) }
+      .flatMap { processFile(directory.resolve(it), type) }
+  }
+
+  private fun processFile(file: File, type: FileType): List<CodeSnippet> {
+    return when (type) {
+      FileType.MD -> {
+        if (file.extension == "md") {
+          logger.info("Processing ${file}...")
+          processMarkdownFile(file, configuration)
+        } else emptyList()
+      }
+      FileType.HTML -> {
+        if (file.extension == "html") {
+          logger.info("Processing ${file}...")
+          processHTMLFile(file, configuration)
+        } else emptyList()
+      }
+    }.withIndex().map { code ->
+      CodeSnippet("${file.nameWithoutExtension}_${code.index}", code.value)
+    }
+  }
+
+  private fun Regex.separatePattern() = Regex(this.pattern + File.separator + ".*")
 }
