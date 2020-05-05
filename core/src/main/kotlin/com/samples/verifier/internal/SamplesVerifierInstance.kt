@@ -104,14 +104,12 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
   }
 
   override fun processFiles(directory: File, filenames: List<String>, type: FileType): List<CodeSnippet> {
-    val fileRegex = configuration.parseDirectory?.let { Regex(it.pattern + File.separator + ".*") }
-    val ignoreRegex = configuration.ignoreDirectory?.let { Regex(it.pattern + File.separator + ".*") }
-
-    return filenames.filter { fileRegex?.matches(it) != false && ignoreRegex?.matches(it) != true }
-      .flatMap { filename ->
-        val file = File(filename)
-        processFile(directory.resolve(file), type)
-      }
+    val fileRegex = configuration.parseDirectory?.separatePattern()
+    val ignoreRegex = configuration.ignoreDirectory?.separatePattern()
+    return filenames
+      .filter { fileRegex?.matches(it) != false && ignoreRegex?.matches(it) != true }
+      .map { File(it) }
+      .flatMap {processFile(it, type) }
   }
 
   private fun processFile(file: File, type: FileType): List<CodeSnippet> {
@@ -132,4 +130,6 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
       CodeSnippet("${file.nameWithoutExtension}_${code.index}", code.value)
     }
   }
+
+  private fun Regex.separatePattern() =  Regex(this.pattern + File.separator + ".*")
 }
