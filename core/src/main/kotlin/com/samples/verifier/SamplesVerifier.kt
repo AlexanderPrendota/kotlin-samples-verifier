@@ -2,7 +2,6 @@ package com.samples.verifier
 
 import com.samples.verifier.model.ExecutionResult
 import com.samples.verifier.model.ParseConfiguration
-import java.io.File
 
 interface SamplesVerifier {
   /**
@@ -26,6 +25,14 @@ interface SamplesVerifier {
    * @throws CallException
    */
   fun collect(url: String, branch: String, type: FileType): Map<Code, ExecutionResult>
+
+  /**
+   * @param files files to be processed
+   * @param type [FileType]
+   * @return map with code as keys and results as values
+   * @throws CallException
+   */
+  fun collect(files: List<String>, type: FileType): Map<Code, ExecutionResult>
 
   /**
    * Execute code snippets from a git repository
@@ -83,13 +90,6 @@ interface SamplesVerifier {
    * @throws CallException
    */
   fun <T> parse(url: String, branch: String, type: FileType, processResult: (List<CodeSnippet>) -> T): T
-
-  /**
-   * @param directory base directory for files
-   * @param filenames list of filenames to be processed
-   * @param type [FileType]
-   */
-  fun processFiles(directory: File, filenames: List<String>, type: FileType): List<CodeSnippet>
 }
 
 enum class FileType {

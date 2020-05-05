@@ -1,3 +1,5 @@
+package com.samples.verifier
+
 import com.samples.verifier.internal.utils.processHTMLFile
 import com.samples.verifier.model.Attribute
 import com.samples.verifier.model.ParseConfiguration
