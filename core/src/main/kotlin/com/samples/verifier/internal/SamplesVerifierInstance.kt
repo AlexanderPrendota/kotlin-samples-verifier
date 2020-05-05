@@ -109,7 +109,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     return filenames
       .filter { fileRegex?.matches(it) != false && ignoreRegex?.matches(it) != true }
       .map { File(it) }
-      .flatMap {processFile(it, type) }
+      .flatMap { processFile(it, type) }
   }
 
   private fun processFile(file: File, type: FileType): List<CodeSnippet> {
@@ -131,5 +131,5 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     }
   }
 
-  private fun Regex.separatePattern() =  Regex(this.pattern + File.separator + ".*")
+  private fun Regex.separatePattern() = Regex(this.pattern + File.separator + ".*")
 }
