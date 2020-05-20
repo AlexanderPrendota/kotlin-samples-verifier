@@ -27,7 +27,7 @@ dependencies {
   implementation("org.eclipse.jgit:org.eclipse.jgit:5.7.0.202003110725-r")
   implementation("org.apache.directory.studio:org.apache.commons.io:2.4")
 
-  implementation("com.squareup.retrofit2:retrofit:2.8.1")
+  implementation("com.squareup.retrofit2:retrofit:2.9.0")
   implementation("com.squareup.retrofit2:converter-jaxb:2.8.1")
   implementation("com.squareup.retrofit2:converter-jackson:2.8.1")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.11.0")
