@@ -22,7 +22,7 @@ dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
 
   implementation(kotlin("stdlib-jdk8"))
-  implementation("com.vladsch.flexmark:flexmark-all:0.61.32")
+  implementation("com.vladsch.flexmark:flexmark-all:0.62.0")
   implementation("org.jsoup:jsoup:1.13.1")
   implementation("org.eclipse.jgit:org.eclipse.jgit:5.7.0.202003110725-r")
   implementation("org.apache.directory.studio:org.apache.commons.io:2.4")
