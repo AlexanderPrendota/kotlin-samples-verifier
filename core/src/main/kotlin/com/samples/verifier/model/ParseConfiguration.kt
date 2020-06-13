@@ -22,8 +22,8 @@ class ParseConfiguration() {
   var ignoreDirectory: Regex? = null
 
   /**
-   * hashset of html tags to be accepted as a code snippets, works for both html and md
-   * default (code) for MD so only fencedCodeBlocks are considered code snippets
+   * hashset of html tags to be accepted as code snippets, works for both html and md
+   * default (code) for MD so only fencedCodeBlocks are accepted as code snippets
    */
   var parseTags: HashSet<String>? = null
 

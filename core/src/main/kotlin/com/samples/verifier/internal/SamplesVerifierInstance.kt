@@ -27,7 +27,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     processRepository(url, branch, type).associate { it.code to executionHelper.executeCode(it) }
 
   override fun collect(files: List<String>, type: FileType): Map<Code, ExecutionResult> =
-    processFiles(File("") ,files, type).associate { it.code to executionHelper.executeCode(it) }
+    processFiles(File(""), files, type).associate { it.code to executionHelper.executeCode(it) }
 
   override fun check(url: String, branch: String, type: FileType) {
     var fail = false
@@ -53,7 +53,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     type: FileType,
     processResult: (CodeSnippet) -> T
   ): Map<Code, T> =
-    processFiles(File("") ,files, type).associate { it.code to processResult(it) }
+    processFiles(File(""), files, type).associate { it.code to processResult(it) }
 
   override fun <T> parse(url: String, branch: String, type: FileType, processResult: (List<CodeSnippet>) -> T): T {
     val snippets = processRepository(url, branch, type)
