@@ -27,6 +27,8 @@ interface SamplesVerifier {
   fun collect(url: String, branch: String, type: FileType): Map<Code, ExecutionResult>
 
   /**
+   * Collect execution results for code snippets from passed files
+   *
    * @param files files to be processed
    * @param type [FileType]
    * @return map with code as keys and results as values
@@ -59,11 +61,8 @@ interface SamplesVerifier {
   fun <T> parse(url: String, branch: String, type: FileType, processResult: (CodeSnippet) -> T): Map<Code, T>
 
   /**
-   * Parse code snippets from a git repository and process them using [processResult] function.
+   * Parse code snippets from passed files and process them using [processResult] function.
    *
-   * @param url git repository url
-   * @param branch can be specified as ref name (refs/heads/master),
-   *               branch name (master) or tag name (v1.2.3).
    * @param type [FileType]
    * @param files list of filenames to be processed
    * @param processResult function to process snippet of code
@@ -71,8 +70,6 @@ interface SamplesVerifier {
    * @throws CallException
    */
   fun <T> parse(
-    url: String,
-    branch: String,
     type: FileType,
     files: List<String>,
     processResult: (CodeSnippet) -> T
