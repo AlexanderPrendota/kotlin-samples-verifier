@@ -3,7 +3,9 @@ package com.samples.verifier.client
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.samples.verifier.FileType
 import com.samples.verifier.KotlinEnv
+import com.samples.verifier.SamplesVerifier
 import com.samples.verifier.SamplesVerifierFactory
+import com.samples.verifier.model.Attribute
 import com.sampullara.cli.Args
 import com.sampullara.cli.Argument
 import org.apache.log4j.BasicConfigurator
@@ -33,18 +35,8 @@ class Client {
 
     private fun check(args: Array<String>) {
       val options = CheckOptions()
-      try {
-        Args.parse(options, args)
-      } catch (e: Exception) {
-        System.err.println(e.message)
-        exitProcess(1)
-      }
 
-      val samplesVerifier =
-        SamplesVerifierFactory.create(compilerUrl = options.compilerUrl, kotlinEnv = options.kotlinEnv)
-          .configure {
-            snippetFlags = options.attributes.toHashSet()
-          }
+      val samplesVerifier = helper(args, options)
 
       samplesVerifier.check(
         options.repositoryUrl,
@@ -55,17 +47,8 @@ class Client {
 
     private fun collect(args: Array<String>) {
       val options = CollectOptions()
-      try {
-        Args.parse(options, args)
-      } catch (e: Exception) {
-        System.err.println(e.message)
-        exitProcess(1)
-      }
-      val samplesVerifier =
-        SamplesVerifierFactory.create(compilerUrl = options.compilerUrl, kotlinEnv = options.kotlinEnv)
-          .configure {
-            snippetFlags = options.attributes.toHashSet()
-          }
+
+      val samplesVerifier = helper(args, options)
 
       FileWriter(options.out).use {
         val mapper = jacksonObjectMapper()
@@ -78,6 +61,27 @@ class Client {
         it.write(mapper.writeValueAsString(results))
       }
     }
+
+    private fun <T : CheckOptions> helper(args: Array<String>, options: T): SamplesVerifier {
+      try {
+        Args.parse(options, args)
+      } catch (e: Exception) {
+        System.err.println(e.message)
+        exitProcess(1)
+      }
+
+      return SamplesVerifierFactory.create(compilerUrl = options.compilerUrl, kotlinEnv = options.kotlinEnv)
+        .configure {
+          snippetFlags = options.snippetFlags.toHashSet()
+          ignoreAttributes = options.ignoreAttributes?.map { s ->
+            val (a, b) = s.split(":", limit = 2)
+            Attribute(a, b)
+          }?.toHashSet()
+          parseDirectory = options.parseDirectory?.let { Regex(it) }
+          ignoreDirectory = options.ignoreDirectory?.let { Regex(it) }
+          parseTags = options.parseTags?.toHashSet()
+        }
+    }
   }
 
   class CollectOptions : CheckOptions() {
@@ -85,7 +89,7 @@ class Client {
     lateinit var out: String
   }
 
-  open class CheckOptions : CompilerOptions() {
+  open class CheckOptions : ParseOptions() {
     @set:Argument(
       "repository",
       alias = "r",
@@ -100,15 +104,45 @@ class Client {
       description = "git branch"
     )
     var branch: String = "master"
+  }
 
+  open class ParseOptions : CompilerOptions() {
     @set:Argument(
-      "attributes",
-      alias = "a",
+      "snippet-flags",
+      alias = "f",
       required = true,
       delimiter = ",",
-      description = "Attributes for code snippets, separated by \",\" like so: \"attr1,attr2\""
+      description = "Flags for code snippets, separated by \",\" like so: \"attr1,attr2\""
     )
-    lateinit var attributes: Array<String>
+    lateinit var snippetFlags: Array<String>
+
+    @set:Argument(
+      value = "ignore-attributes",
+      delimiter = ",",
+      description = "Attributes (name and value separated by \\\":\\\" (name:value)) for code snippets to ignore, " +
+        "separated by \\\",\\\" like so: \\\"attr1,attr2\\\""
+    )
+    var ignoreAttributes: Array<String>? = null
+
+    @set:Argument(
+      value = "parse-directory",
+      description = "Regexp for directories to be processed"
+    )
+    var parseDirectory: String? = null
+
+    @set:Argument(
+      value = "ignore-directory",
+      description = "Regexp for directories to be ignored"
+    )
+    var ignoreDirectory: String? = null
+
+    @set:Argument(
+      value = "parse-tags",
+      delimiter = ",",
+      description = "Html tags to be accepted as code snippets, works for both html and md\n" +
+        "default (code) for MD so only fencedCodeBlocks are accepted as code snippets"
+    )
+    var parseTags: Array<String>? = null
 
     @set:Argument("file-type", description = "MD or HTML (type of files to be processed)")
     var fileType: FileType = FileType.MD

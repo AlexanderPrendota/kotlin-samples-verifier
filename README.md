@@ -38,7 +38,7 @@ repositories {
 ```
 dependencies {
     ...
-    implementation("com.kotlin.samples.verifier:core:1.0.0")
+    implementation("com.kotlin.samples.verifier:core:1.1.0")
 }
 ```
 
@@ -48,32 +48,33 @@ dependencies {
 
 ```shell
 ./gradlew build -x test
+./gradlew installDist
 ```
-
-### Collect options:
-  | Name (alias) | Format | Description | Default |
-  | ------------- |:-------------:| :-----:|:-------------:|
-  |-attributes (-a) | [String[,]] | Attributes for code snippets, separated by "," like so: "attr1,attr2" | n/a |
-  |-compiler-url | [String] | Kotlin compiler URL | `http://localhost:8080/` |
-  |-file-type | [FileType] | MD or HTML (type of files to be processed) | MD |
-  |-kotlin-env | [KotlinEnv] | JS or JVM | JVM |
-  |-out (-o) | [String] | Filename to store results | n/a |
-  |-repository (-r) | [String] | Git repository URL with samples to execute | n/a |
   
-### Check options:
+### Options:
   | Name (alias) | Format | Description | Default |
   | ------------- |:-------------:| :-----:|:-------------:|
-  |-attributes (-a) | [String[,]] | Attributes for code snippets, separated by "," like so: "attr1,attr2"|  n/a |
+  |-snippet-flags (-f) | [String[,]] | Flags for code snippets, separated by \",\" like so: \"attr1,attr2\"|  n/a |
+  |-ignore-attributes | [String[,]] | Attributes (name and value separated by \\\":\\\" (name:value)) for code snippets to ignore, separated by \\\",\\\" like so: \\\"attr1,attr2\\\" | null |
+  |-parse-directory | [String] | Regexp for directories to be processed | null |
+  |-ignore-directory | [String] | Regexp for directories to be ignored | null |
+  |-parse-tags | [String[,]] | Html tags to be accepted as code snippets, works for both html and md. Default (code) for MD so only fencedCodeBlocks are accepted as code snippets | null |
   |-compiler-url | [String] | Kotlin compiler URL | `http://localhost:8080/` |
   |-file-type | [FileType] | MD or HTML (type of files to be processed) | MD |
   |-kotlin-env | [KotlinEnv] | JS or JVM | JVM |
   |-repository (-r) | [String] | Git repository URL with samples to execute| n/a |
   
+#### Only for collect:
+| Name (alias) | Format | Description | Default |
+| ------------- |:-------------:| :-----:|:-------------:|
+|-out (-o) | [String] | Filename to store results | n/a |
+
+  
   
 ### Example:
 
 ```shell
-./gradlew run --args="check -r https://github.com/AlexanderPrendota/kotlin-samples-verifier.git -a run-kotlin"
+./client/build/install/client/bin/client check -r https://github.com/AlexanderPrendota/kotlin-samples-verifier.git -f run-kotlin
 ```
 
 # Usage Example
@@ -94,4 +95,10 @@ samplesVerifier.check(repositoryURL, "master", FileType.MD)
 // get results as Map<ExecutionResult, Code>
 
 val results = samplesVerifier.collect(repositoryURL, "master", FileType.MD)
+
+// process files from list
+
+val filenames = listOf<String>(...)
+
+val results2 = samplesVerifier.collect(filenames, FileType.MD)
 ```
