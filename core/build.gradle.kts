@@ -5,7 +5,7 @@ plugins {
   kotlin("jvm") version "1.3.70"
   id("com.palantir.docker") version "0.25.0"
   id("com.palantir.docker-run") version "0.25.0"
-  id("org.jetbrains.dokka") version "0.10.1"
+  id("org.jetbrains.dokka") version "0.11.0-dev-59"
   id("com.jfrog.bintray") version "1.8.5"
   `maven-publish`
 }
