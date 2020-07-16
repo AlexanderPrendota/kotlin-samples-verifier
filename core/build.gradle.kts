@@ -24,7 +24,7 @@ dependencies {
   implementation(kotlin("stdlib-jdk8"))
   implementation("com.vladsch.flexmark:flexmark-all:0.62.0")
   implementation("org.jsoup:jsoup:1.13.1")
-  implementation("org.eclipse.jgit:org.eclipse.jgit:5.8.0.202006091008-r")
+  implementation("org.eclipse.jgit:org.eclipse.jgit:5.8.1.202007141445-r")
   implementation("org.apache.directory.studio:org.apache.commons.io:2.4")
 
   implementation("com.squareup.retrofit2:retrofit:2.9.0")
