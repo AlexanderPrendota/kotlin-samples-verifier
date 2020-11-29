@@ -30,7 +30,7 @@ dependencies {
   implementation("com.squareup.retrofit2:retrofit:2.9.0")
   implementation("com.squareup.retrofit2:converter-jaxb:2.9.0")
   implementation("com.squareup.retrofit2:converter-jackson:2.9.0")
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.11.3")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.0")
   implementation("com.squareup.okhttp3:okhttp:4.9.0")
 
   implementation("org.slf4j:slf4j-api:2.0.0-alpha1")
