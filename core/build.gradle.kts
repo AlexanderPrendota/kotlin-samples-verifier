@@ -18,8 +18,8 @@ repositories {
 }
 
 dependencies {
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
-  testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.1")
+  testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
 
   implementation(kotlin("stdlib-jdk8"))
   implementation("com.vladsch.flexmark:flexmark-all:0.62.2")
