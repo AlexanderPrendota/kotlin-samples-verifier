@@ -24,7 +24,7 @@ interface SamplesVerifier {
    * @return map with code as keys and results as values
    * @throws CallException
    */
-  fun collect(url: String, branch: String, type: FileType): Map<Code, ExecutionResult>
+  fun collect(url: String, branch: String, type: FileType, startCommit: String? = null, endCommit: String? = null): Map<Code, ExecutionResult>
 
   /**
    * Collect execution results for code snippets from passed files

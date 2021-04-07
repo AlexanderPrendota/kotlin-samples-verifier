@@ -23,7 +23,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     return this
   }
 
-  override fun collect(url: String, branch: String, type: FileType): Map<Code, ExecutionResult> =
+  override fun collect(url: String, branch: String, type: FileType, startCommit: String?, endCommit: String?): Map<Code, ExecutionResult> =
     processRepository(url, branch, type).associate { it.code to executionHelper.executeCode(it) }
 
   override fun collect(files: List<String>, type: FileType): Map<Code, ExecutionResult> =
@@ -64,7 +64,9 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     url: String,
     branch: String,
     type: FileType,
-    filenames: List<String>? = null
+    filenames: List<String>? = null,
+    startCommit: String? = null,
+    endCommit: String? = null
   ): List<CodeSnippet> {
     val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
     return try {

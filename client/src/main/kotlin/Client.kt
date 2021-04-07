@@ -56,7 +56,9 @@ class Client {
           samplesVerifier.collect(
             options.repositoryUrl,
             options.branch,
-            options.fileType
+            options.fileType,
+            if (options.commits.size > 0) options.commits[0] else null,
+            if (options.commits.size == 2) options.commits[1] else null
           )
         it.write(mapper.writeValueAsString(results))
       }
@@ -65,6 +67,9 @@ class Client {
     private fun <T : CheckOptions> helper(args: Array<String>, options: T): SamplesVerifier {
       try {
         Args.parse(options, args)
+        if(options.commits.size > 2 ) {
+          throw Exception("Commits param is invalid")
+        }
       } catch (e: Exception) {
         System.err.println(e.message)
         exitProcess(1)
@@ -104,6 +109,14 @@ class Client {
       description = "git branch"
     )
     var branch: String = "master"
+
+    @set:Argument(
+            value = "commits",
+            delimiter = ",",
+            description = "Considering only the changed files between two arbitrary commits \"commit1,commit2\"" +
+                          "or starting from \"commit1\" if commit2 on one side is omitted"
+    )
+    var commits: Array<String?> = Array<String?>(2) { null }
   }
 
   open class ParseOptions : CompilerOptions() {
