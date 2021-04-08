@@ -1,8 +1,10 @@
 package com.samples.verifier.internal
 
 import com.samples.verifier.*
+import com.samples.verifier.internal.utils.*
 import com.samples.verifier.internal.utils.ExecutionHelper
 import com.samples.verifier.internal.utils.cloneRepository
+import com.samples.verifier.internal.utils.getCommit
 import com.samples.verifier.internal.utils.processHTMLFile
 import com.samples.verifier.internal.utils.processMarkdownFile
 import com.samples.verifier.model.ExecutionResult
@@ -24,7 +26,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
   }
 
   override fun collect(url: String, branch: String, type: FileType, startCommit: String?, endCommit: String?): Map<Code, ExecutionResult> =
-    processRepository(url, branch, type).associate { it.code to executionHelper.executeCode(it) }
+    processRepository(url, branch, type, null, startCommit, endCommit ).associate { it.code to executionHelper.executeCode(it) }
 
   override fun collect(files: List<String>, type: FileType): Map<Code, ExecutionResult> =
     processFiles(File(""), files, type).associate { it.code to executionHelper.executeCode(it) }
@@ -69,11 +71,22 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     endCommit: String? = null
   ): List<CodeSnippet> {
     val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
+    var allFilenames :List<String>? = filenames
     return try {
       logger.info("Cloning repository...")
-      cloneRepository(dir, url, branch)
-      return if (filenames == null) processFiles(dir, type)
-      else processFiles(dir, filenames, type)
+      cloneRepository(dir, url, branch).use {
+        if( startCommit!= null) {
+          logger.info("Getting diff between $startCommit and ${endCommit ?: "HEAD"}")
+          val st = getCommit(it.repository, startCommit)
+          val end = getCommit(it.repository, endCommit ?: "HEAD")
+          allFilenames = getModifiedOrAddedFilenames(diff(it, st, end)) + allFilenames.orEmpty()
+        }
+      }
+
+      allFilenames?.forEach {logger.info("File ${it} is found in commit diff")}
+
+      return if (allFilenames == null) processFiles(dir, type)
+      else processFiles(dir, allFilenames!!, type)
     } catch (e: GitException) {
       logger.error("${e.message}")
       emptyList()
