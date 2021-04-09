@@ -71,6 +71,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     endCommit: String? = null
   ): List<CodeSnippet> {
     val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
+
     var allFilenames :List<String>? = filenames
     return try {
       logger.info("Cloning repository...")
@@ -79,7 +80,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
           logger.info("Getting diff between $startCommit and ${endCommit ?: "HEAD"}")
           val st = getCommit(it.repository, startCommit)
           val end = getCommit(it.repository, endCommit ?: "HEAD")
-          allFilenames = getModifiedOrAddedFilenames(diff(it, st, end)) + allFilenames.orEmpty()
+          allFilenames = getModifiedOrAddedFilenames(diff(it, st, end)).map {  File(it).toRelativeString(dir)   } + allFilenames.orEmpty()
         }
       }
 

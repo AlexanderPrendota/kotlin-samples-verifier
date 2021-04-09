@@ -77,7 +77,7 @@ internal fun diff(git: Git, commit1: String , commit2: String = "HEAD") : List<D
     return  git.diff().setOldTree( oldTreeIter ).setNewTree( newTreeIter ).call() }
 }
 
-internal fun getModifiedOrAddedFilenames(entryList : List<DiffEntry>) : List<String> {
+internal fun getModifiedOrAddedFilenames(entryList : List<DiffEntry>) : MutableList<String> {
   val res =  mutableListOf<String>()
   entryList.forEach { if (it.changeType == DiffEntry.ChangeType.ADD || it.changeType == DiffEntry.ChangeType.MODIFY ) res.add(it.newPath) }
   return res;
