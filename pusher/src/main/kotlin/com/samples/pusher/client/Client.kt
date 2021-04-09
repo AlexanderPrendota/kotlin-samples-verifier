@@ -26,7 +26,9 @@ class Client {
 } // Client
 
 class PusherOptions : CredentialsOption() {
-    @set:Argument("in", alias = "in", required = true, description = "Filename to read results")
+    @set:Argument("in",
+        required = true,
+        description = "Filename to read results")
     lateinit var input: String
 
     @set:Argument(
@@ -49,7 +51,6 @@ class PusherOptions : CredentialsOption() {
 open class CredentialsOption {
     @set:Argument(
         "username",
-        alias = "r",
         required = true,
         description = "Username or acces token for push to a target repository"
     )
@@ -57,7 +58,6 @@ open class CredentialsOption {
 
     @set:Argument(
         "passw",
-        alias = "r",
         description = "User's password for push  to a target repository"
     )
     var passw: String = ""
