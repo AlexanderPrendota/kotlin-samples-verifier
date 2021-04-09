@@ -11,10 +11,6 @@ class Client {
         @JvmStatic
         fun main(args: Array<String>) {
             BasicConfigurator.configure()
-            if (args.isEmpty()) {
-                System.err.println("Command is not specified: `check` or `collect` commands are supported.")
-                exitProcess(1)
-            }
 
             val options = PusherOptions()
             try {
@@ -24,12 +20,12 @@ class Client {
                 exitProcess(1)
             }
 
-            SamplesPusher(options.repositoryUrl).push(options.input)
+            SamplesPusher(options.repositoryUrl, options.path, options.username, options.passw).push(options.input)
         }
     }
 } // Client
 
-class PusherOptions {
+class PusherOptions : CredentialsOption() {
     @set:Argument("in", alias = "in", required = true, description = "Filename to read results")
     lateinit var input: String
 
@@ -43,12 +39,27 @@ class PusherOptions {
 
 
     @set:Argument(
-        "repository",
-        alias = "r",
-        required = true,
-        description = "Git repository to push"
+        "path",
+        alias = "p",
+        description = "Path relatively a target repository"
     )
-    lateinit var repositoryUrl: String
+    var path: String = ""
 }
 
+open class CredentialsOption {
+    @set:Argument(
+        "username",
+        alias = "r",
+        required = true,
+        description = "Username or acces token for push to a target repository"
+    )
+    lateinit var username: String
+
+    @set:Argument(
+        "passw",
+        alias = "r",
+        description = "User's password for push  to a target repository"
+    )
+    var passw: String = ""
+}
 

@@ -7,13 +7,15 @@ import com.samples.pusher.core.utils.cloneRepository
 import com.samples.verifier.Code
 import com.samples.verifier.GitException
 import com.samples.verifier.model.ExecutionResult
+import org.eclipse.egit.github.core.PullRequest
+import org.eclipse.egit.github.core.PullRequestMarker
+import org.eclipse.egit.github.core.RepositoryId
 import org.eclipse.jgit.transport.CredentialsProvider
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.slf4j.LoggerFactory
 import java.io.File
 import kotlin.random.Random.Default.nextInt
 
-import org.kohsuke.github.GHIssueBuilder
 
 internal class SamplesPusher(val url: String, val path: String,
                              val username: String, val password: String = "",
@@ -37,8 +39,8 @@ internal class SamplesPusher(val url: String, val path: String,
 
 
             logger.debug("Created the path ${dirSamples.path}")
-
-            git.checkout().setCreateBranch(true).setName("new-branch-${nextInt()}").call();
+            val branchName = "new-branch-${nextInt()}"
+            git.checkout().setCreateBranch(true).setName(branchName).call()
 
             var i = 0
             res.forEach { File(dirSamples, "${++i}.kt").writeText(it.key) }
@@ -46,15 +48,22 @@ internal class SamplesPusher(val url: String, val path: String,
             logger.debug(".kt files are  writed ")
 
 
-            git.add().addFilepattern(".").call();
-            git.commit().setAll(true).setAllowEmpty(true).setMessage("New samples").setCommitter("pusher", "bot@samples.kotlin.com").call();
+            git.add().addFilepattern(".").call()
+            git.commit().setAll(true).setAllowEmpty(true).setMessage("New samples").setCommitter("pusher", "bot@samples.kotlin.com").call()
 
             val credentialsProvider: CredentialsProvider = UsernamePasswordCredentialsProvider(username, password)
             git.push().setRemote(url).setCredentialsProvider(credentialsProvider).call()
 
             logger.debug(".kt are pushed")
 
-
+            val prServise = org.eclipse.egit.github.core.service.PullRequestService()
+            var pr = PullRequest()
+            pr.setTitle("New samples ")
+            pr.setBody("New files")
+            pr.setBase(PullRequestMarker().setLabel(branchName))
+            pr.setHead(PullRequestMarker().setLabel("master"))
+            pr = prServise.createPullRequest(RepositoryId.createFromUrl(url), pr)
+            logger.debug("push request  is created ${pr.url}")
 
         } catch (e: GitException) {
             logger.error("${e.message}")
