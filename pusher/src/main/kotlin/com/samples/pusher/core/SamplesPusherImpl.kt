@@ -10,6 +10,7 @@ import com.samples.verifier.model.ExecutionResult
 import org.eclipse.egit.github.core.PullRequest
 import org.eclipse.egit.github.core.PullRequestMarker
 import org.eclipse.egit.github.core.RepositoryId
+import org.eclipse.egit.github.core.client.GitHubClient
 import org.eclipse.jgit.transport.CredentialsProvider
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.slf4j.LoggerFactory
@@ -56,12 +57,20 @@ internal class SamplesPusher(val url: String, val path: String,
 
             logger.debug(".kt are pushed")
 
-            val prServise = org.eclipse.egit.github.core.service.PullRequestService()
+            val client = GitHubClient()
+
+            if(password.isEmpty())
+                client.setOAuth2Token(username)
+            else
+                client.setCredentials(username, password)
+
+            val prServise = org.eclipse.egit.github.core.service.PullRequestService(client)
             var pr = PullRequest()
             pr.setTitle("New samples ")
             pr.setBody("New files")
             pr.setBase(PullRequestMarker().setLabel(branchName))
             pr.setHead(PullRequestMarker().setLabel("master"))
+            logger.info(RepositoryId.createFromUrl(url).generateId())
             pr = prServise.createPullRequest(RepositoryId.createFromUrl(url), pr)
             logger.debug("push request  is created ${pr.url}")
 
