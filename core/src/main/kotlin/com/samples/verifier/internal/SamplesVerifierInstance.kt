@@ -135,7 +135,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     val fileRegex = configuration.parseDirectory?.separatePattern()
     val ignoreRegex = configuration.ignoreDirectory?.separatePattern()
     return filenames
-      .filter { fileRegex?.matches(it) != false && ignoreRegex?.matches(it) != true }
+      .filter { fileRegex?.matches(it) ?: true && !(ignoreRegex?.matches(it) ?: false) }
       .map { File(it) }
       .flatMap { processFile(directory, directory.resolve(it), type) }
   }
