@@ -80,7 +80,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
           logger.info("Getting diff between $startCommit and ${endCommit ?: "HEAD"}")
           val st = getCommit(it.repository, startCommit)
           val end = getCommit(it.repository, endCommit ?: "HEAD")
-          allFilenames = getModifiedOrAddedFilenames(diff(it, st, end)).map {  File(it).toRelativeString(dir)   } + allFilenames.orEmpty()
+          allFilenames = getModifiedOrAddedFilenames(diff(it, st, end)).map {  it  } + allFilenames.orEmpty()
         }
       }
 
@@ -111,7 +111,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     val fileTree = directory.walkTopDown()
       .onEnter {
         (configuration.ignoreDirectory == null ||
-          configuration.ignoreDirectory?.matches(it.relativeTo(directory).toString()) != true)
+          configuration.ignoreDirectory?.matches(it.toRelativeString(directory)) != true)
       }
     for (file in fileTree) {
       val dir = file.relativeTo(directory).toString()
