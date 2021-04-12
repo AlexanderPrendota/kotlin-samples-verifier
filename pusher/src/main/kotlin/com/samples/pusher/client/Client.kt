@@ -20,7 +20,9 @@ class Client {
                 exitProcess(1)
             }
 
-            SamplesPusher(options.repositoryUrl, options.path, options.username, options.passw).push(options.input)
+            SamplesPusher(options.repositoryUrl, options.path, options.username, options.passw)
+                .readConfigFromFile("config.properties")
+                .push(options.input)
         }
     }
 } // Client

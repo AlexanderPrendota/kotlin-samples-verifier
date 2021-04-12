@@ -6,7 +6,16 @@ import org.apache.log4j.Logger
 import org.eclipse.jgit.api.Git
 import java.io.File
 
-internal fun cloneRepository(dir: File, repositoryURL: String, branch: String): Git {
+class GitHelper(val git: Git ) : AutoCloseable {
+
+
+    override fun close() {
+        git.close()
+    }
+
+}
+
+internal fun cloneRepository(dir: File, repositoryURL: String, branch: String): Git{
     val level = Logger.getRootLogger().level
     Logger.getRootLogger().level = Level.ERROR
     try {
