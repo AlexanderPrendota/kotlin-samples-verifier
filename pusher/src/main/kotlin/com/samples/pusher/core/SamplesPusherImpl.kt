@@ -99,13 +99,13 @@ internal class SamplesPusher(val url: String, val path: String,
         return client
     }
 
-    private fun createPR(client:GitHubClient, baseBranch: String) {
+    private fun createPR(client:GitHubClient, headBranch: String) {
         val prServise = org.eclipse.egit.github.core.service.PullRequestService(client)
         var pr = PullRequest()
         pr.setTitle("New samples")
         pr.setBody("New files")
-        pr.setBase(PullRequestMarker().setLabel(baseBranch))
-        pr.setHead(PullRequestMarker().setLabel(configuraton.headBranchPR))
+        pr.setBase(PullRequestMarker().setLabel(configuraton.baseBranchPR))
+        pr.setHead(PullRequestMarker().setLabel(headBranch))
         logger.info(RepositoryId.createFromUrl(url).generateId())
         pr = prServise.createPullRequest(RepositoryId.createFromUrl(url), pr)
         logger.debug("Push request  is created ${pr.url}")

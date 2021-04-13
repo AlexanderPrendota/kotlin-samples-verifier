@@ -18,7 +18,7 @@ class PusherConfiruration {
     /**
      *     what branch will the pull request be created for
      */
-    var headBranchPR= "master"
+    var baseBranchPR= "master"
 
 
     fun readFromFile(filename: String) {
@@ -30,7 +30,7 @@ class PusherConfiruration {
         val config = builder.getConfiguration()
         committerName =  config.getString("committerName",  committerName)
         committerEmail = config.getString("committerEmail", committerEmail)
-        headBranchPR =   config.getString("headBranchPR",   headBranchPR)
+        baseBranchPR =   config.getString("baseBranchPR",   baseBranchPR)
 
     }
 
