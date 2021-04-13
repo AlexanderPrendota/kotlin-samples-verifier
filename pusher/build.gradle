@@ -30,6 +30,8 @@ dependencies {
 
     implementation group: 'org.eclipse.mylyn.github', name: 'org.eclipse.egit.github.core', version: '2.1.5'
     implementation group: 'org.apache.commons', name: 'commons-configuration2', version: '2.7'
+    implementation group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
+
     /*implementation("org.kohsuke:github-api:1.125")
     implementation group: 'org.eclipse.mylyn.github', name: 'org.eclipse.egit.github.core', version: '5.11.0.202103031150-rc1'
     implementation 'com.google.code.gson:gson:2.8.6' *//*for rg.eclipse.mylyn.github*/

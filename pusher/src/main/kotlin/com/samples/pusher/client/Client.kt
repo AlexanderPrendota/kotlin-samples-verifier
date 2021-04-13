@@ -4,6 +4,7 @@ import com.samples.pusher.core.SamplesPusher
 import com.sampullara.cli.Args
 import com.sampullara.cli.Argument
 import org.apache.log4j.BasicConfigurator
+import org.apache.log4j.PropertyConfigurator
 import kotlin.system.exitProcess
 
 class Client {
@@ -11,6 +12,7 @@ class Client {
         @JvmStatic
         fun main(args: Array<String>) {
             BasicConfigurator.configure()
+            PropertyConfigurator.configure("log4j.properties")
 
             val options = PusherOptions()
             try {
@@ -19,10 +21,15 @@ class Client {
                 System.err.println(e.message)
                 exitProcess(1)
             }
+            try {
+                SamplesPusher(options.repositoryUrl, options.path, options.username, options.passw)
+                    .readConfigFromFile("config.properties")
+                    .push(options.input)
+            } catch (e: Exception) { // TODO
+                System.err.println(e.message)
+                exitProcess(1)
+            }
 
-            SamplesPusher(options.repositoryUrl, options.path, options.username, options.passw)
-                .readConfigFromFile("config.properties")
-                .push(options.input)
         }
     }
 } // Client
