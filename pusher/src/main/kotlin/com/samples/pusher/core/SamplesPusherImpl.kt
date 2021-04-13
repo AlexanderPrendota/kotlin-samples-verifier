@@ -39,6 +39,7 @@ internal class SamplesPusher(val url: String, val path: String,
         val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
 
         try {
+            logger.debug("Cloning the repository... ")
             val git = cloneRepository(dir, url, branch)
             val dirSamples = prepareTargetPath(dir)
 
