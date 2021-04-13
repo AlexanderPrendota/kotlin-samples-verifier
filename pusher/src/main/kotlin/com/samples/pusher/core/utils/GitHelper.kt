@@ -16,8 +16,6 @@ class GitHelper(val git: Git ) : AutoCloseable {
 }
 
 internal fun cloneRepository(dir: File, repositoryURL: String, branch: String): Git{
-    val level = Logger.getRootLogger().level
-    Logger.getRootLogger().level = Level.ERROR
     try {
         dir.mkdirs()
         return Git.cloneRepository()
@@ -28,7 +26,5 @@ internal fun cloneRepository(dir: File, repositoryURL: String, branch: String): 
 
     } catch (e: Exception) {
         throw GitException(e)
-    } finally {
-        Logger.getRootLogger().level = level
     }
 }
