@@ -47,7 +47,7 @@ internal class SamplesPusher(val url: String, val path: String,
             val branchName = "new-branch-${nextInt()}"
             git.checkout().setCreateBranch(true).setName(branchName).call()
 
-            writeSnippets(dirSamples, res.snippets)
+            writeAndDeleteSnippets(dirSamples, res.snippets, res?.diff?.deletedFiles ?: emptyList<String>() )
             logger.debug(".kt files are  written")
 
             commitAndPush(git)
@@ -77,9 +77,20 @@ internal class SamplesPusher(val url: String, val path: String,
         logger.debug("Created the path ${dirSamples.path}")
         return dirSamples
     }
-    private fun writeSnippets(dirSamples:File, res:CollectionSamples) {
-        var i = 0
-        res.forEach { File(dirSamples, "${++i}.kt").writeText(it.key) }
+    private fun writeAndDeleteSnippets(dirSamples:File, res:CollectionSamples, deleteFiles: List<String>) {
+        val mng = SnippetManager(dirSamples)
+        deleteFiles.forEach{ mng.removeAllSnipets(it)}
+        res.forEach {
+            if (it.value.errors.isNotEmpty()) {
+                logger.error("Filename: ${it.value.fileName}")
+                logger.error("Code: \n${it.key}")
+                logger.error("Errors: \n${it.value.errors.joinToString("\n")}")
+                // Create issue!!!
+            } else {
+                mng.addSnippet(it.key, it.value.fileName)
+            }
+        }
+
     }
 
     private fun commitAndPush(git: Git) {
