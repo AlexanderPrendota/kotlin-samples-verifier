@@ -31,7 +31,7 @@ class SnippetManager(val dirSamples: File) {
         logger.info("Created a snippet file: ${newName}")
     }
 
-    fun removeAllSnipets(path: String) {
+    fun removeAllSnippets(path: String) {
         val filename = path.substringAfterLast('/').substringBeforeLast('.')
         val hash = md5(path)
         val directory = dirSamples.resolve(filename)
