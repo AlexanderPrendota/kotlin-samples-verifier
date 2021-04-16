@@ -9,6 +9,7 @@ import com.samples.verifier.model.Attribute
 import com.sampullara.cli.Args
 import com.sampullara.cli.Argument
 import org.apache.log4j.BasicConfigurator
+import org.apache.log4j.PropertyConfigurator
 import java.io.FileWriter
 import kotlin.system.exitProcess
 
@@ -17,6 +18,7 @@ class Client {
     @JvmStatic
     fun main(args: Array<String>) {
       BasicConfigurator.configure()
+      PropertyConfigurator.configure("log4j.properties")
       if (args.isEmpty()) {
         System.err.println("Command is not specified: `check` or `collect` commands are supported.")
         exitProcess(1)
