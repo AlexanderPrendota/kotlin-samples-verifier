@@ -7,6 +7,7 @@ import com.samples.pusher.core.model.PusherConfiruration
 import com.samples.pusher.core.utils.cloneRepository
 import com.samples.verifier.Code
 import com.samples.verifier.GitException
+import com.samples.verifier.model.CollectionOfRepository
 import com.samples.verifier.model.ExecutionResult
 import org.eclipse.egit.github.core.PullRequest
 import org.eclipse.egit.github.core.PullRequestMarker
@@ -35,7 +36,7 @@ internal class SamplesPusher(val url: String, val path: String,
     }
     fun push(inputFile: String) {
         val mapper = jacksonObjectMapper()
-        val res = mapper.readValue(File(inputFile), object : TypeReference<CollectionSamples>() {})
+        val res = mapper.readValue(File(inputFile), object : TypeReference<CollectionOfRepository>() {})
         val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
 
         try {
@@ -46,7 +47,7 @@ internal class SamplesPusher(val url: String, val path: String,
             val branchName = "new-branch-${nextInt()}"
             git.checkout().setCreateBranch(true).setName(branchName).call()
 
-            writeSnippets(dirSamples, res)
+            writeSnippets(dirSamples, res.snippets)
             logger.debug(".kt files are  written")
 
             commitAndPush(git)
@@ -67,10 +68,10 @@ internal class SamplesPusher(val url: String, val path: String,
     }
 
     private fun prepareTargetPath(repoDir: File): File {
-        val dirSamples = File(repoDir.path ).resolve(path)
+        val dirSamples = repoDir.resolve(path)
         if (!dirSamples.exists())
             if (!dirSamples.mkdirs()) {
-                throw Exception("Can't directory by path ${dirSamples.path}")
+                throw Exception("Can't creare directory by path ${dirSamples.path}")
             }
 
         logger.debug("Created the path ${dirSamples.path}")
