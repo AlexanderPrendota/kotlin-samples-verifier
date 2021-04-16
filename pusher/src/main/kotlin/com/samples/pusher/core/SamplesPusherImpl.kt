@@ -79,7 +79,7 @@ internal class SamplesPusher(val url: String, val path: String,
     }
     private fun writeAndDeleteSnippets(dirSamples:File, res:CollectionSamples, deleteFiles: List<String>) {
         val mng = SnippetManager(dirSamples)
-        deleteFiles.forEach{ mng.removeAllSnipets(it)}
+        deleteFiles.forEach{ mng.removeAllSnippets(it)}
         res.forEach {
             if (it.value.errors.isNotEmpty()) {
                 logger.error("Filename: ${it.value.fileName}")
