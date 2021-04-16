@@ -7,6 +7,8 @@ import com.samples.verifier.internal.utils.cloneRepository
 import com.samples.verifier.internal.utils.getCommit
 import com.samples.verifier.internal.utils.processHTMLFile
 import com.samples.verifier.internal.utils.processMarkdownFile
+import com.samples.verifier.model.CollectionOfRepository
+import com.samples.verifier.model.DiffOfRepository
 import com.samples.verifier.model.ExecutionResult
 import com.samples.verifier.model.ParseConfiguration
 import org.apache.commons.io.FileUtils
@@ -25,15 +27,18 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     return this
   }
 
-  override fun collect(url: String, branch: String, type: FileType, startCommit: String?, endCommit: String?): Map<Code, ExecutionResult> =
-    processRepository(url, branch, type, null, startCommit, endCommit ).associate { it.code to executionHelper.executeCode(it) }
+  override fun collect(url: String, branch: String, type: FileType, startCommit: String?, endCommit: String?): CollectionOfRepository {
+  val (diff, snippets) = processRepository(url, branch, type, null, startCommit, endCommit)
+  return CollectionOfRepository ( url, branch,
+                                  snippets.associate { it.code to executionHelper.executeCode(it) }, diff)
+}
 
   override fun collect(files: List<String>, type: FileType): Map<Code, ExecutionResult> =
     processFiles(File(""), files, type).associate { it.code to executionHelper.executeCode(it) }
 
   override fun check(url: String, branch: String, type: FileType) {
     var fail = false
-    val snippets = processRepository(url, branch, type)
+    val (_, snippets) = processRepository(url, branch, type)
     for (codeSnippet in snippets) {
       val result = executionHelper.executeCode(codeSnippet)
       val errors = result.errors
@@ -48,7 +53,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
   }
 
   override fun <T> parse(url: String, branch: String, type: FileType, processResult: (CodeSnippet) -> T): Map<Code, T> =
-    processRepository(url, branch, type).associate { it.code to processResult(it) }
+    processRepository(url, branch, type).second.associate { it.code to processResult(it) }
 
   override fun <T> parse(
     files: List<String>,
@@ -58,7 +63,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     processFiles(File(""), files, type).associate { it.code to processResult(it) }
 
   override fun <T> parse(url: String, branch: String, type: FileType, processResult: (List<CodeSnippet>) -> T): T {
-    val snippets = processRepository(url, branch, type)
+    val (_, snippets) = processRepository(url, branch, type)
     return processResult(snippets)
   }
 
@@ -69,10 +74,11 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     filenames: List<String>? = null,
     startCommit: String? = null,
     endCommit: String? = null
-  ): List<CodeSnippet> {
+  ): Pair<DiffOfRepository?, List<CodeSnippet>> {
     val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
 
     var allFilenames :List<String>? = filenames
+    var diffInfo:DiffOfRepository? = null
     return try {
       logger.info("Cloning repository...")
       cloneRepository(dir, url, branch).use {
@@ -80,20 +86,22 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
           logger.info("Getting diff between $startCommit and ${endCommit ?: "HEAD"}")
           val st = getCommit(it.repository, startCommit)
           val end = getCommit(it.repository, endCommit ?: "HEAD")
-          allFilenames = getModifiedOrAddedFilenames(diff(it, st, end)).map {  it  } + allFilenames.orEmpty()
+          val diff  = diff(it, st, end)
+          allFilenames = getModifiedOrAddedFilenames(diff).map {  it  } + allFilenames.orEmpty()
+          diffInfo = DiffOfRepository(startCommit, endCommit?: "HEAD", deletedFiles = getDeletedFilenames(diff) )
         }
       }
 
       allFilenames?.forEach {logger.info("File ${it} is found in commit diff")}
 
-      return if (allFilenames == null) processFiles(dir, type)
-      else processFiles(dir, allFilenames!!, type)
+      return if (allFilenames == null) Pair(diffInfo, processFiles(dir, type))
+      else Pair(diffInfo, processFiles(dir, allFilenames!!, type))
     } catch (e: GitException) {
       logger.error("${e.message}")
-      emptyList()
+      Pair(null, emptyList())
     } catch (e: IOException) {
       logger.error("${e.message}")
-      emptyList()
+      Pair(null, emptyList())
     } finally {
       if (dir.isDirectory) {
         FileUtils.deleteDirectory(dir)
