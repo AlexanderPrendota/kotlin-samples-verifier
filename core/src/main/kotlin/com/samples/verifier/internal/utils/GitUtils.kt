@@ -69,7 +69,7 @@ internal fun getModifiedOrAddedFilenames(entryList : List<DiffEntry>) : MutableL
 
 internal fun getDeletedFilenames(entryList : List<DiffEntry>) : MutableList<String> {
   val res =  mutableListOf<String>()
-  entryList.forEach { if (it.changeType == DiffEntry.ChangeType.DELETE ) res.add(it.newPath)
+  entryList.forEach { if (it.changeType == DiffEntry.ChangeType.DELETE ) res.add(it.oldPath)
                       else  if (it.changeType == DiffEntry.ChangeType.RENAME ) res.add(it.oldPath)}
   return res
 }

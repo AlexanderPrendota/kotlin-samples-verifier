@@ -124,7 +124,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     for (file in fileTree) {
       val dir = file.relativeTo(directory).toString()
       if (fileRegex?.matches(dir) == false) continue
-      snippets.addAll(processFile(file, type))
+      snippets.addAll(processFile(directory, file, type))
     }
     return snippets
   }
@@ -135,10 +135,10 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     return filenames
       .filter { fileRegex?.matches(it) != false && ignoreRegex?.matches(it) != true }
       .map { File(it) }
-      .flatMap { processFile(directory.resolve(it), type) }
+      .flatMap { processFile(directory, directory.resolve(it), type) }
   }
 
-  private fun processFile(file: File, type: FileType): List<CodeSnippet> {
+  private fun processFile(baseDir:File, file: File, type: FileType): List<CodeSnippet> {
     return when (type) {
       FileType.MD -> {
         if (file.extension == "md") {
@@ -153,7 +153,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         } else emptyList()
       }
     }.withIndex().map { code ->
-      CodeSnippet("${file.nameWithoutExtension}_${code.index}", code.value)
+      CodeSnippet(file.toRelativeString(baseDir), code.value)
     }
   }
 
