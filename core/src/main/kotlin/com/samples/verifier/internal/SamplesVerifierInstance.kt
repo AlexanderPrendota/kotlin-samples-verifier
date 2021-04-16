@@ -89,6 +89,8 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
           val diff  = diff(it, st, end)
           allFilenames = getModifiedOrAddedFilenames(diff).map {  it  } + allFilenames.orEmpty()
           diffInfo = DiffOfRepository(startCommit, endCommit?: "HEAD", deletedFiles = getDeletedFilenames(diff) )
+          if(endCommit!= null)
+            checkout(it, endCommit)
         }
       }
 

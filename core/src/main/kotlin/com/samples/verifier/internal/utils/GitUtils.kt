@@ -31,8 +31,19 @@ internal fun getCommit(repo: Repository, id: String = "HEAD") : RevCommit {
     throw GitException(e)
   }
 }
+/*
+	 * @param name
+	 *            the name of the branch or commit
+ */
+internal fun checkout(git: Git, name: String) {
+  try {
+    git.checkout().setName(name).call()
+  } catch (e: Exception) {
+    throw GitException(e)
+  }
+}
 
-internal fun diff(git: Git, commit1: RevCommit , commit2: RevCommit) : List<DiffEntry> {
+internal fun diff(git: Git, commit1: RevCommit, commit2: RevCommit) : List<DiffEntry> {
   try {
     val oldTree: ObjectId = commit1.getTree().getId()
     val newTree: ObjectId = commit2.getTree().getId()
