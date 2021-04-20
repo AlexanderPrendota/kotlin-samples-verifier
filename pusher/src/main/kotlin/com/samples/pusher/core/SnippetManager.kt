@@ -17,6 +17,9 @@ class SnippetManager(val dirSamples: File) {
 
     private val mapPath = mutableMapOf<String, PathEntity>()
 
+    var changed: Boolean = false
+        private set
+
     /*
     Create a snippet file in the folder dirSamples/FileName
     Example: for snippet from "src/test.html"
@@ -24,10 +27,17 @@ class SnippetManager(val dirSamples: File) {
      */
     fun addSnippet(code: String, path: String) {
         val filename = path.substringAfterLast('/').substringBeforeLast('.')
+
         val entity = mapPath.getOrPut(path) { PathEntity(0, md5(path)) }
         entity.countSnippets++
         val newName = "${entity.hash}.${entity.countSnippets}.kt"
-        File(dirSamples.resolve(filename), newName).writeText(code)
+        val targetDir = dirSamples.resolve(filename)
+        if(!targetDir.exists())
+            if(!targetDir.mkdirs())
+                throw Exception("Can't make dirs to ${targetDir.path}")
+
+        File(targetDir, newName).writeText(code)
+        changed = true
         logger.info("Created a snippet file: ${newName}")
     }
 
@@ -41,6 +51,7 @@ class SnippetManager(val dirSamples: File) {
                 if (!file.delete()) {
                     logger.error("Can't remove the snippet file: ${file.name}")
                 }
+                changed = true
                 logger.info("Removed the snippet file: ${file.name}")
             }
         }
