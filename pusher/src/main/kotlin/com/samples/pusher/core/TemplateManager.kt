@@ -27,11 +27,12 @@ class TemplateManager {
         val out =  StringWriter()
         temp.process(model, out)
 
-        val strs = out.toString().split("\n\n")
-
-        if(strs.size < 2)
+        val strs = out.toString()
+        val head = strs.substringBefore("\n\n")
+        val body = strs.substringAfter("\n\n")
+        if(body.isEmpty())
             throw Exception("Template has to contain header and body")
-        return Template(strs[0], strs[1])
+        return Template(head, body)
     }
 
 

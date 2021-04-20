@@ -9,8 +9,6 @@ import com.samples.verifier.Code
 import com.samples.verifier.GitException
 import com.samples.verifier.model.CollectionOfRepository
 import com.samples.verifier.model.ExecutionResult
-import freemarker.template.Configuration
-import freemarker.template.TemplateExceptionHandler
 import org.eclipse.egit.github.core.Issue
 import org.eclipse.egit.github.core.PullRequest
 import org.eclipse.egit.github.core.PullRequestMarker
@@ -21,7 +19,6 @@ import org.eclipse.jgit.transport.CredentialsProvider
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.io.StringWriter
 import java.util.*
 import kotlin.random.Random.Default.nextInt
 

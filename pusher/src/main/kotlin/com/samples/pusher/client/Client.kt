@@ -14,8 +14,6 @@ class Client {
             BasicConfigurator.configure()
             PropertyConfigurator.configure("log4j.properties")
 
-            configureTemplateEngine()
-
             val options = PusherOptions()
             try {
                 Args.parse(options, args)
@@ -34,10 +32,6 @@ class Client {
 
         }
 
-        @JvmStatic
-        private fun configureTemplateEngine() {
-
-        }
     }
 } // Client
 
