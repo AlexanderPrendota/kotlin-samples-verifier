@@ -28,7 +28,8 @@ class SnippetManager(val dirSamples: File) {
     fun addSnippet(code: String, path: String) {
         val filename = path.substringAfterLast('/').substringBeforeLast('.')
 
-        val entity = mapPath.getOrPut(path) { PathEntity(0, md5(path)) }
+        val entity = mapPath.getOrPut(path) { removeAllSnippets(path)
+                                              PathEntity(0, md5(path)) }
         entity.countSnippets++
         val newName = "${entity.hash}.${entity.countSnippets}.kt"
         val targetDir = dirSamples.resolve(filename)
