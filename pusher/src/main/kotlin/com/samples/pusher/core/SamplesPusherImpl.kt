@@ -9,6 +9,9 @@ import com.samples.verifier.Code
 import com.samples.verifier.GitException
 import com.samples.verifier.model.CollectionOfRepository
 import com.samples.verifier.model.ExecutionResult
+import freemarker.template.Configuration
+import freemarker.template.TemplateExceptionHandler
+import org.eclipse.egit.github.core.Issue
 import org.eclipse.egit.github.core.PullRequest
 import org.eclipse.egit.github.core.PullRequestMarker
 import org.eclipse.egit.github.core.RepositoryId
@@ -18,25 +21,37 @@ import org.eclipse.jgit.transport.CredentialsProvider
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.lang.Exception
+import java.io.StringWriter
+import java.util.*
 import kotlin.random.Random.Default.nextInt
+
 
 //data class AuthData(val name: String, val password: String)
 
 typealias CollectionSamples = Map<Code, ExecutionResult>
+data class Snippet (val code: Code, val res: ExecutionResult)
+
 internal class SamplesPusher(val url: String, val path: String,
                              val user: String, val password: String = "",
                              val branch: String = "master") {
     private val logger = LoggerFactory.getLogger("Samples Pusher")
 
     var configuraton: PusherConfiruration = PusherConfiruration()
+    private val templates = TemplateManager()
+
     fun readConfigFromFile(filename:String): SamplesPusher {
         configuraton.readFromFile(filename)
         return this
     }
+
     fun push(inputFile: String) {
         val mapper = jacksonObjectMapper()
         val res = mapper.readValue(File(inputFile), object : TypeReference<CollectionOfRepository>() {})
+        if(res.snippets.isEmpty() && res.diff?.deletedFiles.isNullOrEmpty()) {
+            logger.info("Nothing is to push")
+            return
+        }
+
         val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
 
         try {
@@ -47,14 +62,19 @@ internal class SamplesPusher(val url: String, val path: String,
             val branchName = "new-branch-${nextInt()}"
             git.checkout().setCreateBranch(true).setName(branchName).call()
 
-            writeAndDeleteSnippets(dirSamples, res.snippets, res?.diff?.deletedFiles ?: emptyList<String>() )
+            val mng = SnippetManager(dirSamples)
+            val errors = writeAndDeleteSnippets(mng, res.snippets, res?.diff?.deletedFiles ?: emptyList<String>() )
             logger.debug(".kt files are  written")
 
-            commitAndPush(git)
-            logger.debug(".kt are pushed")
-
             val client = createGHClient()
-            createPR(client, branchName)
+
+            if(!errors.isEmpty())
+                createIssue(client, errors, res, res.url)
+            if(mng.changed) {
+                commitAndPush(git)
+                logger.debug(".kt are pushed")
+                createPR(client, res, branchName)
+            }
 
         } catch (e: GitException) {
             logger.error("${e.message}")
@@ -77,20 +97,21 @@ internal class SamplesPusher(val url: String, val path: String,
         logger.debug("Created the path ${dirSamples.path}")
         return dirSamples
     }
-    private fun writeAndDeleteSnippets(dirSamples:File, res:CollectionSamples, deleteFiles: List<String>) {
-        val mng = SnippetManager(dirSamples)
-        deleteFiles.forEach{ mng.removeAllSnippets(it)}
+    private fun writeAndDeleteSnippets(manager: SnippetManager, res:CollectionSamples, deleteFiles: List<String>): List<Snippet> {
+        deleteFiles.forEach{ manager.removeAllSnippets(it)}
+        val errors =   mutableListOf<Snippet>()
         res.forEach {
             if (it.value.errors.isNotEmpty()) {
                 logger.error("Filename: ${it.value.fileName}")
                 logger.error("Code: \n${it.key}")
                 logger.error("Errors: \n${it.value.errors.joinToString("\n")}")
                 // Create issue!!!
+                errors.add(Snippet(it.key, it.value))
             } else {
-                mng.addSnippet(it.key, it.value.fileName)
+                manager.addSnippet(it.key, it.value.fileName)
             }
         }
-
+        return  errors
     }
 
     private fun commitAndPush(git: Git) {
@@ -111,16 +132,37 @@ internal class SamplesPusher(val url: String, val path: String,
         return client
     }
 
-    private fun createPR(client:GitHubClient, headBranch: String) {
+    private fun createPR(client:GitHubClient, res:CollectionOfRepository,  headBranch: String) {
+        val model = HashMap<String, Any>()
+        //root.put("snippets", report)
+        model.put("src", res)
+        val temp = templates.getTemplate("pr.md", model)
+
         val prServise = org.eclipse.egit.github.core.service.PullRequestService(client)
         var pr = PullRequest()
-        pr.setTitle("New samples")
-        pr.setBody("New files")
+        pr.setTitle(temp.head)
+        pr.setBody(temp.body)
         pr.setBase(PullRequestMarker().setLabel(configuraton.baseBranchPR))
         pr.setHead(PullRequestMarker().setLabel(headBranch))
         logger.info(RepositoryId.createFromUrl(url).generateId())
         pr = prServise.createPullRequest(RepositoryId.createFromUrl(url), pr)
-        logger.debug("Push request  is created ${pr.url}")
+        logger.debug("Push request  is created, url: ${pr.htmlUrl}")
     }
 
+
+    private fun createIssue(client:GitHubClient,  report: List<Snippet>, res:CollectionOfRepository, repositoryUrl: String = url) {
+        val model = HashMap<String, Any>()
+        model.put("snippets", report)
+        model.put("src", res)
+        val temp = templates.getTemplate("issue.md", model)
+
+        val issueServise = org.eclipse.egit.github.core.service.IssueService(client)
+        var issue = Issue()
+        issue.setTitle(temp.head)
+        issue.setBody(temp.body)
+
+        logger.info(RepositoryId.createFromUrl(repositoryUrl).generateId())
+        issue = issueServise.createIssue(RepositoryId.createFromUrl(repositoryUrl), issue)
+        logger.debug("Issue  is created, url: ${issue.htmlUrl}")
+    }
 }
