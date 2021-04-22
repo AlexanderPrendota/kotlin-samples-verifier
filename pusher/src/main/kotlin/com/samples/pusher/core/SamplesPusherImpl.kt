@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.samples.pusher.core.model.PusherConfiruration
 import com.samples.pusher.core.utils.cloneRepository
+import com.samples.pusher.core.utils.diffWorking
 import com.samples.verifier.Code
 import com.samples.verifier.GitException
 import com.samples.verifier.model.CollectionOfRepository
@@ -67,7 +68,9 @@ internal class SamplesPusher(val url: String, val path: String,
 
             if(!errors.isEmpty())
                 createIssue(client, errors, res, res.url)
-            if(mng.changed) {
+
+            val df = diffWorking(git)
+            if(df.isNotEmpty()) {
                 commitAndPush(git)
                 logger.debug(".kt are pushed")
                 createPR(client, res, branchName)
