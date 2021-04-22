@@ -46,6 +46,7 @@ class SnippetManager(val dirSamples: File) {
         val filename = path.substringAfterLast('/').substringBeforeLast('.')
         val hash = md5(path)
         val directory = dirSamples.resolve(filename)
+        var folder_empty = true
         val fileTree = directory.walkTopDown()
         for (file in fileTree) {
             if (file.name.startsWith(hash)) {
@@ -54,7 +55,11 @@ class SnippetManager(val dirSamples: File) {
                 }
                 changed = true
                 logger.info("Removed the snippet file: ${file.name}")
+            } else {
+                folder_empty = false
             }
         }
+        if(folder_empty)
+            directory.delete()
     }
 }
