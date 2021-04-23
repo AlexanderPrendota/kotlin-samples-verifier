@@ -62,7 +62,7 @@ open class CredentialsOption {
     @set:Argument(
         "username",
         required = true,
-        description = "Username or acces token for push to a target repository"
+        description = "Username or access token for push to a target repository"
     )
     lateinit var username: String
 
