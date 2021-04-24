@@ -12,6 +12,9 @@ import com.samples.verifier.model.DiffOfRepository
 import com.samples.verifier.model.ExecutionResult
 import com.samples.verifier.model.ParseConfiguration
 import org.apache.commons.io.FileUtils
+import org.apache.commons.io.FilenameUtils
+import org.eclipse.jgit.lib.Repository
+import org.eclipse.jgit.revwalk.RevCommit
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
@@ -77,27 +80,25 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
   ): Pair<DiffOfRepository?, List<CodeSnippet>> {
     val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
 
-    var allFilenames :List<String>? = filenames
-    var diffInfo:DiffOfRepository? = null
     return try {
-      logger.info("Cloning repository...")
-      cloneRepository(dir, url, branch).use {
-        if( startCommit!= null) {
+      if( startCommit!= null) {
+        logger.info("Cloning repository...")
+        cloneRepository(dir, url, branch, true).use {
           logger.info("Getting diff between $startCommit and ${endCommit ?: "HEAD"}")
           val st = getCommit(it.repository, startCommit)
           val end = getCommit(it.repository, endCommit ?: "HEAD")
           val diff  = diff(it, st, end)
-          allFilenames = getModifiedOrAddedFilenames(diff).map {  it  } + allFilenames.orEmpty()
-          diffInfo = DiffOfRepository(startCommit, endCommit?: "HEAD", deletedFiles = getDeletedFilenames(diff) )
-          if(endCommit!= null)
-            checkout(it, endCommit)
+          val allFilenames = getModifiedOrAddedFilenames(diff) + filenames.orEmpty()
+          allFilenames.forEach {logger.info("File ${it} is found in commit diff")}
+          val diffInfo = DiffOfRepository(startCommit, endCommit?: "HEAD", getDeletedFilenames(diff) )
+          return Pair(diffInfo, processRepoFiles(it.repository, end, allFilenames, type))
         }
+      } else {
+        logger.info("Cloning repository...")
+        cloneRepository(dir, url, branch)
+        if (filenames == null) Pair(null, processFiles(dir, type))
+        else Pair(null, processFiles(dir, filenames, type))
       }
-
-      allFilenames?.forEach {logger.info("File ${it} is found in commit diff")}
-
-      return if (allFilenames == null) Pair(diffInfo, processFiles(dir, type))
-      else Pair(diffInfo, processFiles(dir, allFilenames!!, type))
     } catch (e: GitException) {
       logger.error("${e.message}")
       Pair(null, emptyList())
@@ -131,12 +132,15 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     return snippets
   }
 
-  private fun processFiles(directory: File, filenames: List<String>, type: FileType): List<CodeSnippet> {
+  private fun filterFiles(filenames: List<String>): List<String> {
     val fileRegex = configuration.parseDirectory?.separatePattern()
     val ignoreRegex = configuration.ignoreDirectory?.separatePattern()
     return filenames
-      .filter { fileRegex?.matches(it) ?: true && !(ignoreRegex?.matches(it) ?: false) }
-      .map { File(it) }
+            .filter { fileRegex?.matches(it) ?: true && !(ignoreRegex?.matches(it) ?: false) }
+  }
+
+  private fun processFiles(directory: File, filenames: List<String>, type: FileType): List<CodeSnippet> {
+    return filterFiles(filenames).map { File(it) }
       .flatMap { processFile(directory, directory.resolve(it), type) }
   }
 
@@ -159,5 +163,30 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     }
   }
 
+  private fun processRepoFiles(repository: Repository, commit: RevCommit,  filenames: List<String>, type: FileType): List<CodeSnippet> {
+    return filterFiles(filenames)
+            .flatMap {val content = extractFiles(repository, commit, listOf(it))
+                      processFile(it, content.getOrDefault(it, ""), type) }
+  }
+
+  private fun processFile(filename: String, content: String, type: FileType): List<CodeSnippet> {
+    return when (type) {
+      FileType.MD -> {
+        if (FilenameUtils.getExtension(filename) == "md") {
+          logger.info("Processing ${filename}...")
+          processMarkdownText(content, configuration)
+        } else emptyList()
+      }
+      FileType.HTML -> {
+        if (FilenameUtils.getExtension(filename)== "html") {
+          logger.info("Processing ${filename}...")
+          processHTMLText(content, configuration)
+        } else emptyList()
+      }
+    }.withIndex().map { code ->
+      CodeSnippet(filename, code.value)
+    }
+
+  }
   private fun Regex.separatePattern() = Regex(this.pattern + File.separator + ".*")
 }
