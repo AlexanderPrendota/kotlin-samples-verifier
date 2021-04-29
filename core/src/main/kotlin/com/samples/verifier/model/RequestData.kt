@@ -16,6 +16,7 @@ enum class ProjectSeveriry {
   WARNING;
 }
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class ErrorDescriptor(
   val interval: TextInterval,
   val message: String,
