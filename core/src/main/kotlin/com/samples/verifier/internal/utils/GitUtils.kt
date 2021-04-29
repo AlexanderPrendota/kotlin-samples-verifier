@@ -7,7 +7,9 @@ import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.revwalk.RevCommit
 import org.eclipse.jgit.revwalk.RevWalk
+import org.eclipse.jgit.treewalk.AbstractTreeIterator
 import org.eclipse.jgit.treewalk.CanonicalTreeParser
+import org.eclipse.jgit.treewalk.FileTreeIterator
 import org.eclipse.jgit.treewalk.TreeWalk
 import org.eclipse.jgit.treewalk.filter.PathFilter
 import java.io.ByteArrayOutputStream
@@ -107,5 +109,21 @@ internal fun extractFiles(repository: Repository, commit: RevCommit, files: List
       oLoader.copyTo(contentToBytes)
       it to String(contentToBytes.toByteArray())
     }
+  }
+}
+
+/*
+* @return diff between head and actual working file directory
+* */
+internal fun diffWorking(git: Git) : List<DiffEntry> {
+  try {
+    val oldTree: ObjectId = git.repository.resolve("HEAD^{tree}")
+    git.repository.newObjectReader().use { reader ->
+      val oldTreeIter  = CanonicalTreeParser(null, reader, oldTree)
+      val newTreeIter: AbstractTreeIterator = FileTreeIterator(git.repository)
+      return git.diff().setOldTree(oldTreeIter).setNewTree(newTreeIter).call()
+    }
+  } catch (e: Exception) {
+    throw GitException(e)
   }
 }
