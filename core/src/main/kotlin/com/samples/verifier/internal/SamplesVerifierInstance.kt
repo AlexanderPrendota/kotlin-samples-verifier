@@ -2,11 +2,6 @@ package com.samples.verifier.internal
 
 import com.samples.verifier.*
 import com.samples.verifier.internal.utils.*
-import com.samples.verifier.internal.utils.ExecutionHelper
-import com.samples.verifier.internal.utils.cloneRepository
-import com.samples.verifier.internal.utils.getCommit
-import com.samples.verifier.internal.utils.processHTMLFile
-import com.samples.verifier.internal.utils.processMarkdownFile
 import com.samples.verifier.model.CollectionOfRepository
 import com.samples.verifier.model.DiffOfRepository
 import com.samples.verifier.model.ExecutionResult
@@ -31,10 +26,10 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
   }
 
   override fun collect(url: String, branch: String, type: FileType, startCommit: String?, endCommit: String?): CollectionOfRepository {
-  val (diff, snippets) = processRepository(url, branch, type, null, startCommit, endCommit)
-  return CollectionOfRepository ( url, branch,
-                                  snippets.associate { it.code to executionHelper.executeCode(it) }, diff)
-}
+    val (diff, snippets) = processRepository(url, branch, type, null, startCommit, endCommit)
+    return CollectionOfRepository(url, branch,
+      snippets.associate { it.code to executionHelper.executeCode(it) }, diff)
+  }
 
   override fun collect(files: List<String>, type: FileType): Map<Code, ExecutionResult> =
     processFiles(File(""), files, type).associate { it.code to executionHelper.executeCode(it) }
@@ -81,16 +76,16 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
 
     return try {
-      if( startCommit!= null) {
+      if (startCommit != null) {
         logger.info("Cloning repository...")
         cloneRepository(dir, url, branch, true).use {
           logger.info("Getting diff between $startCommit and ${endCommit ?: "HEAD"}")
           val st = getCommit(it.repository, startCommit)
           val end = getCommit(it.repository, endCommit ?: "HEAD")
-          val diff  = diff(it, st, end)
+          val diff = diff(it, st, end)
           val allFilenames = getModifiedOrAddedFilenames(diff) + filenames.orEmpty()
-          allFilenames.forEach {logger.info("File ${it} is found in commit diff")}
-          val diffInfo = DiffOfRepository(startCommit, endCommit?: "HEAD", getDeletedFilenames(diff) )
+          allFilenames.forEach { logger.info("File ${it} is found in commit diff") }
+          val diffInfo = DiffOfRepository(startCommit, endCommit ?: "HEAD", getDeletedFilenames(diff))
           return Pair(diffInfo, processRepoFiles(it.repository, end, allFilenames, type))
         }
       } else {
@@ -136,7 +131,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     val fileRegex = configuration.parseDirectory?.separatePattern()
     val ignoreRegex = configuration.ignoreDirectory?.separatePattern()
     return filenames
-            .filter { fileRegex?.matches(it) ?: true && !(ignoreRegex?.matches(it) ?: false) }
+      .filter { fileRegex?.matches(it) ?: true && !(ignoreRegex?.matches(it) ?: false) }
   }
 
   private fun processFiles(directory: File, filenames: List<String>, type: FileType): List<CodeSnippet> {
@@ -144,7 +139,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
       .flatMap { processFile(directory, directory.resolve(it), type) }
   }
 
-  private fun processFile(baseDir:File, file: File, type: FileType): List<CodeSnippet> {
+  private fun processFile(baseDir: File, file: File, type: FileType): List<CodeSnippet> {
     return when (type) {
       FileType.MD -> {
         if (file.extension == "md") {
@@ -163,10 +158,12 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     }
   }
 
-  private fun processRepoFiles(repository: Repository, commit: RevCommit,  filenames: List<String>, type: FileType): List<CodeSnippet> {
+  private fun processRepoFiles(repository: Repository, commit: RevCommit, filenames: List<String>, type: FileType): List<CodeSnippet> {
     return filterFiles(filenames)
-            .flatMap {val content = extractFiles(repository, commit, listOf(it))
-                      processFile(it, content.getOrDefault(it, ""), type) }
+      .flatMap {
+        val content = extractFiles(repository, commit, listOf(it))
+        processFile(it, content.getOrDefault(it, ""), type)
+      }
   }
 
   private fun processFile(filename: String, content: String, type: FileType): List<CodeSnippet> {
@@ -178,7 +175,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         } else emptyList()
       }
       FileType.HTML -> {
-        if (FilenameUtils.getExtension(filename)== "html") {
+        if (FilenameUtils.getExtension(filename) == "html") {
           logger.info("Processing ${filename}...")
           processHTMLText(content, configuration)
         } else emptyList()
@@ -188,5 +185,6 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     }
 
   }
+
   private fun Regex.separatePattern() = Regex(this.pattern + File.separator + ".*")
 }

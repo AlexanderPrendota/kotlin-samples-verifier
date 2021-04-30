@@ -30,6 +30,7 @@ internal fun processMarkdownText(text: String, parseConfiguration: ParseConfigur
   val htmlText = htmlRenderer.render(node)
   return processHTMLText(htmlText, parseConfiguration, FileType.MD)
 }
+
 internal fun processHTMLText(text: String, parseConfiguration: ParseConfiguration, fileType: FileType = FileType.HTML): List<Code> {
   val document = Jsoup.parse(text)
   val snippets = mutableListOf<Code>()
