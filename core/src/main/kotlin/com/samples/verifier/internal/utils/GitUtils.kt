@@ -38,9 +38,8 @@ internal fun getCommit(repo: Repository, id: String = "HEAD"): RevCommit {
   }
 }
 
-/*
-	 * @param name
-	 *            the name of the branch or commit
+/**
+ *  @param name the branch or commit
  */
 internal fun checkout(git: Git, name: String) {
   try {
@@ -64,8 +63,8 @@ internal fun diff(git: Git, commit1: RevCommit, commit2: RevCommit): List<DiffEn
   }
 }
 
-/*
-  Resolve can return the wrong tree if there is a branch and an abbreviated commit id with this name
+/**
+ * Resolve can return the wrong tree if there is a branch and an abbreviated commit id with this name
  */
 internal fun diff(git: Git, commit1: String, commit2: String = "HEAD"): List<DiffEntry> {
   val repo = git.getRepository()
@@ -97,8 +96,8 @@ internal fun getDeletedFilenames(entryList: List<DiffEntry>): MutableList<String
   return res
 }
 
-/*
-  Extract files from the bare repository
+/**
+ * Extract files from the bare repository
  */
 internal fun extractFiles(repository: Repository, commit: RevCommit, files: List<String>): Map<String, String> {
   val tree = commit.tree
@@ -118,9 +117,9 @@ internal fun extractFiles(repository: Repository, commit: RevCommit, files: List
   }
 }
 
-/*
-* @return diff between head and actual working file directory
-* */
+/**
+ * @return diff between head and actual working file directory
+*/
 internal fun diffWorking(git: Git): List<DiffEntry> {
   try {
     val oldTree: ObjectId = git.repository.resolve("HEAD^{tree}")
