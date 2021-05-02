@@ -6,11 +6,11 @@ plugins {
   id("com.palantir.docker") version "0.26.0"
   id("com.palantir.docker-run") version "0.25.0"
   id("org.jetbrains.dokka") version "0.10.1"
-  id("com.jfrog.bintray") version "1.8.5"
   `maven-publish`
+  signing
 }
 
-group = "com.kotlin.samples.verifier"
+group = "io.github.alexanderprendota"
 version = "1.1.0"
 
 repositories {
@@ -90,21 +90,51 @@ val sourcesJar by tasks.creating(Jar::class) {
   from(sourceSets.main.get().allSource)
 }
 
+signing {
+  sign(publishing.publications)
+}
+
 publishing {
+  repositories {
+    maven {
+      name = "sonatype"
+      setUrl("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+      credentials {
+        val ossrhUsername: String? by project
+        val ossrhPassword: String? by project
+        username = ossrhUsername
+        password = ossrhPassword
+      }
+    }
+  }
   publications {
     create<MavenPublication>("mavenJava") {
       from(components["java"])
       artifact(dokkaJar)
       artifact(sourcesJar)
+      artifactId = "kotlin-samples-verifier"
 
       pom {
         name.set("kotlin-samples-verifier")
         url.set("https://github.com/AlexanderPrendota/kotlin-samples-verifier")
+        description.set("A library that extracts embedded code snippets from HTML and Markdown files from a " +
+          "remote git repository, runs them and collects results.")
         developers {
           developer {
             id.set("myannyax")
             name.set("Mariia Filipanova")
             email.set("myannyax@gmail.com")
+          }
+          developer {
+            id.set("vmishenev")
+            name.set("Vadim Mishenev")
+            email.set("vad-mishenev-@yandex.ru")
+          }
+        }
+        licenses {
+          license {
+            name.set("Apache License, Version 2.0")
+            url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
           }
         }
         scm {
@@ -112,22 +142,7 @@ publishing {
           developerConnection.set("scm:git:https://github.com/AlexanderPrendota/kotlin-samples-verifier.git")
           url.set("https://github.com/AlexanderPrendota/kotlin-samples-verifier")
         }
-
       }
     }
-  }
-}
-
-bintray {
-  val bintrayUser: String? by project
-  val bintrayApiKey: String? by project
-  user = bintrayUser
-  key = bintrayApiKey
-  setPublications("mavenJava")
-  pkg.apply {
-    repo = "kotlin-samples-verifier"
-    name = "kotlin-samples-verifier"
-    setLicenses("Apache-2.0")
-    vcsUrl = "https://github.com/AlexanderPrendota/kotlin-samples-verifier.git"
   }
 }
