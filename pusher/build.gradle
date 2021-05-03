@@ -9,7 +9,7 @@ version '1.0-SNAPSHOT'
 repositories {
     mavenCentral()
     maven {
-        url "https://dl.bintray.com/myannyax/kotlin-samples-verifier"
+        url "https://s01.oss.sonatype.org/content/groups/staging/"
     }
     maven {
         url "https://repo.eclipse.org/content/repositories/egit-releases/"
@@ -26,13 +26,13 @@ dependencies {
     implementation("org.eclipse.jgit:org.eclipse.jgit:5.10.0.202012080955-r")
     implementation("org.slf4j:slf4j-api:2.0.0-alpha1")
     implementation("org.slf4j:slf4j-log4j12:2.0.0-alpha1")
-    implementation("com.kotlin.samples.verifier:core:1.1.0")
+
 
     implementation group: 'org.eclipse.mylyn.github', name: 'org.eclipse.egit.github.core', version: '2.1.5'
     implementation group: 'org.apache.commons', name: 'commons-configuration2', version: '2.7'
     implementation group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
     implementation group: 'org.freemarker', name: 'freemarker', version: '2.3.31'
-
+    implementation group: 'io.github.alexanderprendota', name: 'core', version: '1.0.0'
     /*implementation("org.kohsuke:github-api:1.125")
     implementation group: 'org.eclipse.mylyn.github', name: 'org.eclipse.egit.github.core', version: '5.11.0.202103031150-rc1'
     implementation 'com.google.code.gson:gson:2.8.6' *//*for rg.eclipse.mylyn.github*/
