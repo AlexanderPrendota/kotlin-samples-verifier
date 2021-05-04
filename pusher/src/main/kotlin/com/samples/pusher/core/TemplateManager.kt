@@ -40,7 +40,7 @@ class TemplateManager {
   }
 
   fun getBranchName(): String {
-    val sdf = SimpleDateFormat("dd.M.yy-hh:mm:ss")
+    val sdf = SimpleDateFormat("ddMMyyhhmmss")
     val currentDate = sdf.format(Date())
     return "new-samples-$currentDate"
   }
