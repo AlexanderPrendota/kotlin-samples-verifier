@@ -91,4 +91,41 @@ class SamplesVerifierTest {
     ).map { it.key to it.value }
     assertTrue(result.isNotEmpty())
   }
+
+  @Test
+  fun `collect changes test`() {
+    samplesVerifier.configure {
+      ignoreDirectory = null
+      parseDirectory = Regex("core/src/test/resources/testdir")
+    }
+    val results = listOf(FileType.MD, FileType.HTML).map {
+      samplesVerifier.collect(
+        "https://github.com/AlexanderPrendota/kotlin-samples-verifier.git",
+        "tests",
+        it,
+        "7a6f08e0fd3020e01f235412183046754779f240",
+        "4b33846d2783bfe471a11af3e3fc4ec95b10908f"
+      )
+    }
+
+    val deletedFilesExpectes = listOf<String>("client/src/main/kotlin/cmd.kt",
+      "core/src/main/kotlin/com/samples/verifier/SamplesExecutor.kt",
+      "core/src/main/kotlin/com/samples/verifier/SamplesParser.kt",
+      "core/src/main/kotlin/com/samples/verifier/internal/Config.kt",
+      "core/src/main/kotlin/com/samples/verifier/internal/SamplesExecutorInstance.kt",
+      "core/src/main/kotlin/com/samples/verifier/internal/SamplesParserInstance.kt").sorted()
+
+    val snippets = results.map { it.snippets.map { it.key to it.key } }
+    val expectedResult =
+      codeSnippetsFromRepo.filter { it.contains("4") || it.contains("5") }.sorted().map { it to it }
+    Assertions.assertEquals(
+      listOf(1, 2).map { expectedResult },
+      snippets.map { it.sortedBy { it.first } }
+    )
+
+    Assertions.assertEquals(
+      listOf(1, 2).map { deletedFilesExpectes },
+      results.map { it.diff?.deletedFiles?.sorted() }
+    )
+  }
 }

@@ -66,7 +66,10 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     if (fail) throw SamplesVerifierExceptions("Verification failed. Please see errors logs.")
   }
 
-  override fun <T> parse(url: String, branch: String, type: FileType, processResult: (CodeSnippet) -> T): Map<Code, T> =
+  override fun <T> parse(url: String,
+                         branch: String,
+                         type: FileType,
+                         processResult: (CodeSnippet) -> T): Map<Code, T> =
     processRepository(url, branch, type).associate { it.code to processResult(it) }
 
   override fun <T> parse(
