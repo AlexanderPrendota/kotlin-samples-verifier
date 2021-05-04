@@ -25,14 +25,26 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     return this
   }
 
+  data class RepoChanges(val diff: DiffOfRepository?, val snippets: List<CodeSnippet>)
+
   override fun collect(url: String,
                        branch: String,
                        type: FileType,
                        startCommit: String?,
                        endCommit: String?): CollectionOfRepository {
-    val (diff, snippets) = processRepository(url, branch, type, null, startCommit, endCommit)
-    return CollectionOfRepository(url, branch,
-      snippets.associate { it.code to executionHelper.executeCode(it) }, diff)
+    if (startCommit != null || endCommit != null) {
+      val changes = processRepository(url, branch, type, startCommit, endCommit)
+      return CollectionOfRepository(url = url,
+        branch = branch,
+        snippets = changes.snippets.associate { it.code to executionHelper.executeCode(it) },
+        diff = changes.diff)
+    } else {
+      val snippets = processRepository(url, branch, type)
+      return CollectionOfRepository(url = url,
+        branch = branch,
+        snippets = snippets.associate { it.code to executionHelper.executeCode(it) }
+      )
+    }
   }
 
   override fun collect(files: List<String>, type: FileType): Map<Code, ExecutionResult> =
@@ -40,7 +52,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
 
   override fun check(url: String, branch: String, type: FileType) {
     var fail = false
-    val (_, snippets) = processRepository(url, branch, type)
+    val snippets = processRepository(url, branch, type)
     for (codeSnippet in snippets) {
       val result = executionHelper.executeCode(codeSnippet)
       val errors = result.errors
@@ -55,7 +67,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
   }
 
   override fun <T> parse(url: String, branch: String, type: FileType, processResult: (CodeSnippet) -> T): Map<Code, T> =
-    processRepository(url, branch, type).second.associate { it.code to processResult(it) }
+    processRepository(url, branch, type).associate { it.code to processResult(it) }
 
   override fun <T> parse(
     files: List<String>,
@@ -65,7 +77,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     processFiles(File(""), files, type).associate { it.code to processResult(it) }
 
   override fun <T> parse(url: String, branch: String, type: FileType, processResult: (List<CodeSnippet>) -> T): T {
-    val (_, snippets) = processRepository(url, branch, type)
+    val snippets = processRepository(url, branch, type)
     return processResult(snippets)
   }
 
@@ -73,37 +85,19 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     url: String,
     branch: String,
     type: FileType,
-    filenames: List<String>? = null,
-    startCommit: String? = null,
-    endCommit: String? = null
-  ): Pair<DiffOfRepository?, List<CodeSnippet>> {
+    filenames: List<String>? = null
+  ): List<CodeSnippet> {
     val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
-
     return try {
-      logger.info("Cloning repository...")
-      if (startCommit != null) {
-        cloneRepository(dir, url, branch, true).use { git ->
-          logger.info("Getting diff between $startCommit and ${endCommit ?: "HEAD"}")
-          val st = getCommit(git.repository, startCommit)
-          val end = getCommit(git.repository, endCommit ?: "HEAD")
-          val diff = diff(git, st, end)
-          val diffFilenames = getModifiedOrAddedFilenames(diff)
-          diffFilenames.forEach { logger.info("File $it is found in commit diff") }
-          val allFilenames = diffFilenames + filenames.orEmpty()
-          val diffInfo = DiffOfRepository(startCommit, endCommit ?: "HEAD", getDeletedFilenames(diff))
-          return Pair(diffInfo, processRepoFiles(git.repository, end, allFilenames, type))
-        }
-      } else {
-        cloneRepository(dir, url, branch).close()
-        Pair(null,
-          if (filenames == null) processFiles(dir, type) else processFiles(dir, filenames, type))
-      }
+      cloneRepository(dir, url, branch).close()
+      if (filenames == null) processFiles(dir, type)
+      else processFiles(dir, filenames, type)
     } catch (e: GitException) {
       logger.error("${e.message}")
-      Pair(null, emptyList())
+      emptyList()
     } catch (e: IOException) {
       logger.error("${e.message}")
-      Pair(null, emptyList())
+      emptyList()
     } finally {
       if (dir.isDirectory) {
         FileUtils.deleteDirectory(dir)
@@ -111,6 +105,40 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         dir.delete()
       }
     }
+  }
+
+  private fun processRepository(url: String,
+                                branch: String,
+                                type: FileType,
+                                startCommit: String?,
+                                endCommit: String?,
+                                filenames: List<String>? = null): RepoChanges {
+    val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
+    try {
+      logger.info("Cloning repository...")
+      cloneRepository(dir, url, branch, true).use { git ->
+        logger.info("Getting diff between $startCommit and ${endCommit ?: "HEAD"}")
+        val st = if (startCommit == null) null else getCommit(git.repository, startCommit)
+        val end = getCommit(git.repository, endCommit ?: "HEAD")
+        val diff = diff(git, st, end)
+        val diffFilenames = getModifiedOrAddedFilenames(diff)
+        diffFilenames.forEach { logger.info("File $it is found in commit diff") }
+        val allFilenames = diffFilenames + filenames.orEmpty()
+        val diffInfo = DiffOfRepository(startCommit ?: "", endCommit ?: "HEAD", getDeletedFilenames(diff))
+        return RepoChanges(diffInfo, processRepoFiles(git.repository, end, allFilenames, type))
+      }
+    } catch (e: GitException) {
+      logger.error("${e.message}")
+    } catch (e: IOException) {
+      logger.error("${e.message}")
+    } finally {
+      if (dir.isDirectory) {
+        FileUtils.deleteDirectory(dir)
+      } else {
+        dir.delete()
+      }
+    }
+    return RepoChanges(null, emptyList())
   }
 
   private fun processFiles(directory: File, type: FileType): List<CodeSnippet> {
@@ -131,15 +159,23 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     return snippets
   }
 
-  private fun filterFiles(filenames: List<String>): List<String> {
+  private fun filterFilesDirs(filenames: List<String>): List<String> {
     val fileRegex = configuration.parseDirectory?.separatePattern()
     val ignoreRegex = configuration.ignoreDirectory?.separatePattern()
     return filenames
       .filter { fileRegex?.matches(it) ?: true && !(ignoreRegex?.matches(it) ?: false) }
   }
 
+  private fun filterFilesType(filenames: List<String>, type: FileType): List<String> {
+    return filenames
+      .filter {
+        type == FileType.HTML && FilenameUtils.getExtension(it) == "html"
+          || type == FileType.MD && FilenameUtils.getExtension(it) == "md"
+      }
+  }
+
   private fun processFiles(directory: File, filenames: List<String>, type: FileType): List<CodeSnippet> {
-    return filterFiles(filenames).map { File(it) }
+    return filterFilesDirs(filenames).map { File(it) }
       .flatMap { processFile(directory, directory.resolve(it), type) }
   }
 
@@ -166,9 +202,9 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
                                commit: RevCommit,
                                filenames: List<String>,
                                type: FileType): List<CodeSnippet> {
-    return filterFiles(filenames)
+    return filterFilesType(filterFilesDirs(filenames), type) // we don't need to extract with another extensions
       .flatMap {
-        val content = extractFiles(repository, commit, listOf(it))
+        val content = extractFiles(repository, commit, listOf(it)) // extract not all files at once, only one
         processFile(it, content.getOrDefault(it, ""), type)
       }
   }

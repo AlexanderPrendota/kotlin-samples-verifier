@@ -7,10 +7,7 @@ import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.revwalk.RevCommit
 import org.eclipse.jgit.revwalk.RevWalk
-import org.eclipse.jgit.treewalk.AbstractTreeIterator
-import org.eclipse.jgit.treewalk.CanonicalTreeParser
-import org.eclipse.jgit.treewalk.FileTreeIterator
-import org.eclipse.jgit.treewalk.TreeWalk
+import org.eclipse.jgit.treewalk.*
 import org.eclipse.jgit.treewalk.filter.PathFilter
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -49,12 +46,17 @@ internal fun checkout(git: Git, name: String) {
   }
 }
 
-internal fun diff(git: Git, commit1: RevCommit, commit2: RevCommit): List<DiffEntry> {
+internal fun diff(git: Git, startCommit: RevCommit?, endCommit: RevCommit): List<DiffEntry> {
   try {
-    val oldTree: ObjectId = commit1.getTree().getId()
-    val newTree: ObjectId = commit2.getTree().getId()
+    val oldTree: ObjectId? = startCommit?.getTree()?.getId()
+    val newTree: ObjectId = endCommit.getTree().getId()
     git.repository.newObjectReader().use { reader ->
-      val oldTreeIter = CanonicalTreeParser(null, reader, oldTree)
+      val oldTreeIter =
+        if (oldTree == null)
+          EmptyTreeIterator()
+        else
+          CanonicalTreeParser(null, reader, oldTree)
+
       val newTreeIter = CanonicalTreeParser(null, reader, newTree)
       return git.diff().setOldTree(oldTreeIter).setNewTree(newTreeIter).call()
     }
@@ -66,10 +68,10 @@ internal fun diff(git: Git, commit1: RevCommit, commit2: RevCommit): List<DiffEn
 /**
  * Resolve can return the wrong tree if there is a branch and an abbreviated commit id with this name
  */
-internal fun diff(git: Git, commit1: String, commit2: String = "HEAD"): List<DiffEntry> {
+internal fun diff(git: Git, startCommit: String, endCommit: String = "HEAD"): List<DiffEntry> {
   val repo = git.getRepository()
-  val oldTree: ObjectId = repo.resolve("$commit1^{tree}")
-  val newTree: ObjectId = repo.resolve("$commit2^{tree}")
+  val oldTree: ObjectId = repo.resolve("$startCommit^{tree}")
+  val newTree: ObjectId = repo.resolve("$endCommit^{tree}")
 
   git.repository.newObjectReader().use { reader ->
     val oldTreeIter = CanonicalTreeParser(null, reader, oldTree)
@@ -78,22 +80,20 @@ internal fun diff(git: Git, commit1: String, commit2: String = "HEAD"): List<Dif
   }
 }
 
-internal fun getModifiedOrAddedFilenames(entryList: List<DiffEntry>): MutableList<String> {
-  val res = mutableListOf<String>()
-  entryList.forEach {
-    if (it.changeType == DiffEntry.ChangeType.ADD || it.changeType == DiffEntry.ChangeType.MODIFY
-      || it.changeType == DiffEntry.ChangeType.RENAME) res.add(it.newPath)
-  }
-  return res
+internal fun getModifiedOrAddedFilenames(entryList: List<DiffEntry>): List<String> {
+  return entryList
+    .filter {
+      it.changeType == DiffEntry.ChangeType.ADD ||
+        it.changeType == DiffEntry.ChangeType.MODIFY ||
+        it.changeType == DiffEntry.ChangeType.RENAME
+    }
+    .map { it.newPath }
 }
 
-internal fun getDeletedFilenames(entryList: List<DiffEntry>): MutableList<String> {
-  val res = mutableListOf<String>()
-  entryList.forEach {
-    if (it.changeType == DiffEntry.ChangeType.DELETE) res.add(it.oldPath)
-    else if (it.changeType == DiffEntry.ChangeType.RENAME) res.add(it.oldPath)
-  }
-  return res
+internal fun getDeletedFilenames(entryList: List<DiffEntry>): List<String> {
+  return entryList
+    .filter { it.changeType == DiffEntry.ChangeType.DELETE || it.changeType == DiffEntry.ChangeType.RENAME }
+    .map { it.oldPath }
 }
 
 /**
@@ -119,7 +119,7 @@ internal fun extractFiles(repository: Repository, commit: RevCommit, files: List
 
 /**
  * @return diff between head and actual working file directory
-*/
+ */
 internal fun diffWorking(git: Git): List<DiffEntry> {
   try {
     val oldTree: ObjectId = git.repository.resolve("HEAD^{tree}")

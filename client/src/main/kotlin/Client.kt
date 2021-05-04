@@ -54,13 +54,14 @@ class Client {
 
       FileWriter(options.out).use {
         val mapper = jacksonObjectMapper()
+        val commits = options.commits
         val results =
           samplesVerifier.collect(
             options.repositoryUrl,
             options.branch,
             options.fileType,
-            if (options.commits.size > 0) options.commits[0] else null,
-            if (options.commits.size == 2) options.commits[1] else null
+            if (commits.size > 0) commits[0] else null,
+            if (commits.size == 2) commits[1] else null
           )
         it.write(mapper.writeValueAsString(results))
       }
@@ -69,7 +70,7 @@ class Client {
     private fun <T : CheckOptions> helper(args: Array<String>, options: T): SamplesVerifier {
       try {
         Args.parse(options, args)
-        if(options.commits.size > 2 ) {
+        if (options.commits.size > 2) {
           throw Exception("Commits param is invalid")
         }
       } catch (e: Exception) {
@@ -113,10 +114,10 @@ class Client {
     var branch: String = "master"
 
     @set:Argument(
-            value = "commits",
-            delimiter = ",",
-            description = "Considering only the changed files between two arbitrary commits \"commit1,commit2\"" +
-                          "or starting from \"commit1\" if commit2 on one side is omitted"
+      value = "commits",
+      delimiter = ",",
+      description = "Considering only the changed files between two arbitrary commits \"commit1,commit2\"" +
+        "or starting from \"commit1\" if commit2 on one side is omitted"
     )
     var commits: Array<String?> = Array<String?>(2) { null }
   }
