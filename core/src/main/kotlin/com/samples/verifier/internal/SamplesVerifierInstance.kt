@@ -27,20 +27,24 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
 
   data class RepoChanges(val diff: DiffOfRepository?, val snippets: List<CodeSnippet>)
 
-  override fun collect(url: String,
-                       branch: String,
-                       type: FileType,
-                       startCommit: String?,
-                       endCommit: String?): CollectionOfRepository {
-    if (startCommit != null || endCommit != null) {
+  override fun collect(
+    url: String,
+    branch: String,
+    type: FileType,
+    startCommit: String?,
+    endCommit: String?
+  ): CollectionOfRepository {
+    return if (startCommit != null || endCommit != null) {
       val changes = processRepository(url, branch, type, startCommit, endCommit)
-      return CollectionOfRepository(url = url,
+      CollectionOfRepository(
+        url = url,
         branch = branch,
         snippets = changes.snippets.associate { it.code to executionHelper.executeCode(it) },
-        diff = changes.diff)
+        diff = changes.diff
+      )
     } else {
       val snippets = processRepository(url, branch, type)
-      return CollectionOfRepository(url = url,
+      CollectionOfRepository(url = url,
         branch = branch,
         snippets = snippets.associate { it.code to executionHelper.executeCode(it) }
       )
@@ -66,11 +70,12 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     if (fail) throw SamplesVerifierExceptions("Verification failed. Please see errors logs.")
   }
 
-  override fun <T> parse(url: String,
-                         branch: String,
-                         type: FileType,
-                         processResult: (CodeSnippet) -> T): Map<Code, T> =
-    processRepository(url, branch, type).associate { it.code to processResult(it) }
+  override fun <T> parse(
+    url: String,
+    branch: String,
+    type: FileType,
+    processResult: (CodeSnippet) -> T
+  ): Map<Code, T> = processRepository(url, branch, type).associate { it.code to processResult(it) }
 
   override fun <T> parse(
     files: List<String>,
@@ -110,12 +115,14 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     }
   }
 
-  private fun processRepository(url: String,
-                                branch: String,
-                                type: FileType,
-                                startCommit: String?,
-                                endCommit: String?,
-                                filenames: List<String>? = null): RepoChanges {
+  private fun processRepository(
+    url: String,
+    branch: String,
+    type: FileType,
+    startCommit: String?,
+    endCommit: String?,
+    filenames: List<String>? = null
+  ): RepoChanges {
     val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
     try {
       logger.info("Cloning repository...")
@@ -165,16 +172,14 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
   private fun filterFilesDirs(filenames: List<String>): List<String> {
     val fileRegex = configuration.parseDirectory?.separatePattern()
     val ignoreRegex = configuration.ignoreDirectory?.separatePattern()
-    return filenames
-      .filter { fileRegex?.matches(it) ?: true && !(ignoreRegex?.matches(it) ?: false) }
+    return filenames.filter { fileRegex?.matches(it) ?: true && !(ignoreRegex?.matches(it) ?: false) }
   }
 
   private fun filterFilesType(filenames: List<String>, type: FileType): List<String> {
-    return filenames
-      .filter {
-        type == FileType.HTML && FilenameUtils.getExtension(it) == "html"
-          || type == FileType.MD && FilenameUtils.getExtension(it) == "md"
-      }
+    return filenames.filter {
+      type == FileType.HTML && FilenameUtils.getExtension(it) == "html"
+        || type == FileType.MD && FilenameUtils.getExtension(it) == "md"
+    }
   }
 
   private fun processFiles(directory: File, filenames: List<String>, type: FileType): List<CodeSnippet> {
@@ -201,10 +206,12 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     }
   }
 
-  private fun processRepoFiles(repository: Repository,
-                               commit: RevCommit,
-                               filenames: List<String>,
-                               type: FileType): List<CodeSnippet> {
+  private fun processRepoFiles(
+    repository: Repository,
+    commit: RevCommit,
+    filenames: List<String>,
+    type: FileType
+  ): List<CodeSnippet> {
     return filterFilesType(filterFilesDirs(filenames), type) // we don't need to extract with another extensions
       .flatMap {
         val content = extractFiles(repository, commit, listOf(it)) // extract not all files at once, only one

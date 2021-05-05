@@ -29,7 +29,13 @@ interface SamplesVerifier {
    *                                  deleted files between commits
    * @throws CallException
    */
-  fun collect(url: String, branch: String, type: FileType, startCommit: String? = null, endCommit: String? = null): CollectionOfRepository
+  fun collect(
+    url: String,
+    branch: String,
+    type: FileType,
+    startCommit: String? = null,
+    endCommit: String? = null
+  ): CollectionOfRepository
 
   /**
    * Collect execution results for code snippets from passed files

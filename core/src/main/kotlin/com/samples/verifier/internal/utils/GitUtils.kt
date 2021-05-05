@@ -48,15 +48,13 @@ internal fun checkout(git: Git, name: String) {
 
 internal fun diff(git: Git, startCommit: RevCommit?, endCommit: RevCommit): List<DiffEntry> {
   try {
-    val oldTree: ObjectId? = startCommit?.getTree()?.getId()
-    val newTree: ObjectId = endCommit.getTree().getId()
+    val oldTree: ObjectId? = startCommit?.tree?.id
+    val newTree: ObjectId = endCommit.tree.id
     git.repository.newObjectReader().use { reader ->
-      val oldTreeIter =
-        if (oldTree == null)
-          EmptyTreeIterator()
-        else
-          CanonicalTreeParser(null, reader, oldTree)
-
+      val oldTreeIter = if (oldTree == null)
+        EmptyTreeIterator()
+      else
+        CanonicalTreeParser(null, reader, oldTree)
       val newTreeIter = CanonicalTreeParser(null, reader, newTree)
       return git.diff().setOldTree(oldTreeIter).setNewTree(newTreeIter).call()
     }
@@ -69,7 +67,7 @@ internal fun diff(git: Git, startCommit: RevCommit?, endCommit: RevCommit): List
  * Resolve can return the wrong tree if there is a branch and an abbreviated commit id with this name
  */
 internal fun diff(git: Git, startCommit: String, endCommit: String = "HEAD"): List<DiffEntry> {
-  val repo = git.getRepository()
+  val repo = git.repository
   val oldTree: ObjectId = repo.resolve("$startCommit^{tree}")
   val newTree: ObjectId = repo.resolve("$endCommit^{tree}")
 
@@ -102,17 +100,17 @@ internal fun getDeletedFilenames(entryList: List<DiffEntry>): List<String> {
 internal fun extractFiles(repository: Repository, commit: RevCommit, files: List<String>): Map<String, String> {
   val tree = commit.tree
   TreeWalk(repository).use { treeWalk ->
-    return files.associate {
+    return files.associateWith {
       treeWalk.reset()
       treeWalk.addTree(tree)
       treeWalk.isRecursive = true
       treeWalk.filter = PathFilter.create(it)
-      check(treeWalk.next()) { "Can't find expected file ${it} in a repository" }
+      check(treeWalk.next()) { "Can't find expected file $it in a repository" }
       val objectId = treeWalk.getObjectId(0)
       val oLoader = repository.open(objectId)
       val contentToBytes = ByteArrayOutputStream()
       oLoader.copyTo(contentToBytes)
-      it to String(contentToBytes.toByteArray())
+      String(contentToBytes.toByteArray())
     }
   }
 }
