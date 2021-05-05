@@ -1,5 +1,6 @@
 package com.samples.verifier
 
+import com.samples.verifier.model.CollectionOfRepository
 import com.samples.verifier.model.ExecutionResult
 import com.samples.verifier.model.ParseConfiguration
 
@@ -16,15 +17,19 @@ interface SamplesVerifier {
 
   /**
    * Collect execution results for code snippets from a git repository
+   * Can consider only changes between the commits
    *
    * @param url git repository url
    * @param branch can be specified as ref name (refs/heads/master),
    *               branch name (master) or tag name (v1.2.3).
    * @param type [FileType]
-   * @return map with code as keys and results as values
+   * @param startCommit
+   * @param endCommit
+   * @return [CollectionOfRepository] including map with code as keys and results as values,
+   *                                  deleted files between commits
    * @throws CallException
    */
-  fun collect(url: String, branch: String, type: FileType): Map<Code, ExecutionResult>
+  fun collect(url: String, branch: String, type: FileType, startCommit: String? = null, endCommit: String? = null): CollectionOfRepository
 
   /**
    * Collect execution results for code snippets from passed files

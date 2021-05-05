@@ -9,6 +9,7 @@ import com.samples.verifier.model.Attribute
 import com.sampullara.cli.Args
 import com.sampullara.cli.Argument
 import org.apache.log4j.BasicConfigurator
+import org.apache.log4j.PropertyConfigurator
 import java.io.FileWriter
 import kotlin.system.exitProcess
 
@@ -17,6 +18,7 @@ class Client {
     @JvmStatic
     fun main(args: Array<String>) {
       BasicConfigurator.configure()
+      PropertyConfigurator.configure("log4j.properties")
       if (args.isEmpty()) {
         System.err.println("Command is not specified: `check` or `collect` commands are supported.")
         exitProcess(1)
@@ -52,11 +54,14 @@ class Client {
 
       FileWriter(options.out).use {
         val mapper = jacksonObjectMapper()
+        val commits = options.commits
         val results =
           samplesVerifier.collect(
             options.repositoryUrl,
             options.branch,
-            options.fileType
+            options.fileType,
+            if (commits.size > 0) commits[0] else null,
+            if (commits.size == 2) commits[1] else null
           )
         it.write(mapper.writeValueAsString(results))
       }
@@ -65,6 +70,9 @@ class Client {
     private fun <T : CheckOptions> helper(args: Array<String>, options: T): SamplesVerifier {
       try {
         Args.parse(options, args)
+        if (options.commits.size > 2) {
+          throw Exception("Commits param is invalid")
+        }
       } catch (e: Exception) {
         System.err.println(e.message)
         exitProcess(1)
@@ -104,6 +112,14 @@ class Client {
       description = "git branch"
     )
     var branch: String = "master"
+
+    @set:Argument(
+      value = "commits",
+      delimiter = ",",
+      description = "Considering only the changed files between two arbitrary commits \"commit1,commit2\"" +
+        "or starting from \"commit1\" if commit2 on one side is omitted"
+    )
+    var commits: Array<String?> = Array<String?>(2) { null }
   }
 
   open class ParseOptions : CompilerOptions() {

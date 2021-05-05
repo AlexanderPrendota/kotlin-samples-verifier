@@ -11,7 +11,7 @@ open class BaseSamplesVerifierTest(host: String = DEFAULT_COMPILER_HOST, kotlinE
   val samplesVerifier = SamplesVerifierFactory.create(host, kotlinEnv)
 
   fun assertNoErrors(url: String, branch: String, type: FileType) {
-    val results = samplesVerifier.collect(url, branch, type)
+    val results = samplesVerifier.collect(url, branch, type).snippets
     assertTrue(results.all { it.value.errors.all { it.severity != ProjectSeveriry.ERROR } })
   }
 }

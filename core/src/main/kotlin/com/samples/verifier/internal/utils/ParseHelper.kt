@@ -22,12 +22,16 @@ internal fun processHTMLFile(file: File, parseConfiguration: ParseConfiguration)
 }
 
 internal fun processMarkdownFile(file: File, parseConfiguration: ParseConfiguration): List<Code> {
-  val node: Node = htmlParser.parse(file.readText())
+  return processMarkdownText(file.readText(), parseConfiguration)
+}
+
+internal fun processMarkdownText(text: String, parseConfiguration: ParseConfiguration): List<Code> {
+  val node: Node = htmlParser.parse(text)
   val htmlText = htmlRenderer.render(node)
   return processHTMLText(htmlText, parseConfiguration, FileType.MD)
 }
 
-private fun processHTMLText(text: String, parseConfiguration: ParseConfiguration, fileType: FileType): List<Code> {
+internal fun processHTMLText(text: String, parseConfiguration: ParseConfiguration, fileType: FileType = FileType.HTML): List<Code> {
   val document = Jsoup.parse(text)
   val snippets = mutableListOf<Code>()
   val queue = LinkedList<Element>()

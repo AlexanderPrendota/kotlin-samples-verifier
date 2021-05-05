@@ -60,6 +60,7 @@ dependencies {
   |-ignore-directory | [String] | Regexp for directories to be ignored | null |
   |-parse-tags | [String[,]] | Html tags to be accepted as code snippets, works for both html and md. Default (code) for MD so only fencedCodeBlocks are accepted as code snippets | null |
   |-compiler-url | [String] | Kotlin compiler URL | `http://localhost:8080/` |
+  |-commits | [String [,String]] | Considering only the changed files between two arbitrary commits \"commit1,commit2\" or starting from \"commit1\" if \"commit2\" on one side is omitted | null |
   |-file-type | [FileType] | MD or HTML (type of files to be processed) | MD |
   |-kotlin-env | [KotlinEnv] | JS or JVM | JVM |
   |-repository (-r) | [String] | Git repository URL with samples to execute| n/a |
