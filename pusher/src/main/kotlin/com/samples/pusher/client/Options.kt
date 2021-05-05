@@ -16,7 +16,7 @@ class PusherOptions : CredentialsOption() {
     "push-repository",
     alias = "pr",
     required = true,
-    description = "Git repository to push the samples"
+    description = "Git repository URL to push the samples"
   )
   lateinit var repositoryUrl: String
 
