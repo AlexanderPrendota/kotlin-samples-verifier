@@ -47,8 +47,8 @@ class Client {
         options.repositoryUrl,
         options.branch,
         options.fileType,
-        if (commits.size > 0) commits[0] else null,
-        if (commits.size == 2) commits[1] else null
+        if (commits.size > 0 && commits[0]?.isNotEmpty() == true) commits[0] else null,
+        if (commits.size == 2 && commits[1]?.isNotEmpty() == true) commits[1] else null
       )
     }
 
