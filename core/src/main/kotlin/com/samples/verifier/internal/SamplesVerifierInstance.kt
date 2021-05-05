@@ -35,7 +35,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     endCommit: String?
   ): CollectionOfRepository {
     return if (startCommit != null || endCommit != null) {
-      val changes = processRepository(url, branch, type, startCommit, endCommit)
+      val changes = processDiffRepository(url, branch, type, startCommit, endCommit)
       CollectionOfRepository(
         url = url,
         branch = branch,
@@ -115,7 +115,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     }
   }
 
-  private fun processRepository(
+  private fun processDiffRepository(
     url: String,
     branch: String,
     type: FileType,
