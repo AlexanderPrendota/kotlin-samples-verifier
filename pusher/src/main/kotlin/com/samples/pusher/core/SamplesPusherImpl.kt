@@ -69,7 +69,7 @@ internal class SamplesPusher(
 
       val mng = SnippetManager(dirSamples)
       val errors =
-        writeAndDeleteSnippets(mng, collection.snippets, collection?.diff?.deletedFiles ?: emptyList<String>())
+        writeAndDeleteSnippets(mng, collection.snippets, collection.diff?.deletedFiles ?: emptyList<String>())
       logger.debug(".kt files are  written")
 
       val client = createGHClient()
