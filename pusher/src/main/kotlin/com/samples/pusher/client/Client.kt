@@ -40,7 +40,7 @@ class Client {
           .push(repoSamples)
 
         if (!isOk)
-          exitProcess(1)
+          exitProcess(2)
       } catch (e: Exception) { // TODO
         System.err.println(e.message)
         exitProcess(1)

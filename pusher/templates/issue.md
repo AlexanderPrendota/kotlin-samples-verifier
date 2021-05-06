@@ -1,7 +1,18 @@
 Bad samples
 
-Bad samples in a repository ${src.url}
-Files:
+Bad samples in a repository ${src.url}:
+Snippets: 
 <#list snippets as item>
-    ${item.res.fileName}
+  File: ${item.res.fileName}
+
+```kotlin
+${item.code}
+```
+
+<#list item.res.errors as err>
+(${err.interval.start.line}:${err.interval.start.ch}, ${err.interval.end.line}:${err.interval.end.ch}) ${err.severity} **${err.message}**
+</#list>
+    
+------
+    
 </#list>
