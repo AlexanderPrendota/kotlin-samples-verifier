@@ -12,7 +12,6 @@ import org.eclipse.jgit.treewalk.filter.PathFilter
 import java.io.ByteArrayOutputStream
 import java.io.File
 
-
 internal fun cloneRepository(dir: File, repositoryURL: String, branch: String, bare: Boolean = false): Git {
   try {
     dir.mkdirs()
@@ -35,17 +34,6 @@ internal fun getCommit(repo: Repository, id: String = "HEAD"): RevCommit {
   }
 }
 
-/**
- *  @param name the branch or commit
- */
-internal fun checkout(git: Git, name: String) {
-  try {
-    git.checkout().setName(name).call()
-  } catch (e: Exception) {
-    throw GitException(e)
-  }
-}
-
 internal fun diff(git: Git, startCommit: RevCommit?, endCommit: RevCommit): List<DiffEntry> {
   try {
     val oldTree: ObjectId? = startCommit?.tree?.id
@@ -60,21 +48,6 @@ internal fun diff(git: Git, startCommit: RevCommit?, endCommit: RevCommit): List
     }
   } catch (e: Exception) {
     throw GitException(e)
-  }
-}
-
-/**
- * Resolve can return the wrong tree if there is a branch and an abbreviated commit id with this name
- */
-internal fun diff(git: Git, startCommit: String, endCommit: String = "HEAD"): List<DiffEntry> {
-  val repo = git.repository
-  val oldTree: ObjectId = repo.resolve("$startCommit^{tree}")
-  val newTree: ObjectId = repo.resolve("$endCommit^{tree}")
-
-  git.repository.newObjectReader().use { reader ->
-    val oldTreeIter = CanonicalTreeParser(null, reader, oldTree)
-    val newTreeIter = CanonicalTreeParser(null, reader, newTree)
-    return git.diff().setOldTree(oldTreeIter).setNewTree(newTreeIter).call()
   }
 }
 
@@ -112,21 +85,5 @@ internal fun extractFiles(repository: Repository, commit: RevCommit, files: List
       oLoader.copyTo(contentToBytes)
       String(contentToBytes.toByteArray())
     }
-  }
-}
-
-/**
- * @return diff between head and actual working file directory
- */
-internal fun diffWorking(git: Git): List<DiffEntry> {
-  try {
-    val oldTree: ObjectId = git.repository.resolve("HEAD^{tree}")
-    git.repository.newObjectReader().use { reader ->
-      val oldTreeIter = CanonicalTreeParser(null, reader, oldTree)
-      val newTreeIter: AbstractTreeIterator = FileTreeIterator(git.repository)
-      return git.diff().setOldTree(oldTreeIter).setNewTree(newTreeIter).call()
-    }
-  } catch (e: Exception) {
-    throw GitException(e)
   }
 }
