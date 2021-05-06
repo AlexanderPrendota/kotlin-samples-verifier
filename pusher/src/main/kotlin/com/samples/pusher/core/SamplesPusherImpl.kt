@@ -32,12 +32,20 @@ data class Snippet(val code: Code, val res: ExecutionResult)
 internal class SamplesPusher(
   val url: String, val path: String,
   val user: String, val password: String = "",
-  val branch: String = "master"
+  val branch: String = "master",
+  templatePath: String = "templates"
 ) {
+  private val templates = TemplateManager()
+
+  init {
+    templates.configureTemplate(templatePath)
+  }
+
   private val logger = LoggerFactory.getLogger("Samples Pusher")
 
+
   var configuraton: PusherConfiruration = PusherConfiruration()
-  private val templates = TemplateManager()
+
 
   fun readConfigFromFile(filename: String): SamplesPusher {
     configuraton.readFromFile(filename)

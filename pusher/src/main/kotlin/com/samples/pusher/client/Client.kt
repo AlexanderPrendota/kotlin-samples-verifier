@@ -29,8 +29,13 @@ class Client {
 
       try {
         val repoSamples = collect(checkOptions)
-        SamplesPusher(pusherOptions.repositoryUrl, pusherOptions.path, pusherOptions.username, pusherOptions.passw)
-          .readConfigFromFile("config.properties")
+        SamplesPusher(
+          pusherOptions.repositoryUrl,
+          path =pusherOptions.path,
+          user = pusherOptions.username,
+          password = pusherOptions.passw,
+          templatePath = pusherOptions.templatePath)
+          .readConfigFromFile(pusherOptions.configPath)
           .push(repoSamples)
 
       } catch (e: Exception) { // TODO

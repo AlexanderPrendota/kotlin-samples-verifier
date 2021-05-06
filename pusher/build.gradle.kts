@@ -42,6 +42,10 @@ dependencies {
     implementation("io.github.alexanderprendota:kotlin-samples-verifier:1.1.0")
 }
 
+tasks.test {
+    useJUnitPlatform()
+}
+
 tasks {
     compileKotlin {
         kotlinOptions.jvmTarget = "1.8"

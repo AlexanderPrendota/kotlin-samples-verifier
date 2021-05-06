@@ -35,6 +35,14 @@ inputs:
     description: 'User password for push'
     required: false
     default:  ''
+  config-path:
+    description: 'Url or file path for loading config'
+    required: false
+    default: 'config.properties'
+  template-path:
+    description: 'Url or file path for loading templates'
+    required: false
+    default: 'templates'
 runs:
   using: "composite"
   steps:
@@ -51,6 +59,6 @@ runs:
       run: ./gradlew installDist
       shell: bash
     - working-directory: ${{ github.action_path }}
-      run: ./build/install/kotlin-samples-pusher/bin/kotlin-samples-pusher -r ${{  inputs.repository }} -br ${{  inputs.verify-branch }} -snippet-flags ${{  inputs.snippet-flags }} -push-repository ${{  inputs.push-repository }} -path '${{ inputs.push-path }}' -username ${{  inputs.username }} -passw '${{  inputs.password }}' -commits ${{  inputs.start-commit }},${{  inputs.end-commit }}
+      run: ./build/install/kotlin-samples-pusher/bin/kotlin-samples-pusher -r ${{  inputs.repository }} -br ${{  inputs.verify-branch }} -snippet-flags ${{  inputs.snippet-flags }} -push-repository ${{  inputs.push-repository }} -push-path '${{ inputs.push-path }}' -username ${{  inputs.username }} -passw '${{  inputs.password }}' -commits ${{  inputs.start-commit }},${{  inputs.end-commit }} -config-path '${{  inputs.config-path }}' -template-path '${{  inputs.template-path }}'
       shell: bash
 

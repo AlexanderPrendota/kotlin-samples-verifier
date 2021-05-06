@@ -21,11 +21,23 @@ class PusherOptions : CredentialsOption() {
   lateinit var repositoryUrl: String
 
   @set:Argument(
-    "path",
+    "push-path",
     alias = "p",
     description = "Path relatively a push repository"
   )
   var path: String = ""
+
+  @set:Argument(
+    "template-path",
+    description = "Url or file path for loading templates"
+  )
+  var templatePath: String = "templates"
+
+  @set:Argument(
+    "config-path",
+    description = "Url or file path for loading config"
+  )
+  var configPath: String = "config.properties"
 }
 
 open class CredentialsOption {
