@@ -18,8 +18,9 @@ class TemplateManager() {
 
 
   fun configureTemplate(path: String) {
-    if(path.indexOf("http://", 0, true)==0 ||
-      path.indexOf("https://", 0, true)==0) {
+    if (path.indexOf("http://", 0, true) == 0 ||
+      path.indexOf("https://", 0, true) == 0
+    ) {
       cfgTemplates.setTemplateLoader(object : URLTemplateLoader() {
         override fun getURL(name: String): URL? {
           return try {

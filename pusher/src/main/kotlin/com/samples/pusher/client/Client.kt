@@ -29,15 +29,18 @@ class Client {
 
       try {
         val repoSamples = collect(checkOptions)
-        SamplesPusher(
+        val isOk = SamplesPusher(
           pusherOptions.repositoryUrl,
-          path =pusherOptions.path,
+          path = pusherOptions.path,
           user = pusherOptions.username,
           password = pusherOptions.passw,
-          templatePath = pusherOptions.templatePath)
+          templatePath = pusherOptions.templatePath
+        )
           .readConfigFromFile(pusherOptions.configPath)
           .push(repoSamples)
 
+        if (!isOk)
+          exitProcess(1)
       } catch (e: Exception) { // TODO
         System.err.println(e.message)
         exitProcess(1)
