@@ -8,7 +8,7 @@ inputs:
   verify-branch:
     description: 'git branch of repository to be verified'
     required: false
-    default: 'master'
+    default: '${{ github.ref }}'
   snippet-flags:
     description: 'Flags for code snippets, separated by "," like so: "attr1,attr2"'
     required: true
