@@ -4,6 +4,7 @@ inputs:
   repository:
     description: 'Git repository URL with samples to execute'
     required: true
+    default: 'https://github.com/${{github.repository}}'
   verify-branch:
     description: 'git branch of repository to be verified'
     required: false
