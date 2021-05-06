@@ -58,11 +58,13 @@ internal class SamplesPusher(
     push(collection)
   }
 
-
-  fun push(collection: CollectionOfRepository) {
+  /**
+   * @return true if all is ok
+   */
+  fun push(collection: CollectionOfRepository): Boolean {
     if (collection.snippets.isEmpty() && collection.diff?.deletedFiles.isNullOrEmpty()) {
       logger.info("Nothing is to push")
-      return
+      return true
     }
 
     val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
@@ -91,7 +93,7 @@ internal class SamplesPusher(
         logger.debug(".kt are pushed")
         createPR(client, collection, branchName)
       }
-
+      return errors.isEmpty()
     } catch (e: GitException) {
       logger.error("${e.message}")
     } finally {
@@ -101,6 +103,7 @@ internal class SamplesPusher(
         dir.delete()
       }
     }
+    return true
   }
 
   private fun prepareTargetPath(repoDir: File): File {
