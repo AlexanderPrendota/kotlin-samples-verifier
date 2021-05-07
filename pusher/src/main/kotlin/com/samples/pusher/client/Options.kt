@@ -2,6 +2,7 @@ package com.samples.pusher.client
 
 import com.samples.verifier.FileType
 import com.samples.verifier.KotlinEnv
+import com.samples.verifier.model.ProjectSeveriry
 import com.sampullara.cli.Argument
 
 
@@ -38,6 +39,13 @@ class PusherOptions : CredentialsOption() {
     description = "Url or file path for loading config"
   )
   var configPath: String = "config.properties"
+
+  @set:Argument(
+    "config-path",
+    description = "Create issue and do not push if " +
+      "the snippet has errors equals or greater severity"
+  )
+  var severity: ProjectSeveriry = ProjectSeveriry.ERROR
 }
 
 open class CredentialsOption {

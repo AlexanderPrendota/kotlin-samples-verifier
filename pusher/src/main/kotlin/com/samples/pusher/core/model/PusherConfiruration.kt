@@ -1,5 +1,6 @@
 package com.samples.pusher.core.model
 
+import com.samples.verifier.model.ProjectSeveriry
 import org.apache.commons.configuration2.FileBasedConfiguration
 import org.apache.commons.configuration2.PropertiesConfiguration
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder
@@ -7,6 +8,8 @@ import org.apache.commons.configuration2.builder.fluent.Parameters
 import java.net.URL
 
 class PusherConfiruration {
+
+  var severity: ProjectSeveriry = ProjectSeveriry.ERROR
 
   /**
    *  committer's  name and email

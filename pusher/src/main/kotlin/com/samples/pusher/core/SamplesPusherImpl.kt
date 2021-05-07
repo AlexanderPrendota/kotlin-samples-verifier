@@ -10,6 +10,7 @@ import com.samples.verifier.Code
 import com.samples.verifier.GitException
 import com.samples.verifier.model.CollectionOfRepository
 import com.samples.verifier.model.ExecutionResult
+import com.samples.verifier.model.ProjectSeveriry
 import org.eclipse.egit.github.core.Issue
 import org.eclipse.egit.github.core.PullRequest
 import org.eclipse.egit.github.core.PullRequestMarker
@@ -21,6 +22,7 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.*
+import javax.print.attribute.standard.Severity
 
 
 //data class AuthData(val name: String, val password: String  = "")
@@ -52,6 +54,10 @@ internal class SamplesPusher(
     return this
   }
 
+  fun configure( fn: PusherConfiruration.() -> Unit ): SamplesPusher {
+    configuraton.apply(fn)
+    return this
+  }
   fun pushFromFile(filename: String) {
     val mapper = jacksonObjectMapper()
     val collection = mapper.readValue(File(filename), object : TypeReference<CollectionOfRepository>() {})
@@ -129,8 +135,10 @@ internal class SamplesPusher(
         logger.error("Filename: ${it.value.fileName}")
         logger.error("Code: \n${it.key}")
         logger.error("Errors: \n${it.value.errors.joinToString("\n")}")
-        // Create issue!!!
-        errors.add(Snippet(it.key, it.value))
+        if(it.value.errors.filter { greateOrEqualSeverity(it.severity) }.isNotEmpty()) {
+          // Create issue!!!
+          errors.add(Snippet(it.key, it.value))
+        }
       } else {
         manager.addSnippet(it.key, it.value.fileName)
       }
@@ -197,5 +205,16 @@ internal class SamplesPusher(
 
     issue = issueServise.createIssue(RepositoryId.createFromUrl(repositoryUrl), issue)
     logger.info("The Issue  is created, url: ${issue.htmlUrl}")
+  }
+
+  fun greateOrEqualSeverity(severiry: ProjectSeveriry): Boolean {
+    if (configuraton.severity == ProjectSeveriry.ERROR) {
+      return severiry == ProjectSeveriry.ERROR
+    } else     if (configuraton.severity == ProjectSeveriry.INFO) {
+      return true
+    } else if (configuraton.severity == ProjectSeveriry.WARNING) {
+      return severiry == ProjectSeveriry.ERROR || severiry == ProjectSeveriry.WARNING
+    }
+    throw NotImplementedError()
   }
 }
