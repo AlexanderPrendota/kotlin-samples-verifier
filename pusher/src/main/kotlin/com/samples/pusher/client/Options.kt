@@ -13,8 +13,11 @@ import com.sampullara.cli.Argument
 
 class PusherOptions : CredentialsOption() {
 
-  @Argument
-  var io = false
+  @set:Argument(
+    "io-event",
+    description = "Special arguments  for GitHub event"
+  )
+  var ioEvent: String? = null
 
   @set:Argument(
     "push-repository",

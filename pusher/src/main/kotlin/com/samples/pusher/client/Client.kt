@@ -6,6 +6,7 @@ import com.samples.verifier.SamplesVerifierFactory
 import com.samples.verifier.model.Attribute
 import com.samples.verifier.model.CollectionOfRepository
 import com.sampullara.cli.Args
+import jdk.jfr.Event
 import org.apache.log4j.BasicConfigurator
 import org.apache.log4j.PropertyConfigurator
 import kotlin.system.exitProcess
@@ -19,39 +20,31 @@ class Client {
 
 
       val pusherOptions = PusherOptions()
-      val checkOptions = CheckOptions()
+      val verifierOptions = CheckOptions()
       try {
         val remainArgs = Args.parse(pusherOptions, args, false)
-        Args.parse(checkOptions, remainArgs.toTypedArray())
+        Args.parse(verifierOptions, remainArgs.toTypedArray())
       } catch (e: Exception) {
         System.err.println(e.message)
         exitProcess(1)
       }
-      // work through io
-      if(pusherOptions.io) {
-        val inputAsString = System.`in`.bufferedReader().use { it.readText() }
-
-
-      }
 
 
       try {
-        val repoSamples = collect(checkOptions)
-        val isOk = SamplesPusher(
-          pusherOptions.repositoryUrl,
-          path = pusherOptions.path,
-          user = pusherOptions.username,
-          password = pusherOptions.passw,
-          templatePath = pusherOptions.templatePath
-        )
-          .readConfigFromFile(pusherOptions.configPath)
-          .configure {
-            severity = pusherOptions.severity
-          }
-          .push(repoSamples)
+        val verifier = helperCreateVerifier(verifierOptions)
+        val pusher = helperCreatePusher(pusherOptions)
 
-        if (!isOk)
-          exitProcess(2)
+        // work through io
+        if(pusherOptions.ioEvent!=null) {
+          val input = System.`in`.bufferedReader().use { it.readText() }
+          val eventType = EventType.valueOf(pusherOptions.ioEvent ?:"")
+          GitEventHandler(verifier, pusher).process(eventType, input)
+        } else { // work through cli arguments
+          val repoSamples = collect(verifier, verifierOptions)
+          val isOk = pusher.push(repoSamples)
+          if (!isOk)
+            exitProcess(2)
+        }
       } catch (e: Exception) { // TODO
         System.err.println(e.message)
         exitProcess(1)
@@ -59,8 +52,9 @@ class Client {
 
     }
 
-    private fun collect(options: CheckOptions): CollectionOfRepository {
-      val samplesVerifier = helperGetVerifier(options)
+
+
+    private fun collect(samplesVerifier: SamplesVerifier, options: CheckOptions): CollectionOfRepository {
       val commits = options.commits
       return samplesVerifier.collect(
         options.repositoryUrl,
@@ -71,7 +65,22 @@ class Client {
       )
     }
 
-    private fun <T : CheckOptions> helperGetVerifier(options: T): SamplesVerifier {
+    private fun helperCreatePusher(pusherOptions: PusherOptions): SamplesPusher {
+      val pusher = SamplesPusher(
+        pusherOptions.repositoryUrl,
+        path = pusherOptions.path,
+        user = pusherOptions.username,
+        password = pusherOptions.passw,
+        templatePath = pusherOptions.templatePath
+      )
+        .readConfigFromFile(pusherOptions.configPath)
+        .configure {
+          severity = pusherOptions.severity
+        }
+      return pusher
+    }
+
+    private fun helperCreateVerifier(options: CheckOptions): SamplesVerifier {
       try {
         if (options.commits.size > 2) {
           throw Exception("Commits param is invalid")

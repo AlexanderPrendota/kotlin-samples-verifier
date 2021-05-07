@@ -31,7 +31,7 @@ typealias CollectionSamples = Map<Code, ExecutionResult>
 
 data class Snippet(val code: Code, val res: ExecutionResult)
 
-internal class SamplesPusher(
+class SamplesPusher(
   val url: String, val path: String,
   val user: String, val password: String = "",
   val branch: String = "master",
