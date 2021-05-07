@@ -17,6 +17,7 @@ class Client {
       BasicConfigurator.configure()
       PropertyConfigurator.configure("log4j.properties")
 
+
       val pusherOptions = PusherOptions()
       val checkOptions = CheckOptions()
       try {
@@ -26,6 +27,13 @@ class Client {
         System.err.println(e.message)
         exitProcess(1)
       }
+      // work through io
+      if(pusherOptions.io) {
+        val inputAsString = System.`in`.bufferedReader().use { it.readText() }
+
+
+      }
+
 
       try {
         val repoSamples = collect(checkOptions)

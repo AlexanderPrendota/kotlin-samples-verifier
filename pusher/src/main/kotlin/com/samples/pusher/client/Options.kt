@@ -13,6 +13,9 @@ import com.sampullara.cli.Argument
 
 class PusherOptions : CredentialsOption() {
 
+  @Argument
+  var io = false
+
   @set:Argument(
     "push-repository",
     alias = "pr",
