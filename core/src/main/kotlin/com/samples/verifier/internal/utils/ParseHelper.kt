@@ -4,16 +4,20 @@ import com.samples.verifier.Code
 import com.samples.verifier.FileType
 import com.samples.verifier.model.Attribute
 import com.samples.verifier.model.ParseConfiguration
+import com.vladsch.flexmark.ext.attributes.AttributesExtension
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.util.ast.Node
 import com.vladsch.flexmark.util.data.MutableDataSet
+import com.vladsch.flexmark.util.misc.Extension
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import java.io.File
 import java.util.*
 
 private val parseOptions = MutableDataSet()
+  .set(Parser.EXTENSIONS, Collections.singleton(AttributesExtension.create()) as Collection<Extension>)
+  .toImmutable()
 private val htmlRenderer = HtmlRenderer.builder(parseOptions).build()
 private val htmlParser = Parser.builder(parseOptions).build()
 
@@ -24,6 +28,20 @@ internal fun processHTMLFile(file: File, parseConfiguration: ParseConfiguration)
 internal fun processMarkdownFile(file: File, parseConfiguration: ParseConfiguration): List<Code> {
   return processMarkdownText(file.readText(), parseConfiguration)
 }
+
+/**
+ * Extension attributes
+ *
+ * ```kotlin
+ * //something
+ * ```
+ * {kotlin-runnable="true" kotlin-min-compiler-version="1.3"}
+ *
+ * ===>
+ * <code class="language-kotlin" kotlin-runnable="true" kotlin-min-compiler-version="1.3">
+ * //something
+ * </code>
+ */
 
 internal fun processMarkdownText(text: String, parseConfiguration: ParseConfiguration): List<Code> {
   val node: Node = htmlParser.parse(text)
