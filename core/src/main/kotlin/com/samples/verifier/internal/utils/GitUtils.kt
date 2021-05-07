@@ -7,7 +7,11 @@ import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.revwalk.RevCommit
 import org.eclipse.jgit.revwalk.RevWalk
-import org.eclipse.jgit.treewalk.*
+import org.eclipse.jgit.revwalk.filter.RevFilter
+import org.eclipse.jgit.transport.FetchResult
+import org.eclipse.jgit.treewalk.CanonicalTreeParser
+import org.eclipse.jgit.treewalk.EmptyTreeIterator
+import org.eclipse.jgit.treewalk.TreeWalk
 import org.eclipse.jgit.treewalk.filter.PathFilter
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -65,6 +69,37 @@ internal fun getDeletedFilenames(entryList: List<DiffEntry>): List<String> {
   return entryList
     .filter { it.changeType == DiffEntry.ChangeType.DELETE || it.changeType == DiffEntry.ChangeType.RENAME }
     .map { it.oldPath }
+}
+
+/**
+ * RevCommits need to be produced by the same RevWalk instance
+ */
+internal fun mergeBase(git: Git, base: String, head: String): RevCommit {
+  try {
+    val repo = git.repository
+    RevWalk(repo).use {
+      val baseCommit = it.parseCommit(repo.resolve(base))
+      val headCommit = it.parseCommit(repo.resolve(head))
+
+      it.setRevFilter(RevFilter.MERGE_BASE)
+      it.markStart(headCommit)
+      it.markStart(baseCommit)
+      return it.parseCommit(it.next()) // Be carefull, commits may have multiple merge bases
+    }
+  } catch (e: Exception) {
+    throw GitException(e)
+  }
+}
+
+/**
+ * Fetch the ref from a remote repository to remote/{ref}
+ */
+internal fun fetch(git: Git, url: String, branch: String): FetchResult {
+  val ref = if(branch.indexOf("refs/")==0) branch else "refs/heads/$branch"
+  return git.fetch()
+    .setRemote(url)
+    .setRefSpecs("+$ref:remote/$ref")
+    .call()
 }
 
 /**

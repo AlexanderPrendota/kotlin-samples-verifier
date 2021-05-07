@@ -51,6 +51,23 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     }
   }
 
+
+  override fun collect(
+    baseUrl: String,
+    baseBranch: String,
+    headUrl: String,
+    headBranch: String,
+    type: FileType
+  ): CollectionOfRepository {
+    val changes = processDiffBranchesRepository(baseUrl, baseBranch, headUrl, headBranch, type)
+    return CollectionOfRepository(
+      url = baseUrl,
+      branch = baseBranch,
+      snippets = changes.snippets.associate { it.code to executionHelper.executeCode(it) },
+      diff = changes.diff
+    )
+  }
+
   override fun collect(files: List<String>, type: FileType): Map<Code, ExecutionResult> =
     processFiles(File(""), files, type).associate { it.code to executionHelper.executeCode(it) }
 
@@ -115,6 +132,50 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     }
   }
 
+  private fun processDiffBranchesRepository(
+    baseUrl: String,
+    baseBranch: String,
+    headUrl: String,
+    headBranch: String,
+    type: FileType
+  ): RepoChanges {
+    val dir = File(baseUrl.substringAfterLast('/').substringBeforeLast('.'))
+    try {
+      logger.info("Cloning repository...")
+      cloneRepository(dir, baseUrl, baseBranch, true).use { git ->
+        logger.info("Getting diff between $baseUrl:$baseBranch and $headUrl:$headBranch")
+
+        val fr = fetch(git, headUrl, headBranch)
+        val newName = fr.getTrackingRefUpdates().first().localName
+
+        // git diff $(git-merge-base A B) B
+        // aka triple dots diff
+        val commonAncestor = mergeBase(git, baseBranch, newName)
+        val headCommit = getCommit(git.repository, newName)
+        val diff = diff(git, commonAncestor, headCommit)
+
+        val diffFilenames = getModifiedOrAddedFilenames(diff)
+        diffFilenames.forEach { logger.info("File $it is found in branches diff") }
+        val allFilenames = diffFilenames //+ filenames.orEmpty()
+        val diffInfo = DiffOfRepository(baseBranch, headBranch, getDeletedFilenames(diff))
+        return RepoChanges(diffInfo, processRepoFiles(git.repository, headCommit, allFilenames, type))
+      }
+    } catch (e: GitException) {
+      logger.error("Git: ${e.message}")
+    } catch (e: IOException) {
+      logger.error("IO: ${e.message}")
+    } catch (e: Exception) {
+      logger.error("${e.message}")
+    } finally {
+      if (dir.isDirectory) {
+        FileUtils.deleteDirectory(dir)
+      } else {
+        dir.delete()
+      }
+    }
+    return RepoChanges(null, emptyList())
+  }
+
   private fun processDiffRepository(
     url: String,
     branch: String,
@@ -138,8 +199,10 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         return RepoChanges(diffInfo, processRepoFiles(git.repository, end, allFilenames, type))
       }
     } catch (e: GitException) {
-      logger.error("${e.message}")
+      logger.error("Git: ${e.message}")
     } catch (e: IOException) {
+      logger.error("IO: ${e.message}")
+    } catch (e: Exception) {
       logger.error("${e.message}")
     } finally {
       if (dir.isDirectory) {
