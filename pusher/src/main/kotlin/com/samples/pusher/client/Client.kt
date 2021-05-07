@@ -37,6 +37,9 @@ class Client {
           templatePath = pusherOptions.templatePath
         )
           .readConfigFromFile(pusherOptions.configPath)
+          .configure {
+            severity = pusherOptions.severity
+          }
           .push(repoSamples)
 
         if (!isOk)
