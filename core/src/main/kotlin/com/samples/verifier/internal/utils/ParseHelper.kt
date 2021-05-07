@@ -49,26 +49,51 @@ internal fun processMarkdownText(text: String, parseConfiguration: ParseConfigur
   return processHTMLText(htmlText, parseConfiguration, FileType.MD)
 }
 
-internal fun processHTMLText(text: String, parseConfiguration: ParseConfiguration, fileType: FileType = FileType.HTML): List<Code> {
+internal fun processHTMLText(
+  text: String,
+  parseConfiguration: ParseConfiguration,
+  fileType: FileType = FileType.HTML
+): List<Code> {
   val document = Jsoup.parse(text)
   val snippets = mutableListOf<Code>()
   val queue = LinkedList<Element>()
   val codeFlags = if (fileType == FileType.MD) {
     parseConfiguration.snippetFlags.map { "language-$it" }
   } else parseConfiguration.snippetFlags
+
+  val isUseFilter = parseConfiguration.tagFilter.isNotEmpty()
+  val tagUserFilter = if (isUseFilter) compileFilter(parseConfiguration.tagFilter) else null
+
+  val isUseIgnoreFilter = parseConfiguration.ignoreTagFilter.isNotEmpty()
+  val ignoreUFilter = if (isUseFilter) compileFilter(parseConfiguration.ignoreTagFilter) else null
+
   queue.addFirst(document.body())
   with(parseConfiguration) {
     while (queue.isNotEmpty()) {
       val elem = queue.remove()
       val attrs = elem.attributes().map { Attribute(it.key, it.value) }.toHashSet()
 
-      if (ignoreAttributes != null && attrs.intersect(ignoreAttributes!!).isNotEmpty())
-        continue
+      if (isUseIgnoreFilter) {
+        if (ignoreUFilter?.evaluate(elem) == true) {
+          continue
+        }
+      } else {
+        if (ignoreAttributes != null && attrs.intersect(ignoreAttributes!!).isNotEmpty())
+          continue
+      }
 
       queue.addAll(elem.children())
 
+      if (isUseFilter) {
+        if (tagUserFilter?.evaluate(elem) == true) {
+          val code = elem.wholeText().trimIndent()
+          snippets.add(code)
+        }
+        continue
+      }
+      // else
       if ((parseTags != null && (elem.tagName() !in parseTags!!)) ||
-        (parseTags == null && (elem.tagName() != "code") && fileType == FileType.MD)
+        (parseTags == null && elem.tagName() != "code" && fileType == FileType.MD)
       ) {
         continue
       }

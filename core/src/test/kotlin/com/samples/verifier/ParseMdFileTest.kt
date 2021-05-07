@@ -25,4 +25,19 @@ class ParseMdFileTest {
       })
     assertEquals(listOf(1, 2, 3, 4, 5, 6, 7).map { helloWorld }, res)
   }
+  @Test
+  fun `process runnable md test`() {
+    val helloWorld = """
+      fun main() {
+          println("Hello world!")
+      }
+    """.trimIndent()
+    val res = processMarkdownFile(
+      File("src/test/resources/md_runnable_test.md"),
+      ParseConfiguration {
+        tagFilter = "(#tag=\"code\" & kotlin-runnable=\"true\" & kotlin-min-compiler-version)"
+        ignoreTagFilter  = "another-ignore-attribute=\"ignore\" | data-highlight-only"
+      })
+    assertEquals(listOf(1, 2).map { helloWorld }, res)
+  }
 }
