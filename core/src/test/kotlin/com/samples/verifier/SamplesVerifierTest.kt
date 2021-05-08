@@ -108,7 +108,7 @@ class SamplesVerifierTest {
       )
     }
 
-    val deletedFilesExpectes = listOf<String>("client/src/main/kotlin/cmd.kt",
+    val deletedFilesExpected = listOf<String>("client/src/main/kotlin/cmd.kt",
       "core/src/main/kotlin/com/samples/verifier/SamplesExecutor.kt",
       "core/src/main/kotlin/com/samples/verifier/SamplesParser.kt",
       "core/src/main/kotlin/com/samples/verifier/internal/Config.kt",
@@ -124,8 +124,38 @@ class SamplesVerifierTest {
     )
 
     Assertions.assertEquals(
-      listOf(1, 2).map { deletedFilesExpectes },
+      listOf(1, 2).map { deletedFilesExpected },
       results.map { it.diff?.deletedFiles?.sorted() }
+    )
+  }
+
+  @Test
+  fun `collect changes between two branches`() {
+    samplesVerifier.configure {
+      ignoreDirectory = null
+      parseDirectory = Regex("core/src/test/resources")
+    }
+    val results =
+      samplesVerifier.collect(
+        "https://github.com/AlexanderPrendota/kotlin-samples-verifier.git",
+        "tests",
+        "https://github.com/AlexanderPrendota/kotlin-samples-verifier.git",
+        "test-branch-two",
+        FileType.MD
+      )
+
+    val deletedFilesExpected = listOf<String>(
+      "core/src/test/resources/hello_world.html",
+      "core/src/test/resources/hello_world.md"
+    ).sorted()
+
+    Assertions.assertEquals(
+      deletedFilesExpected,
+      results.diff?.deletedFiles?.sorted()
+    )
+    Assertions.assertEquals(
+      results.snippets.size,
+      2
     )
   }
 }

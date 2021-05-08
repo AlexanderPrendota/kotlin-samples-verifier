@@ -10,7 +10,7 @@ data class CollectionOfRepository(
 )
 
 data class DiffOfRepository(
-  var startCommit: String,
-  var endCommit: String,
+  var startRef: String,
+  var endRef: String,
   var deletedFiles: List<String>
 )

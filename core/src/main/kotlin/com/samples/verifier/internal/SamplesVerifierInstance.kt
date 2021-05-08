@@ -8,6 +8,7 @@ import com.samples.verifier.model.ExecutionResult
 import com.samples.verifier.model.ParseConfiguration
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
+import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.revwalk.RevCommit
 import org.slf4j.LoggerFactory
@@ -35,7 +36,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     endCommit: String?
   ): CollectionOfRepository {
     return if (startCommit != null || endCommit != null) {
-      val changes = processDiffRepository(url, branch, type, startCommit, endCommit)
+      val changes = processDiffCommits(url, branch, type, startCommit, endCommit)
       CollectionOfRepository(
         url = url,
         branch = branch,
@@ -49,6 +50,23 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         snippets = snippets.associate { it.code to executionHelper.executeCode(it) }
       )
     }
+  }
+
+
+  override fun collect(
+    baseUrl: String,
+    baseBranch: String,
+    headUrl: String,
+    headBranch: String,
+    type: FileType
+  ): CollectionOfRepository {
+    val changes = processDiffBranches(baseUrl, baseBranch, headUrl, headBranch, type)
+    return CollectionOfRepository(
+      url = baseUrl,
+      branch = baseBranch,
+      snippets = changes.snippets.associate { it.code to executionHelper.executeCode(it) },
+      diff = changes.diff
+    )
   }
 
   override fun collect(files: List<String>, type: FileType): Map<Code, ExecutionResult> =
@@ -95,51 +113,49 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     type: FileType,
     filenames: List<String>? = null
   ): List<CodeSnippet> {
-    val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
-    return try {
-      cloneRepository(dir, url, branch).close()
-      if (filenames == null) processFiles(dir, type)
-      else processFiles(dir, filenames, type)
-    } catch (e: GitException) {
-      logger.error("${e.message}")
-      emptyList()
-    } catch (e: IOException) {
-      logger.error("${e.message}")
-      emptyList()
-    } finally {
-      if (dir.isDirectory) {
-        FileUtils.deleteDirectory(dir)
-      } else {
-        dir.delete()
-      }
-    }
+    return cloneRepositoryToDir(url, branch, false) {git ->
+      val repo = git.repository
+      if (filenames == null) processFiles(repo.workTree, type)
+      else processFiles(repo.workTree, filenames, type)
+    } ?: emptyList()
   }
 
-  private fun processDiffRepository(
+  private fun processDiffBranches(
+    baseUrl: String,
+    baseBranch: String,
+    headUrl: String,
+    headBranch: String,
+    type: FileType
+  ): RepoChanges {
+    return cloneRepositoryToDir(baseUrl, baseBranch, true) { git ->
+        logger.info("Getting diff between $baseUrl:$baseBranch and $headUrl:$headBranch")
+
+        val fr = fetch(git, headUrl, headBranch)
+        val newName = fr.getTrackingRefUpdates().first().localName
+
+        // git diff $(git-merge-base A B) B
+        // aka triple dots diff
+        val commonAncestor = mergeBase(git, baseBranch, newName)
+        val headCommit = getCommit(git.repository, newName)
+        processDiff(git, commonAncestor, headCommit, emptyList(), type)
+    } ?: RepoChanges(null, emptyList())
+  }
+
+  private fun <T> cloneRepositoryToDir(
     url: String,
     branch: String,
-    type: FileType,
-    startCommit: String?,
-    endCommit: String?,
-    filenames: List<String>? = null
-  ): RepoChanges {
+    bare: Boolean = false,
+    cb: (Git) -> T
+  ): T? {
     val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
     try {
       logger.info("Cloning repository...")
-      cloneRepository(dir, url, branch, true).use { git ->
-        logger.info("Getting diff between $startCommit and ${endCommit ?: "HEAD"}")
-        val st = if (startCommit == null) null else getCommit(git.repository, startCommit)
-        val end = getCommit(git.repository, endCommit ?: "HEAD")
-        val diff = diff(git, st, end)
-        val diffFilenames = getModifiedOrAddedFilenames(diff)
-        diffFilenames.forEach { logger.info("File $it is found in commit diff") }
-        val allFilenames = diffFilenames + filenames.orEmpty()
-        val diffInfo = DiffOfRepository(startCommit ?: "", endCommit ?: "HEAD", getDeletedFilenames(diff))
-        return RepoChanges(diffInfo, processRepoFiles(git.repository, end, allFilenames, type))
-      }
+      return cloneRepository(dir, url, branch, bare).use(cb)
     } catch (e: GitException) {
-      logger.error("${e.message}")
+      logger.error("Git: ${e.message}")
     } catch (e: IOException) {
+      logger.error("IO: ${e.message}")
+    } catch (e: Exception) {
       logger.error("${e.message}")
     } finally {
       if (dir.isDirectory) {
@@ -148,7 +164,38 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         dir.delete()
       }
     }
-    return RepoChanges(null, emptyList())
+    return null
+  }
+
+  private fun processDiffCommits(
+    url: String,
+    branch: String,
+    type: FileType,
+    startCommitName: String?,
+    endCommitName: String?,
+    filenames: List<String>? = null
+  ): RepoChanges {
+    return cloneRepositoryToDir(url, branch, true) { git ->
+        logger.info("Getting diff between $startCommitName and ${endCommitName ?: "HEAD"}")
+        val st = if (startCommitName == null) null else getCommit(git.repository, startCommitName)
+        val end = getCommit(git.repository, endCommitName ?: "HEAD")
+        processDiff(git, st, end, filenames, type)
+      } ?: RepoChanges(null, emptyList())
+  }
+
+  private fun processDiff(
+    git: Git,
+    startCommit: RevCommit?,
+    endCommit: RevCommit,
+    filenames: List<String>?,
+    type: FileType
+  ): RepoChanges {
+    val diff = diff(git, startCommit, endCommit)
+    val diffFilenames = getModifiedOrAddedFilenames(diff)
+    diffFilenames.forEach { logger.info("File $it is found in commit diff") }
+    val allFilenames = diffFilenames + filenames.orEmpty()
+    val diffInfo = DiffOfRepository(startCommit?.name ?: "", endCommit.name ?: "HEAD", getDeletedFilenames(diff))
+    return RepoChanges(diffInfo, processRepoFiles(git.repository, endCommit, allFilenames, type))
   }
 
   private fun processFiles(directory: File, type: FileType): List<CodeSnippet> {

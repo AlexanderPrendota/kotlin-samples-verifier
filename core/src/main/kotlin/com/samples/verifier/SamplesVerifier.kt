@@ -38,6 +38,29 @@ interface SamplesVerifier {
   ): CollectionOfRepository
 
   /**
+   * Collect execution results for code snippets from a changes between two branches.
+   * It considers the changes on a head branch, starting at a common ancestor of both branches.
+   *
+   * @param baseUrl git base repository url
+   * @param baseBranch can be specified as ref name (refs/heads/master),
+   *               branch name (master) or tag name (v1.2.3).
+   * @param headUrl git head repository url
+   * @param headBranch can be specified as ref name (refs/heads/master),
+   *               branch name (master) or tag name (v1.2.3).
+   * @param type [FileType]
+   * @return [CollectionOfRepository] including map with code as keys and results as values,
+   *                                  deleted files between commits
+   * @throws CallException
+   */
+  fun collect(
+    baseUrl: String,
+    baseBranch: String,
+    headUrl: String,
+    headBranch: String,
+    type: FileType
+  ): CollectionOfRepository
+
+  /**
    * Collect execution results for code snippets from passed files
    *
    * @param files files to be processed
