@@ -35,8 +35,12 @@ class GitEventHandler(val verifier: SamplesVerifier, val pusher: SamplesPusher, 
   }
 
   fun process(event: PullRequestEvent): Boolean {
-    if (event.action != "opened") return true
-    var collection = verifier.collect(
+    if (event.action != "opened" ||
+      event.action != "synchronize"
+    )
+      return true
+
+    val collection = verifier.collect(
       event.pullRequest.base.repo.gitUrl,
       event.pullRequest.base.ref,
       event.pullRequest.head.repo.gitUrl,
