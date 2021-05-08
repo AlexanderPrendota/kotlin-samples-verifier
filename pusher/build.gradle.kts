@@ -1,7 +1,8 @@
 import java.lang.Thread.sleep
 
 plugins {
-    kotlin("jvm") version "1.3.72"
+    kotlin("jvm") version "1.4.32"
+    kotlin("plugin.serialization") version "1.4.32"
     id("com.palantir.docker") version "0.26.0"
     id("com.palantir.docker-run") version "0.25.0"
     application
@@ -28,7 +29,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
 
     implementation("com.github.spullara.cli-parser:cli-parser:1.1.5")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.1")
+    //implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.1")
     implementation("org.eclipse.jgit:org.eclipse.jgit:5.10.0.202012080955-r")
 
     implementation("org.slf4j:slf4j-api:2.0.0-alpha1")
@@ -38,8 +39,8 @@ dependencies {
     implementation("org.apache.commons:commons-configuration2:2.7")
     implementation("commons-beanutils:commons-beanutils:1.9.4")
     implementation("org.freemarker:freemarker:2.3.31")
-
-    implementation("io.github.alexanderprendota:kotlin-samples-verifier:1.1.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.0")
+    implementation("io.github.alexanderprendota:kotlin-samples-verifier:1.1.2")
 }
 
 tasks.test {

@@ -1,17 +1,15 @@
 name: 'Kotlin Samples Verifier'
-description: 'Extracts embedded code snippets from HTML and Markdown files from a remote git repository, runs them and collects results into a repository of samples. It creats a issue for failed snippets.'
+description: 'Extracts embedded code snippets from HTML and Markdown files from a remote git repository, runs them and collects results into a repository of samples. It creates a issue for failed snippets.'
 inputs:
+  #options for work through cli
   repository:
     description: 'Git repository URL with samples to execute'
-    required: true
+    required: false
     default: 'https://github.com/${{github.repository}}'
   verify-branch:
     description: 'git branch of repository to be verified'
     required: false
     default: '${{ github.ref }}'
-  snippet-flags:
-    description: 'Flags for code snippets, separated by "," like so: "attr1,attr2"'
-    required: true
   start-commit:
     description: 'Considering only the changed files starting with this'
     required: false
@@ -20,6 +18,10 @@ inputs:
     description: 'Considering only the changed files ending this'
     required: false
     default: ''
+  #options for parsing
+  snippet-flags:
+    description: 'Flags for code snippets, separated by "," like so: "attr1,attr2"'
+    required: true
   #options for Pusher
   push-repository:
     description: 'Git repository URL to push the samples'
@@ -43,6 +45,10 @@ inputs:
     description: 'Url or file path for loading templates'
     required: false
     default: 'templates'
+  severity:
+    description: 'Create issue and do not push if the snippet has errors equals or greater the severity'
+    required: false
+    default: 'ERROR'
 runs:
   using: "composite"
   steps:
@@ -59,6 +65,6 @@ runs:
       run: ./gradlew installDist
       shell: bash
     - working-directory: ${{ github.action_path }}
-      run: ./build/install/kotlin-samples-pusher/bin/kotlin-samples-pusher -r ${{  inputs.repository }} -br ${{  inputs.verify-branch }} -snippet-flags ${{  inputs.snippet-flags }} -push-repository ${{  inputs.push-repository }} -push-path '${{ inputs.push-path }}' -username ${{  inputs.username }} -passw '${{  inputs.password }}' -commits ${{  inputs.start-commit }},${{  inputs.end-commit }} -config-path '${{  inputs.config-path }}' -template-path '${{  inputs.template-path }}'
+      run: echo '${{ toJson(github.event) }}' | ./build/install/kotlin-samples-pusher/bin/kotlin-samples-pusher -io-event '${{ github.event_name }}' -r ${{  inputs.repository }} -br ${{  inputs.verify-branch }} -snippet-flags ${{  inputs.snippet-flags }} -push-repository ${{  inputs.push-repository }} -push-path '${{ inputs.push-path }}' -username ${{  inputs.username }} -passw '${{  inputs.password }}' -commits ${{  inputs.start-commit }},${{  inputs.end-commit }} -config-path '${{  inputs.config-path }}' -template-path '${{  inputs.template-path }}'
       shell: bash
 
