@@ -6,9 +6,9 @@ import com.samples.verifier.SamplesVerifierFactory
 import com.samples.verifier.model.Attribute
 import com.samples.verifier.model.CollectionOfRepository
 import com.sampullara.cli.Args
-import jdk.jfr.Event
 import org.apache.log4j.BasicConfigurator
 import org.apache.log4j.PropertyConfigurator
+import org.eclipse.egit.github.core.RepositoryId
 import kotlin.system.exitProcess
 
 class Client {
@@ -29,29 +29,30 @@ class Client {
         exitProcess(1)
       }
 
-
       try {
         val verifier = helperCreateVerifier(verifierOptions)
         val pusher = helperCreatePusher(pusherOptions)
 
+        val isOk: Boolean
         // work through io
-        if(pusherOptions.ioEvent!=null) {
+        if (!pusherOptions.ioEvent.isNullOrBlank()) {
           val input = System.`in`.bufferedReader().use { it.readText() }
-          val eventType = EventType.valueOf(pusherOptions.ioEvent ?:"")
-          GitEventHandler(verifier, pusher).process(eventType, input)
+          val eventType = EventType.valueOf(pusherOptions.ioEvent ?: "")
+          isOk = GitEventHandler(verifier, pusher).process(eventType, input)
+
         } else { // work through cli arguments
           val repoSamples = collect(verifier, verifierOptions)
-          val isOk = pusher.push(repoSamples)
-          if (!isOk)
-            exitProcess(2)
+          isOk = pusher.push(repoSamples)
         }
-      } catch (e: Exception) { // TODO
+
+        if (!isOk)
+          exitProcess(2)
+      } catch (e: Exception) {
         System.err.println(e.message)
         exitProcess(1)
       }
 
     }
-
 
 
     private fun collect(samplesVerifier: SamplesVerifier, options: CheckOptions): CollectionOfRepository {

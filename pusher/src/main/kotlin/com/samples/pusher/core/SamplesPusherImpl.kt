@@ -1,8 +1,5 @@
 package com.samples.pusher.core
 
-
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.samples.pusher.core.model.PusherConfiruration
 import com.samples.pusher.core.utils.cloneRepository
 import com.samples.pusher.core.utils.diffWorking
@@ -21,11 +18,7 @@ import org.eclipse.jgit.transport.CredentialsProvider
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.util.*
-import javax.print.attribute.standard.Severity
 
-
-//data class AuthData(val name: String, val password: String  = "")
 
 typealias CollectionSamples = Map<Code, ExecutionResult>
 
@@ -44,30 +37,25 @@ class SamplesPusher(
   }
 
   private val logger = LoggerFactory.getLogger("Samples Pusher")
-
-
-  var configuraton: PusherConfiruration = PusherConfiruration()
-
+  private var configuraton: PusherConfiruration = PusherConfiruration()
 
   fun readConfigFromFile(filename: String): SamplesPusher {
     configuraton.readFromFile(filename)
     return this
   }
 
-  fun configure( fn: PusherConfiruration.() -> Unit ): SamplesPusher {
+  fun configure(fn: PusherConfiruration.() -> Unit): SamplesPusher {
     configuraton.apply(fn)
     return this
   }
-  fun pushFromFile(filename: String) {
-    val mapper = jacksonObjectMapper()
-    val collection = mapper.readValue(File(filename), object : TypeReference<CollectionOfRepository>() {})
-    push(collection)
-  }
+
+
+  private val ghClient: GitHubClient by lazy { createGHClient() }
 
   /**
    * @return true if all is ok
    */
-  fun push(collection: CollectionOfRepository): Boolean {
+  fun push(collection: CollectionOfRepository, isCreateIssue: Boolean = true): Boolean {
     if (collection.snippets.isEmpty() && collection.diff?.deletedFiles.isNullOrEmpty()) {
       logger.info("Nothing is to push")
       return true
@@ -88,16 +76,14 @@ class SamplesPusher(
         writeAndDeleteSnippets(mng, collection.snippets, collection.diff?.deletedFiles ?: emptyList<String>())
       logger.debug(".kt files are  written")
 
-      val client = createGHClient()
-
-      if (!errors.isEmpty())
-        createIssue(client, errors, collection, collection.url)
+      if (isCreateIssue && errors.isNotEmpty())
+        createIssue(errors, collection, collection.url)
 
       val df = diffWorking(git)
       if (df.isNotEmpty()) {
         commitAndPush(git)
         logger.debug(".kt are pushed")
-        createPR(client, collection, branchName)
+        createPR(collection, branchName)
       }
       return errors.isEmpty()
     } catch (e: GitException) {
@@ -110,6 +96,14 @@ class SamplesPusher(
       }
     }
     return true
+  }
+
+  fun filterBadSnippets(res: CollectionSamples): List<Snippet> {
+    return res.filter {
+      it.value.errors.any {
+        greateOrEqualSeverity(it.severity)
+      }
+    }.map { Snippet(it.key, it.value) }
   }
 
   private fun prepareTargetPath(repoDir: File): File {
@@ -129,21 +123,26 @@ class SamplesPusher(
     deleteFiles: List<String>
   ): List<Snippet> {
     deleteFiles.forEach { manager.removeAllSnippets(it) }
-    val errors = mutableListOf<Snippet>()
+    val badSnippets = mutableListOf<Snippet>()
     res.forEach {
       if (it.value.errors.isNotEmpty()) {
         logger.error("Filename: ${it.value.fileName}")
         logger.error("Code: \n${it.key}")
         logger.error("Errors: \n${it.value.errors.joinToString("\n")}")
-        if(it.value.errors.filter { greateOrEqualSeverity(it.severity) }.isNotEmpty()) {
-          // Create issue!!!
-          errors.add(Snippet(it.key, it.value))
+        if (it.value.errors.any {
+            greateOrEqualSeverity(it.severity)
+          }) {
+          badSnippets.add(Snippet(it.key, it.value))
         }
       } else {
         manager.addSnippet(it.key, it.value.fileName)
       }
     }
-    return errors
+    return badSnippets
+  }
+
+  fun greateOrEqualSeverity(severity: ProjectSeveriry): Boolean {
+    return severity >= configuraton.severity
   }
 
   private fun commitAndPush(git: Git) {
@@ -159,6 +158,7 @@ class SamplesPusher(
     git.push().setRemote(url).setCredentialsProvider(credentialsProvider).call()
   }
 
+  // GitHub helpers
   private fun createGHClient(): GitHubClient {
     val client = GitHubClient()
 
@@ -169,13 +169,13 @@ class SamplesPusher(
     return client
   }
 
-  private fun createPR(client: GitHubClient, res: CollectionOfRepository, headBranch: String) {
+  private fun createPR(res: CollectionOfRepository, headBranch: String) {
     val model = HashMap<String, Any>()
     //root.put("snippets", report)
     model.put("src", res)
     val temp = templates.getTemplate("pr.md", model)
 
-    val prServise = org.eclipse.egit.github.core.service.PullRequestService(client)
+    val prServise = org.eclipse.egit.github.core.service.PullRequestService(ghClient)
     var pr = PullRequest()
     pr.setTitle(temp.head)
     pr.setBody(temp.body)
@@ -188,17 +188,16 @@ class SamplesPusher(
 
 
   private fun createIssue(
-    client: GitHubClient,
-    report: List<Snippet>,
+    badSnippets: List<Snippet>,
     res: CollectionOfRepository,
     repositoryUrl: String = url
   ) {
     val model = HashMap<String, Any>()
-    model.put("snippets", report)
+    model.put("snippets", badSnippets)
     model.put("src", res)
     val temp = templates.getTemplate("issue.md", model)
 
-    val issueServise = org.eclipse.egit.github.core.service.IssueService(client)
+    val issueServise = org.eclipse.egit.github.core.service.IssueService(ghClient)
     var issue = Issue()
     issue.setTitle(temp.head)
     issue.setBody(temp.body)
@@ -207,14 +206,21 @@ class SamplesPusher(
     logger.info("The Issue  is created, url: ${issue.htmlUrl}")
   }
 
-  fun greateOrEqualSeverity(severiry: ProjectSeveriry): Boolean {
-    if (configuraton.severity == ProjectSeveriry.ERROR) {
-      return severiry == ProjectSeveriry.ERROR
-    } else     if (configuraton.severity == ProjectSeveriry.INFO) {
-      return true
-    } else if (configuraton.severity == ProjectSeveriry.WARNING) {
-      return severiry == ProjectSeveriry.ERROR || severiry == ProjectSeveriry.WARNING
-    }
-    throw NotImplementedError()
+  fun createCommentPR(
+    id: Long,
+    badSnippets: List<Snippet>,
+    res: CollectionOfRepository,
+    repositoryUrl: String = url
+  ) {
+    val model = HashMap<String, Any>()
+    model.put("snippets", badSnippets)
+    model.put("src", res)
+    val temp = templates.getTemplate("pr-comment.md", model)
+
+    val issueServise = org.eclipse.egit.github.core.service.IssueService(ghClient)
+
+    val comment = issueServise.createComment(RepositoryId.createFromUrl(repositoryUrl), id.toInt(), temp.body)
+    logger.info("The pr comment  is created, url: ${comment.url}")
   }
+
 }

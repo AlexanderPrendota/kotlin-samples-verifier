@@ -52,7 +52,7 @@ class TemplateManager() {
     val head = strs.substringBefore("\n\n")
     val body = strs.substringAfter("\n\n")
     if (body.isEmpty())
-      throw Exception("Template has to contain header and body")
+      throw Exception("Template has to contain body")
     return Template(head, body)
   }
 

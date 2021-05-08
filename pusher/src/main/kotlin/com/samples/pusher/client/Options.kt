@@ -47,9 +47,9 @@ class PusherOptions : CredentialsOption() {
   var configPath: String = "config.properties"
 
   @set:Argument(
-    "config-path",
+    "severity",
     description = "Create issue and do not push if " +
-      "the snippet has errors equals or greater severity"
+      "the snippet has errors equals or greater the severity"
   )
   var severity: ProjectSeveriry = ProjectSeveriry.ERROR
 }
@@ -81,7 +81,7 @@ open class CheckOptions : ParseOptions() {
   @set:Argument(
     "repository",
     alias = "r",
-    required = true,
+    required = false,
     description = "Git repository URL with samples to execute"
   )
   lateinit var repositoryUrl: String
