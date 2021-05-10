@@ -10,8 +10,12 @@ This tool can run as GitHub Action.
 
 It can run in the two work modes:
 
-1. The action handles GitHub events such as ```pull request``` and ```push```.
-2. The action runs a verification of repository.
+1. *Automatic mode.* The action handles GitHub events such as:
+   * ```push``` The tool verifies pushed commits, create PR with the new samples, creates an issue if needed.
+   * ```pull_request``` The tool verifies the repository changes, creates a comment into the PR if needed.
+   * ```shedule```  The tool verifies the all repository, create PR with the new samples, creates an issue.
+
+2. *Manual mode.* The action runs a verification of repository. You need to unset ```io-event``` option and set the required options manually .
 
 ### Options:
   | Name (alias) | Format | Description | Default |

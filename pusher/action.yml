@@ -49,6 +49,11 @@ inputs:
     description: 'Create issue and do not push if the snippet has errors equals or greater the severity'
     required: false
     default: 'ERROR'
+
+  io-event:
+    description: 'The default is the event name (automatic mode). It needs to process the github events'
+    required: false
+    default: '${{ github.event_name }}'
 runs:
   using: "composite"
   steps:
@@ -65,6 +70,6 @@ runs:
       run: ./gradlew installDist
       shell: bash
     - working-directory: ${{ github.action_path }}
-      run: echo '${{ toJson(github.event) }}' | ./build/install/kotlin-samples-pusher/bin/kotlin-samples-pusher -io-event '${{ github.event_name }}' -r ${{  inputs.repository }} -br ${{  inputs.verify-branch }} -snippet-flags ${{  inputs.snippet-flags }} -push-repository ${{  inputs.push-repository }} -push-path '${{ inputs.push-path }}' -username ${{  inputs.username }} -passw '${{  inputs.password }}' -commits ${{  inputs.start-commit }},${{  inputs.end-commit }} -config-path '${{  inputs.config-path }}' -template-path '${{  inputs.template-path }}'
+      run: echo '${{ toJson(github.event) }}' | ./build/install/kotlin-samples-pusher/bin/kotlin-samples-pusher -io-event '${{ inputs.io-event }}' -r ${{  inputs.repository }} -br ${{  inputs.verify-branch }} -snippet-flags ${{  inputs.snippet-flags }} -push-repository ${{  inputs.push-repository }} -push-path '${{ inputs.push-path }}' -username ${{  inputs.username }} -passw '${{  inputs.password }}' -commits ${{  inputs.start-commit }},${{  inputs.end-commit }} -config-path '${{  inputs.config-path }}' -template-path '${{  inputs.template-path }}'
       shell: bash
 
