@@ -16,7 +16,6 @@ class TemplateManager() {
 
   private val cfgTemplates: Configuration = Configuration(Configuration.VERSION_2_3_31)
 
-
   fun configureTemplate(path: String) {
     if (path.indexOf("http://", 0, true) == 0 ||
       path.indexOf("https://", 0, true) == 0
@@ -50,9 +49,11 @@ class TemplateManager() {
 
     val strs = out.toString()
     val head = strs.substringBefore("\n\n")
-    val body = strs.substringAfter("\n\n")
+    var body = strs.substringAfter("\n\n")
     if (body.isEmpty())
       throw Exception("Template has to contain body")
+    if(body.length > MAX_BODY_LENGTH)
+      body = body.substring(0, MAX_BODY_LENGTH - TOO_LONG.length) + TOO_LONG
     return Template(head, body)
   }
 
@@ -62,4 +63,8 @@ class TemplateManager() {
     return "new-samples-$currentDate"
   }
 
+  companion object {
+    const val MAX_BODY_LENGTH =65536
+    const val TOO_LONG ="TOO LONG"
+  }
 }
