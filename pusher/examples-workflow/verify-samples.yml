@@ -1,6 +1,8 @@
-name: Verify snippets DEV
+name: Verify samples DEV
 
 on:
+#  schedule:
+#    - cron: '30 5 * * 1,4' # 5:30 UTC Mon, Thu
   push:
     branches: [ master ]
   pull_request:
