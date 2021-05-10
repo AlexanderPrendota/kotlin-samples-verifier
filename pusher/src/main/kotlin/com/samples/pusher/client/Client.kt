@@ -38,7 +38,7 @@ class Client {
         if (!pusherOptions.ioEvent.isNullOrBlank()) {
           val input = System.`in`.bufferedReader().use { it.readText() }
           val eventType = EventType.valueOf(pusherOptions.ioEvent ?: "")
-          isOk = GitEventHandler(verifier, pusher).process(eventType, input)
+          isOk = GitEventHandler(verifier, pusher, verifierOptions).process(eventType, input)
 
         } else { // work through cli arguments
           val repoSamples = collect(verifier, verifierOptions)
