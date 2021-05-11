@@ -44,7 +44,7 @@ class GitEventHandler(val verifier: SamplesVerifier, val pusher: SamplesPusher, 
   }
 
   fun process(event: PullRequestEvent): Boolean {
-    if (event.action != "opened" ||
+    if (event.action != "opened" &&
       event.action != "synchronize"
     )
       return true
