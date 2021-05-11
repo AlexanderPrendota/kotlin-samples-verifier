@@ -6,7 +6,7 @@ import com.samples.verifier.internal.utils.processHTMLFile
 import com.samples.verifier.internal.utils.processMarkdownFile
 import com.samples.verifier.model.ExecutionResult
 import com.samples.verifier.model.ParseConfiguration
-import com.samples.verifier.model.ProjectSeveriry
+import com.samples.verifier.model.ProjectSeverity
 import org.junit.jupiter.api.Assertions.assertTrue
 import java.io.File
 
@@ -56,5 +56,5 @@ fun ExecutionResult.contains(str: String) {
 }
 
 fun ExecutionResult.hasNoErrors() {
-  assertTrue(errors.all { it.severity != ProjectSeveriry.ERROR })
+  assertTrue(errors.all { it.severity != ProjectSeverity.ERROR })
 }
