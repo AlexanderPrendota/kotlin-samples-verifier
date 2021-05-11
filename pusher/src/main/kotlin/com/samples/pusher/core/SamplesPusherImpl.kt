@@ -7,7 +7,7 @@ import com.samples.verifier.Code
 import com.samples.verifier.GitException
 import com.samples.verifier.model.CollectionOfRepository
 import com.samples.verifier.model.ExecutionResult
-import com.samples.verifier.model.ProjectSeveriry
+import com.samples.verifier.model.ProjectSeverity
 import org.eclipse.egit.github.core.Issue
 import org.eclipse.egit.github.core.PullRequest
 import org.eclipse.egit.github.core.PullRequestMarker
@@ -141,7 +141,7 @@ class SamplesPusher(
     return badSnippets
   }
 
-  fun greateOrEqualSeverity(severity: ProjectSeveriry): Boolean {
+  fun greateOrEqualSeverity(severity: ProjectSeverity): Boolean {
     return severity >= configuraton.severity
   }
 

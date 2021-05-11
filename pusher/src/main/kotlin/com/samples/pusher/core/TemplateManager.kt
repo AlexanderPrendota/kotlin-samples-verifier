@@ -65,6 +65,6 @@ class TemplateManager() {
 
   companion object {
     const val MAX_BODY_LENGTH =65536
-    const val TOO_LONG ="TOO LONG"
+    const val TOO_LONG =" [TOO LONG]"
   }
 }
