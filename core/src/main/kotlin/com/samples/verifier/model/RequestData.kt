@@ -10,17 +10,17 @@ data class TextInterval(val start: TextPosition, val end: TextPosition) {
   data class TextPosition(val line: Int, val ch: Int)
 }
 
-enum class ProjectSeveriry {
+enum class ProjectSeverity {
   INFO,
-  ERROR,
-  WARNING;
+  WARNING,
+  ERROR;
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class ErrorDescriptor(
   val interval: TextInterval,
   val message: String,
-  val severity: ProjectSeveriry,
+  val severity: ProjectSeverity,
   val className: String?
 )
 
