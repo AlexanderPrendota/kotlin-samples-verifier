@@ -40,7 +40,7 @@ dependencies {
     implementation("commons-beanutils:commons-beanutils:1.9.4")
     implementation("org.freemarker:freemarker:2.3.31")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.0")
-    implementation("io.github.alexanderprendota:kotlin-samples-verifier:1.1.2")
+    implementation("io.github.alexanderprendota:kotlin-samples-verifier:1.1.3")
 }
 
 tasks.test {

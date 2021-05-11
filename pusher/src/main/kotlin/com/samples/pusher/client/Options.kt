@@ -104,6 +104,21 @@ open class CheckOptions : ParseOptions() {
 
 open class ParseOptions : CompilerOptions() {
   @set:Argument(
+    "tag-filter",
+    required = false,
+    description = "User filter for tag containing snippet  like so: (#tag=\"name\" & attr1=\"val\"). " +
+      "It also supports !, &, | operations."
+  )
+  var tagFilter: String = ""
+
+  @set:Argument(
+    "ignore-tag-filter",
+    required = false,
+    description = "User filter for ignoring of tag including inners tags."
+  )
+  var ignoreTagFilter: String = ""
+
+  @set:Argument(
     "snippet-flags",
     alias = "f",
     required = true,
