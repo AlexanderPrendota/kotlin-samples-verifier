@@ -79,6 +79,7 @@ private object BooleanGrammar : Grammar<BooleanExpression<Element>>() {
   val not by literalToken("!")
   val and by regexToken("&{1,2}")
   val or by regexToken("\\|{1,2}")
+  val ws by regexToken("\\s+", ignore = true) // is use
   // [-] tokens
 
   val attr: Parser<Atribute> by id map { Atribute(it.text) }
