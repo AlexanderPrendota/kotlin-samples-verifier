@@ -2,7 +2,7 @@ package com.samples.pusher.client
 
 import com.samples.verifier.FileType
 import com.samples.verifier.KotlinEnv
-import com.samples.verifier.model.ProjectSeveriry
+import com.samples.verifier.model.ProjectSeverity
 import com.sampullara.cli.Argument
 
 
@@ -51,7 +51,7 @@ class PusherOptions : CredentialsOption() {
     description = "Create issue and do not push if " +
       "the snippet has errors equals or greater the severity"
   )
-  var severity: ProjectSeveriry = ProjectSeveriry.ERROR
+  var severity: ProjectSeverity = ProjectSeverity.ERROR
 }
 
 open class CredentialsOption {
