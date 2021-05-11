@@ -27,6 +27,23 @@ class ParseConfiguration() {
    */
   var parseTags: HashSet<String>? = null
 
+  /**
+   * User filter for tag containing snippet
+   * Special the word #tag means tag name.
+   * Attribute name can implicit transform to true if the attribute exists else false.
+   *
+   * e.g. (#tag="code" & kotlin-runnable="true" & kotlin-min-compiler-version)
+   *
+   * Here kotlin-min-compiler-version implicit transform to true  if the attribute exists.
+   * The filter supports !, & and | operations.
+   */
+  var tagFilter: String = ""
+
+  /**
+   * User filter for ignoring of tag including inners tags.
+   */
+  var ignoreTagFilter: String = ""
+
   constructor(block: ParseConfiguration.() -> Unit) : this() {
     this.block()
   }
