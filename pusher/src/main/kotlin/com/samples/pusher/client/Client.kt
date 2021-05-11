@@ -54,7 +54,6 @@ class Client {
 
     }
 
-
     private fun collect(samplesVerifier: SamplesVerifier, options: CheckOptions): CollectionOfRepository {
       val commits = options.commits
       return samplesVerifier.collect(
@@ -101,6 +100,8 @@ class Client {
           parseDirectory = options.parseDirectory?.let { Regex(it) }
           ignoreDirectory = options.ignoreDirectory?.let { Regex(it) }
           parseTags = options.parseTags?.toHashSet()
+          tagFilter = options.tagFilter
+          ignoreTagFilter = options.ignoreTagFilter
         }
     }
 

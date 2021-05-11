@@ -21,7 +21,16 @@ inputs:
   #options for parsing
   snippet-flags:
     description: 'Flags for code snippets, separated by "," like so: "attr1,attr2"'
-    required: true
+    required: false
+    default: ''
+  tag-filter:
+    description: 'User filter for tag containing snippet  like so: (#tag="name" & attr1="val"). It also supports !, &, | operations.'
+    required: false
+    default: ''
+  ignore-tag-filter:
+    description: 'User filter for ignoring of tag including inners tags.'
+    required: false
+    default: ''
   #options for Pusher
   push-repository:
     description: 'Git repository URL to push the samples'
@@ -70,6 +79,6 @@ runs:
       run: ./gradlew installDist
       shell: bash
     - working-directory: ${{ github.action_path }}
-      run: echo '${{ toJson(github.event) }}' | ./build/install/kotlin-samples-pusher/bin/kotlin-samples-pusher -io-event '${{ inputs.io-event }}' -r ${{  inputs.repository }} -br ${{  inputs.verify-branch }} -snippet-flags ${{  inputs.snippet-flags }} -push-repository ${{  inputs.push-repository }} -push-path '${{ inputs.push-path }}' -username ${{  inputs.username }} -passw '${{  inputs.password }}' -commits ${{  inputs.start-commit }},${{  inputs.end-commit }} -config-path '${{  inputs.config-path }}' -template-path '${{  inputs.template-path }}'
+      run: echo '${{ toJson(github.event) }}' | ./build/install/kotlin-samples-pusher/bin/kotlin-samples-pusher -io-event '${{ inputs.io-event }}' -r ${{  inputs.repository }} -br ${{  inputs.verify-branch }} -snippet-flags '${{  inputs.snippet-flags }}' -tag-filter '${{  inputs.tag-filter }}' -ignore-tag-filter '${{  inputs.ignore-tag-filter }}' -push-repository ${{  inputs.push-repository }} -push-path '${{ inputs.push-path }}' -username ${{  inputs.username }} -passw '${{  inputs.password }}' -commits ${{  inputs.start-commit }},${{  inputs.end-commit }} -config-path '${{  inputs.config-path }}' -template-path '${{  inputs.template-path }}'
       shell: bash
 
