@@ -65,7 +65,7 @@ internal fun processHTMLText(
   val tagUserFilter = if (isUseFilter) compileFilter(parseConfiguration.tagFilter) else null
 
   val isUseIgnoreFilter = parseConfiguration.ignoreTagFilter.isNotEmpty()
-  val ignoreUFilter = if (isUseFilter) compileFilter(parseConfiguration.ignoreTagFilter) else null
+  val ignoreUFilter = if (isUseIgnoreFilter) compileFilter(parseConfiguration.ignoreTagFilter) else null
 
   queue.addFirst(document.body())
   with(parseConfiguration) {
@@ -73,25 +73,19 @@ internal fun processHTMLText(
       val elem = queue.remove()
       val attrs = elem.attributes().map { Attribute(it.key, it.value) }.toHashSet()
 
-      if (isUseIgnoreFilter) {
-        if (ignoreUFilter?.evaluate(elem) == true) {
-          continue
-        }
-      } else {
-        if (ignoreAttributes != null && attrs.intersect(ignoreAttributes!!).isNotEmpty())
-          continue
-      }
+      if (ignoreUFilter?.evaluate(elem) == true
+        || (ignoreAttributes != null && attrs.intersect(ignoreAttributes!!).isNotEmpty())
+      )
+        continue
 
       queue.addAll(elem.children())
 
-      if (isUseFilter) {
-        if (tagUserFilter?.evaluate(elem) == true) {
-          val code = elem.wholeText().trimIndent()
-          snippets.add(code)
-        }
+      if (tagUserFilter?.evaluate(elem) == true) {
+        val code = elem.wholeText().trimIndent()
+        snippets.add(code)
         continue
       }
-      // else
+
       if ((parseTags != null && (elem.tagName() !in parseTags!!)) ||
         (parseTags == null && elem.tagName() != "code" && fileType == FileType.MD)
       ) {

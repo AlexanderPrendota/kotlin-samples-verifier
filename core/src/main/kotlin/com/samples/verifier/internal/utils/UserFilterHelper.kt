@@ -10,6 +10,7 @@ import com.github.h0tk3y.betterParse.parser.Parser
 
 import org.jsoup.nodes.Element
 
+// [+] Classes for storing AST of a custom filter
 sealed class BooleanExpression<T> {
   abstract fun evaluate(element: T): Boolean
 }
@@ -51,19 +52,34 @@ data class CompareAttrOp(val left: Atribute, val right: String) : BooleanExpress
 data class CompareVarOp(val left: Variable, val right: String) : BooleanExpression<Element>() {
   override fun evaluate(element: Element): Boolean = left.evaluate(element).equals(right)
 }
+// [-] Classes for storing AST of a custom filter
 
-object BooleanGrammar : Grammar<BooleanExpression<Element>>() {
+/**
+ * Describe the grammar for parsing a user filter in Kotlin DSL ( https://github.com/h0tk3y/better-parse ).
+ * Grammar in BNF:
+ * <attr> ::= [A-Za-z]\w*
+ * <variable> ::= #[A-Za-z]\w*
+ *
+ * <bracedExpression> = '(' <orChain> ')'
+ * <negation>  ::= '!' <term>
+ * <atom> ::= <variable> '=' '"\w*"' |  <attr> '=' '"\w*"' | <attr>
+ * <term> ::= <atom> | <negation> | <bracedExpression>
+ * <andChain> ::=  <andChain> '&' <term> | <term>
+ * <orChain> ::=   <orChain> '|' <andChain> | <andChain>
+ */
+private object BooleanGrammar : Grammar<BooleanExpression<Element>>() {
 
+  // [+] tokens
   val equ by regexToken("={1,2}")
   val id by regexToken("[A-Za-z][\\w-]*")
   val varname by regexToken("#[A-Za-z]\\w*")
-  val quote by regexToken("\"\\w+\"")
+  val quote by regexToken("\"\\w*\"")
   val lpar by literalToken("(")
   val rpar by literalToken(")")
   val not by literalToken("!")
   val and by regexToken("&{1,2}")
   val or by regexToken("\\|{1,2}")
-  val ws by regexToken("\\s+", ignore = true)
+  // [-] tokens
 
   val attr: Parser<Atribute> by id map { Atribute(it.text) }
   val variable: Parser<Variable> by varname map { Variable(it.text.substring(1)) }
@@ -88,4 +104,7 @@ object BooleanGrammar : Grammar<BooleanExpression<Element>>() {
   override val rootParser by orChain
 }
 
+/**
+ * Build AST by the grammar given above
+ */
 internal fun compileFilter(s: String) = BooleanGrammar.parseToEnd(s)
