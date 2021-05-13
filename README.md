@@ -26,6 +26,8 @@ Gradle tasks to run server using docker:
 ./gradlew dockerStop dockerRemoveContainer
 ```
 
+Also, the tool can collect snippets from the changes between two commits or two branches.
+
 ## Gradle
 
 ```groovy
@@ -64,6 +66,8 @@ dependencies {
   |-file-type | [FileType] | MD or HTML (type of files to be processed) | MD |
   |-kotlin-env | [KotlinEnv] | JS or JVM | JVM |
   |-repository (-r) | [String] | Git repository URL with samples to execute| n/a |
+  |-tag-filter | [String] | User filter for tag containing snippet  like so: (#tag=\"name\" & attr1=\"val\"). It also supports !, &, / operations | "" |
+  |-ignore-tag-filter | [String] | User filter for ignoring of tag including inners tags | "" |
   
 #### Only for collect:
 | Name (alias) | Format | Description | Default |
