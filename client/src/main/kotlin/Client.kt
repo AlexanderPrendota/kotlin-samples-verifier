@@ -85,9 +85,11 @@ class Client {
             val (a, b) = s.split(":", limit = 2)
             Attribute(a, b)
           }?.toHashSet()
-          parseDirectory = options.parseDirectory?.let { Regex(it) }
+          parseDirectory  = options.parseDirectory?.let { Regex(it) }
           ignoreDirectory = options.ignoreDirectory?.let { Regex(it) }
-          parseTags = options.parseTags?.toHashSet()
+          parseTags       = options.parseTags?.toHashSet()
+          tagFilter       = options.tagFilter
+          ignoreTagFilter = options.ignoreTagFilter
         }
     }
   }
@@ -98,6 +100,21 @@ class Client {
   }
 
   open class CheckOptions : ParseOptions() {
+    @set:Argument(
+      "tag-filter",
+      required = false,
+      description = "User filter for tag containing snippet  like so: (#tag=\"name\" & attr1=\"val\"). " +
+        "It also supports !, &, | operations."
+    )
+    var tagFilter: String = ""
+
+    @set:Argument(
+      "ignore-tag-filter",
+      required = false,
+      description = "User filter for ignoring of tag including inners tags."
+    )
+    var ignoreTagFilter: String = ""
+
     @set:Argument(
       "repository",
       alias = "r",
