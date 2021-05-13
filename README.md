@@ -30,17 +30,11 @@ Also, the tool can collect snippets from the changes between two commits or two 
 
 ## Gradle
 
-```groovy
-repositories {
-    maven {
-        url = uri("https://dl.bintray.com/myannyax/kotlin-samples-verifier")
-    }
-}
-```
+Maven Central:
 ```
 dependencies {
     ...
-    implementation("com.kotlin.samples.verifier:core:1.1.0")
+    implementation("io.github.alexanderprendota:kotlin-samples-verifier:1.1.4:1.1.0")
 }
 ```
 
