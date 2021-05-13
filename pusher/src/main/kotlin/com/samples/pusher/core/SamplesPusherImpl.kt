@@ -83,7 +83,7 @@ class SamplesPusher(
       if (df.isNotEmpty()) {
         commitAndPush(git)
         logger.debug(".kt are pushed")
-        createPR(collection, branchName)
+        createPR(collection, errors, branchName)
       }
       return errors.isEmpty()
     } catch (e: GitException) {
@@ -169,9 +169,9 @@ class SamplesPusher(
     return client
   }
 
-  private fun createPR(res: CollectionOfRepository, headBranch: String) {
+  private fun createPR(res: CollectionOfRepository, badSnippets: List<Snippet>, headBranch: String) {
     val model = HashMap<String, Any>()
-    //root.put("snippets", report)
+    model.put("badSnippets", badSnippets)
     model.put("src", res)
     val temp = templates.getTemplate("pr.md", model)
 
