@@ -52,6 +52,12 @@ class PusherOptions : CredentialsOption() {
       "the snippet has errors equals or greater the severity"
   )
   var severity: ProjectSeverity = ProjectSeverity.ERROR
+
+  @set:Argument(
+    "create-issue",
+    description = "Username or access token for push to a target repository"
+  )
+  var createIssue: Boolean = false
 }
 
 open class CredentialsOption {

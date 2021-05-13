@@ -42,7 +42,7 @@ class Client {
 
         } else { // work through cli arguments
           val repoSamples = collect(verifier, verifierOptions)
-          isOk = pusher.push(repoSamples)
+          isOk = pusher.push(repoSamples, pusherOptions.createIssue)
         }
 
         if (!isOk)

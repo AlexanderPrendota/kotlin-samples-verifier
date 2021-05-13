@@ -2,7 +2,7 @@ name: Verify samples CRON
 
 on:
   schedule:
-   - cron: '30 5 * * 1,4' # 5:30 UTC Mon, Thu
+   - cron: '30 18 * * 1,4' # 18:30 UTC Mon, Thu
 
 jobs:
   build:
@@ -13,6 +13,9 @@ jobs:
           - repo: 'https://github.com/JetBrains/kotlin-web-site'
             filter: '#tag="code" & kotlin-runnable="true"'
             path: 'src/test/resources/test-compile-data/kotlin-web-site'
+          - repo: 'https://github.com/Kotlin/kotlin-by-example'
+            filter: '#tag="code" & class="language-run-kotlin"'
+            path: 'src/test/resources/test-compile-data//kotlin-by-example'
     steps:
       - name: Set up JDK
         uses: actions/setup-java@v2
@@ -28,4 +31,4 @@ jobs:
           push-repository: 'https://github.com/${{github.repository}}'
           tag-filter: '${{ matrix.filter }}'
           push-path: '${{ matrix.path }}'
-          username: '${{ secrets.TOKEN }}' #token with an access to create PR in push-repository and issue in this repository
+          username: '${{ secrets.GITHUB_TOKEN }}' #token with an access to create PR in push-repository
