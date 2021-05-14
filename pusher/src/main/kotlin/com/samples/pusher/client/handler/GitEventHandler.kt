@@ -44,10 +44,12 @@ class GitEventHandler(val verifier: SamplesVerifier, val pusher: SamplesPusher, 
   }
 
   fun process(event: PullRequestEvent): Boolean {
+    /* Anyway check samples
+
     if (event.action != "opened" &&
       event.action != "synchronize"
     )
-      return true
+      return true*/
 
     val collection = verifier.collect(
       event.pullRequest.base.repo.gitUrl,

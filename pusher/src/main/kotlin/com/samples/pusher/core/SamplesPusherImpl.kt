@@ -16,8 +16,6 @@ import org.eclipse.egit.github.core.RepositoryId
 import org.eclipse.egit.github.core.client.GitHubClient
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.CredentialsProvider
-import org.eclipse.jgit.transport.PushResult
-import org.eclipse.jgit.transport.RemoteRefUpdate
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -160,8 +158,6 @@ class SamplesPusher(
     val credentialsProvider: CredentialsProvider = UsernamePasswordCredentialsProvider(user, password)
     pushRepo(git, url, credentialsProvider)
   }
-
-
 
   // GitHub helpers
   private fun createGHClient(): GitHubClient {
