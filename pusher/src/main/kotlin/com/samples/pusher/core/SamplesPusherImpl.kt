@@ -3,6 +3,7 @@ package com.samples.pusher.core
 import com.samples.pusher.core.model.PusherConfiruration
 import com.samples.pusher.core.utils.cloneRepository
 import com.samples.pusher.core.utils.diffWorking
+import com.samples.pusher.core.utils.pushRepo
 import com.samples.verifier.Code
 import com.samples.verifier.GitException
 import com.samples.verifier.model.CollectionOfRepository
@@ -15,6 +16,8 @@ import org.eclipse.egit.github.core.RepositoryId
 import org.eclipse.egit.github.core.client.GitHubClient
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.CredentialsProvider
+import org.eclipse.jgit.transport.PushResult
+import org.eclipse.jgit.transport.RemoteRefUpdate
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -82,7 +85,7 @@ class SamplesPusher(
       val df = diffWorking(git)
       if (df.isNotEmpty()) {
         commitAndPush(git)
-        logger.debug(".kt are pushed")
+        logger.debug(".kt are pushed into branch: $branchName")
         createPR(collection, errors, branchName)
       }
       return errors.isEmpty()
@@ -155,8 +158,10 @@ class SamplesPusher(
       .call()
 
     val credentialsProvider: CredentialsProvider = UsernamePasswordCredentialsProvider(user, password)
-    git.push().setRemote(url).setCredentialsProvider(credentialsProvider).call()
+    pushRepo(git, url, credentialsProvider)
   }
+
+
 
   // GitHub helpers
   private fun createGHClient(): GitHubClient {
