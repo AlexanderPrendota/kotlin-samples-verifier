@@ -42,7 +42,8 @@ class Client {
 
         } else { // work through cli arguments
           val repoSamples = collect(verifier, verifierOptions)
-          isOk = pusher.push(repoSamples, pusherOptions.createIssue)
+          pusher.push(repoSamples, pusherOptions.createIssue)
+          isOk = true // collect mode
         }
 
         if (!isOk)
