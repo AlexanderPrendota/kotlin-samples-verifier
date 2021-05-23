@@ -130,11 +130,12 @@ class SamplesPusher(
         logger.error("Filename: ${it.value.fileName}")
         logger.error("Code: \n${it.key}")
         logger.error("Errors: \n${it.value.errors.joinToString("\n")}")
-        if (it.value.errors.any {
-            greateOrEqualSeverity(it.severity)
-          }) {
-          badSnippets.add(Snippet(it.key, it.value))
-        }
+      }
+
+      if (it.value.errors.any {
+          greateOrEqualSeverity(it.severity)
+        }) {
+        badSnippets.add(Snippet(it.key, it.value))
       } else {
         manager.addSnippet(it.key, it.value.fileName)
       }
