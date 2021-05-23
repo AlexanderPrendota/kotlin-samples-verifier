@@ -29,7 +29,6 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
 
     implementation("com.github.spullara.cli-parser:cli-parser:1.1.5")
-    //implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.1")
     implementation("org.eclipse.jgit:org.eclipse.jgit:5.10.0.202012080955-r")
 
     implementation("org.slf4j:slf4j-api:2.0.0-alpha1")
