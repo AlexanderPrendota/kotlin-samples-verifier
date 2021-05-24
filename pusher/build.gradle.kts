@@ -4,7 +4,7 @@ plugins {
     kotlin("jvm") version "1.4.32"
     kotlin("plugin.serialization") version "1.4.32"
     id("com.palantir.docker") version "0.26.0"
-    id("com.palantir.docker-run") version "0.25.0"
+    id("com.palantir.docker-run") version "0.26.0"
     application
 }
 
