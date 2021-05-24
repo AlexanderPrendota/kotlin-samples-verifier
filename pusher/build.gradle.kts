@@ -29,7 +29,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
 
     implementation("com.github.spullara.cli-parser:cli-parser:1.1.5")
-    implementation("org.eclipse.jgit:org.eclipse.jgit:5.10.0.202012080955-r")
+    implementation("org.eclipse.jgit:org.eclipse.jgit:5.11.1.202105131744-r")
 
     implementation("org.slf4j:slf4j-api:2.0.0-alpha1")
     implementation("org.slf4j:slf4j-log4j12:2.0.0-alpha1")
