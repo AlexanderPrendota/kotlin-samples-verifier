@@ -49,10 +49,10 @@ internal fun pushRepo(git: Git, url: String, credentialsProvider: CredentialsPro
     throw GitException("No push result")
   }
   val result: PushResult = iterResult.next()
-  if (result.getRemoteUpdates().isEmpty()) {
+  if (result.remoteUpdates.isEmpty()) {
     //logger.warn("No remote updates occurred")
   } else {
-    for (update in result.getRemoteUpdates()) {
+    for (update in result.remoteUpdates) {
       if (RemoteRefUpdate.Status.NON_EXISTING != update.status
         && RemoteRefUpdate.Status.OK != update.status
       ) {

@@ -143,7 +143,7 @@ class SamplesPusher(
     return badSnippets
   }
 
-  fun greateOrEqualSeverity(severity: ProjectSeverity): Boolean {
+  private fun greateOrEqualSeverity(severity: ProjectSeverity): Boolean {
     return severity >= configuraton.severity
   }
 

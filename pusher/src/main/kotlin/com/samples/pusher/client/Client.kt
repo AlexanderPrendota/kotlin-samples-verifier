@@ -8,7 +8,6 @@ import com.samples.verifier.model.CollectionOfRepository
 import com.sampullara.cli.Args
 import org.apache.log4j.BasicConfigurator
 import org.apache.log4j.PropertyConfigurator
-import org.eclipse.egit.github.core.RepositoryId
 import kotlin.system.exitProcess
 
 class Client {

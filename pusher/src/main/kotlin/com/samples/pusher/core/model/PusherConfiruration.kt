@@ -42,7 +42,7 @@ class PusherConfiruration {
       FileBasedConfigurationBuilder<FileBasedConfiguration>(PropertiesConfiguration::class.java)
         .configure(props)
 
-    val config = builder.getConfiguration()
+    val config = builder.configuration
     committerName = config.getString("committerName", committerName)
     committerEmail = config.getString("committerEmail", committerEmail)
     commitMsg = config.getString("commitMsg", commitMsg)
