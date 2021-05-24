@@ -1,8 +1,8 @@
 import java.lang.Thread.sleep
 
 plugins {
-    kotlin("jvm") version "1.4.32"
-    kotlin("plugin.serialization") version "1.4.32"
+    kotlin("jvm") version "1.5.10"
+    kotlin("plugin.serialization") version "1.5.10"
     id("com.palantir.docker") version "0.26.0"
     id("com.palantir.docker-run") version "0.26.0"
     application
@@ -34,7 +34,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api:2.0.0-alpha1")
     implementation("org.slf4j:slf4j-log4j12:2.0.0-alpha1")
 
-    implementation("org.eclipse.mylyn.github:org.eclipse.egit.github.core:3.4.0.201406110918-r")
+    implementation("org.eclipse.mylyn.github:org.eclipse.egit.github.core:2.1.5")
     implementation("org.apache.commons:commons-configuration2:2.7")
     implementation("commons-beanutils:commons-beanutils:1.9.4")
     implementation("org.freemarker:freemarker:2.3.31")
