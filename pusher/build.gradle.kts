@@ -34,7 +34,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api:2.0.0-alpha1")
     implementation("org.slf4j:slf4j-log4j12:2.0.0-alpha1")
 
-    implementation("org.eclipse.mylyn.github:org.eclipse.egit.github.core:2.1.5")
+    implementation("org.eclipse.mylyn.github:org.eclipse.egit.github.core:3.4.0.201406110918-r")
     implementation("org.apache.commons:commons-configuration2:2.7")
     implementation("commons-beanutils:commons-beanutils:1.9.4")
     implementation("org.freemarker:freemarker:2.3.31")
