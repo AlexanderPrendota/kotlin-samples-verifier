@@ -5,7 +5,7 @@ plugins {
   kotlin("jvm") version "1.3.70"
   id("com.palantir.docker") version "0.26.0"
   id("com.palantir.docker-run") version "0.25.0"
-  id("org.jetbrains.dokka") version "0.10.1"
+  id("org.jetbrains.dokka") version "1.4.32"
   `maven-publish`
   signing
 }
@@ -74,16 +74,15 @@ tasks.test {
   finalizedBy("dockerStop", "dockerRemoveContainer")
 }
 
-tasks.dokka {
-  outputFormat = "html"
-  outputDirectory = "$buildDir/javadoc"
+tasks.dokkaHtml {
+  outputDirectory.set(file("$buildDir/javadoc"))
 }
 
 val dokkaJar by tasks.creating(Jar::class) {
   group = JavaBasePlugin.DOCUMENTATION_GROUP
   description = "Assembles Kotlin docs with Dokka"
   archiveClassifier.set("javadoc")
-  from(tasks.dokka)
+  from(tasks.dokkaHtml)
 }
 
 val sourcesJar by tasks.creating(Jar::class) {
@@ -97,18 +96,6 @@ signing {
 }
 
 publishing {
-  repositories {
-    maven {
-      name = "sonatype"
-      setUrl("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-      credentials {
-        val ossrhUsername: String? by project
-        val ossrhPassword: String? by project
-        username = ossrhUsername
-        password = ossrhPassword
-      }
-    }
-  }
   publications {
     create<MavenPublication>("mavenJava") {
       from(components["java"])
