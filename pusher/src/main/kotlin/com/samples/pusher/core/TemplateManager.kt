@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-class TemplateManager() {
+class TemplateManager {
   data class Template(val head: String, val body: String)
 
   private val cfgTemplates: Configuration = Configuration(Configuration.VERSION_2_3_31)
@@ -20,7 +20,7 @@ class TemplateManager() {
     if (path.indexOf("http://", 0, true) == 0 ||
       path.indexOf("https://", 0, true) == 0
     ) {
-      cfgTemplates.setTemplateLoader(object : URLTemplateLoader() {
+      cfgTemplates.templateLoader = object : URLTemplateLoader() {
         override fun getURL(name: String): URL? {
           return try {
 
@@ -29,16 +29,16 @@ class TemplateManager() {
             null
           }
         }
-      })
+      }
     } else {
       cfgTemplates.setDirectoryForTemplateLoading(File(path))
     }
     cfgTemplates.unsetLocale()
-    cfgTemplates.setDefaultEncoding("UTF-8")
-    cfgTemplates.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER)
-    cfgTemplates.setLogTemplateExceptions(false)
-    cfgTemplates.setWrapUncheckedExceptions(true)
-    cfgTemplates.setFallbackOnNullLoopVariable(false)
+    cfgTemplates.defaultEncoding = "UTF-8"
+    cfgTemplates.templateExceptionHandler = TemplateExceptionHandler.RETHROW_HANDLER
+    cfgTemplates.logTemplateExceptions = false
+    cfgTemplates.wrapUncheckedExceptions = true
+    cfgTemplates.fallbackOnNullLoopVariable = false
   }
 
   fun getTemplate(name: String, model: HashMap<String, Any>): Template {
@@ -52,7 +52,7 @@ class TemplateManager() {
     var body = strs.substringAfter("\n\n")
     if (body.isEmpty())
       throw Exception("Template has to contain body")
-    if(body.length > MAX_BODY_LENGTH)
+    if (body.length > MAX_BODY_LENGTH)
       body = body.substring(0, MAX_BODY_LENGTH - TOO_LONG.length) + TOO_LONG
     return Template(head, body)
   }
@@ -64,7 +64,7 @@ class TemplateManager() {
   }
 
   companion object {
-    const val MAX_BODY_LENGTH =65536
-    const val TOO_LONG =" [TOO LONG]"
+    const val MAX_BODY_LENGTH = 65536
+    const val TOO_LONG = " [TOO LONG]"
   }
 }

@@ -10,7 +10,7 @@ fun md5(input: String): String {
   return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
 }
 
-class SnippetManager(val dirSamples: File) {
+class SnippetManager(private val dirSamples: File) {
   private val logger = LoggerFactory.getLogger("Samples Pusher")
 
   data class PathEntity(var countSnippets: Int, var hash: String)
@@ -20,10 +20,10 @@ class SnippetManager(val dirSamples: File) {
   var changed: Boolean = false
     private set
 
-  /*
-  Create a snippet file in the folder dirSamples/FileName
-  Example: for snippet from "src/test.html"
-  It will create some .kt file in dirSamples/test
+  /**
+   * Create a snippet file in the folder dirSamples/FileName
+   * Example: for snippet from "src/test.html"
+   * It will create some .kt file in dirSamples/test
    */
   fun addSnippet(code: String, path: String) {
     val filename = path.substringAfterLast('/').substringBeforeLast('.')
@@ -41,7 +41,7 @@ class SnippetManager(val dirSamples: File) {
 
     File(targetDir, newName).writeText(code)
     changed = true
-    logger.info("Created a snippet file: ${newName}")
+    logger.info("Created a snippet file: $newName")
   }
 
   fun removeAllSnippets(path: String) {
