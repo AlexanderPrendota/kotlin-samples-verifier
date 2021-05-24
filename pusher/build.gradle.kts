@@ -25,8 +25,8 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
 
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.1")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
 
     implementation("com.github.spullara.cli-parser:cli-parser:1.1.5")
     implementation("org.eclipse.jgit:org.eclipse.jgit:5.10.0.202012080955-r")
