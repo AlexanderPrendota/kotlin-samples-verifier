@@ -1,5 +1,6 @@
 package com.samples.pusher.core.model
 
+import com.samples.pusher.core.utils.isHttpUrl
 import com.samples.verifier.model.ProjectSeverity
 import org.apache.commons.configuration2.FileBasedConfiguration
 import org.apache.commons.configuration2.PropertiesConfiguration
@@ -19,9 +20,7 @@ class PusherConfiguration {
 
   fun readFromFile(filename: String) {
     val props = Parameters().properties()
-    if (filename.indexOf("http://", 0, true) == 0 ||
-      filename.indexOf("https://", 0, true) == 0
-    ) {
+    if (filename.isHttpUrl()) {
       props.setURL(URL(filename))
     } else {
       props.setFileName(filename)
