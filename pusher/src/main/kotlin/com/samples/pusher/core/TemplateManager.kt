@@ -6,7 +6,6 @@ import freemarker.template.Configuration
 import freemarker.template.TemplateExceptionHandler
 import java.io.File
 import java.io.StringWriter
-import java.net.MalformedURLException
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
@@ -20,13 +19,7 @@ class TemplateManager {
   fun configureTemplate(path: String) {
     if (path.isHttpUrl()) {
       cfgTemplates.templateLoader = object : URLTemplateLoader() {
-        override fun getURL(name: String): URL? {
-          return try {
-            URL("$path/$name")
-          } catch (e: MalformedURLException) {
-            null
-          }
-        }
+        override fun getURL(name: String) = runCatching { URL("$path/$name") }.getOrNull()
       }
     } else {
       cfgTemplates.setDirectoryForTemplateLoading(File(path))
