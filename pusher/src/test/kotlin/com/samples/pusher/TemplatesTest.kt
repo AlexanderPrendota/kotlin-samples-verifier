@@ -28,7 +28,6 @@ class TemplatesTest {
         model.put("snippets", listOf<Snippet>( Snippet("dfd", ExecutionResult( listOf<ErrorDescriptor>(), null, "kllkgdfg.md"  ) ) ))
 
         val temp = templates.getTemplate("pr.md", model)
-        //print(temp)
         Assertions.assertEquals(temp.head, "New samples from commit")
     }
 }

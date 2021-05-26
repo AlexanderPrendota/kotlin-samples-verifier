@@ -62,7 +62,6 @@ class SnippetManager(private val dirSamples: File) {
       }
     }
 
-    val fd = directory.isDirectory
     if (directory.listFiles().isEmpty())
       directory.delete()
   }
