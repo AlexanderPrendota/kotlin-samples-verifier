@@ -25,14 +25,14 @@ typealias CollectionSamples = Map<Code, ExecutionResult>
 
 data class Snippet(val code: Code, val res: ExecutionResult)
 
-class SamplesPusher(
+class SamplesPusherImpl(
   val url: String,
   val user: String,
   val password: String = "",
   val branch: String = "master",
   val path: String,
   templatePath: String = "templates"
-) {
+) : SamplesPusher {
   private val templates = TemplateManager()
 
   init {
@@ -42,12 +42,12 @@ class SamplesPusher(
   private val logger = LoggerFactory.getLogger("Samples Pusher")
   private var configuraton: PusherConfiguration = PusherConfiguration()
 
-  fun readConfigFromFile(filename: String): SamplesPusher {
+  override fun readConfigFromFile(filename: String): SamplesPusherImpl {
     configuraton.readFromFile(filename)
     return this
   }
 
-  fun configure(fn: PusherConfiguration.() -> Unit): SamplesPusher {
+  override fun configure(fn: PusherConfiguration.() -> Unit): SamplesPusherImpl {
     configuraton.apply(fn)
     return this
   }
@@ -58,7 +58,7 @@ class SamplesPusher(
   /**
    * @return true if all is ok
    */
-  fun push(collection: CollectionOfRepository, isCreateIssue: Boolean = true): Boolean {
+  override fun push(collection: CollectionOfRepository, isCreateIssue: Boolean): Boolean {
     if (collection.snippets.isEmpty() && collection.diff?.deletedFiles.isNullOrEmpty()) {
       logger.info("Nothing is to push")
       return true
@@ -101,7 +101,7 @@ class SamplesPusher(
     return true
   }
 
-  fun filterBadSnippets(res: CollectionSamples): List<Snippet> {
+  override fun filterBadSnippets(res: CollectionSamples): List<Snippet> {
     return res.filter {
       it.value.errors.any {
         greateOrEqualSeverity(it.severity)
@@ -201,29 +201,29 @@ class SamplesPusher(
     model["src"] = res
     val temp = templates.getTemplate("issue.md", model)
 
-    val issueServise = org.eclipse.egit.github.core.service.IssueService(ghClient)
+    val issueService = org.eclipse.egit.github.core.service.IssueService(ghClient)
     var issue = Issue()
     issue.title = temp.head
     issue.body = temp.body
 
-    issue = issueServise.createIssue(RepositoryId.createFromUrl(repositoryUrl), issue)
+    issue = issueService.createIssue(RepositoryId.createFromUrl(repositoryUrl), issue)
     logger.info("The Issue  is created, url: ${issue.htmlUrl}")
   }
 
-  fun createCommentPR(
+  override fun createCommentPR(
     id: Long,
     badSnippets: List<Snippet>,
     res: CollectionOfRepository,
-    repositoryUrl: String = url
+    repositoryUrl: String
   ) {
     val model = HashMap<String, Any>()
     model["snippets"] = badSnippets
     model["src"] = res
     val temp = templates.getTemplate("pr-comment.md", model)
 
-    val issueServise = org.eclipse.egit.github.core.service.IssueService(ghClient)
+    val issueService = org.eclipse.egit.github.core.service.IssueService(ghClient)
 
-    val comment = issueServise.createComment(RepositoryId.createFromUrl(repositoryUrl), id.toInt(), temp.body)
+    val comment = issueService.createComment(RepositoryId.createFromUrl(repositoryUrl), id.toInt(), temp.body)
     logger.info("The pr comment  is created, url: ${comment.url}")
   }
 
