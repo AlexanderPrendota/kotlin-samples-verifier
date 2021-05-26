@@ -1,6 +1,7 @@
 package com.samples.pusher.client
 
 import com.samples.pusher.core.SamplesPusher
+import com.samples.pusher.core.SamplesPusherImpl
 import com.samples.verifier.SamplesVerifier
 import com.samples.verifier.SamplesVerifierFactory
 import com.samples.verifier.model.Attribute
@@ -64,7 +65,7 @@ class Client {
     }
 
     private fun helperCreatePusher(pusherOptions: PusherOptions): SamplesPusher {
-      val pusher = SamplesPusher(
+      val pusher = SamplesPusherImpl(
         url = pusherOptions.repositoryUrl,
         path = pusherOptions.path,
         user = pusherOptions.username,
