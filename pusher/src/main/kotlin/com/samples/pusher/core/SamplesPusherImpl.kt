@@ -1,6 +1,6 @@
 package com.samples.pusher.core
 
-import com.samples.pusher.core.model.PusherConfiruration
+import com.samples.pusher.core.model.PusherConfiguration
 import com.samples.pusher.core.utils.cloneRepository
 import com.samples.pusher.core.utils.diffWorking
 import com.samples.pusher.core.utils.pushRepo
@@ -38,14 +38,14 @@ class SamplesPusher(
   }
 
   private val logger = LoggerFactory.getLogger("Samples Pusher")
-  private var configuraton: PusherConfiruration = PusherConfiruration()
+  private var configuraton: PusherConfiguration = PusherConfiguration()
 
   fun readConfigFromFile(filename: String): SamplesPusher {
     configuraton.readFromFile(filename)
     return this
   }
 
-  fun configure(fn: PusherConfiruration.() -> Unit): SamplesPusher {
+  fun configure(fn: PusherConfiguration.() -> Unit): SamplesPusher {
     configuraton.apply(fn)
     return this
   }

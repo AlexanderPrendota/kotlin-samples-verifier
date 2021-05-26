@@ -7,7 +7,7 @@ import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder
 import org.apache.commons.configuration2.builder.fluent.Parameters
 import java.net.URL
 
-class PusherConfiruration {
+class PusherConfiguration {
 
   var severity: ProjectSeverity = ProjectSeverity.ERROR
 
