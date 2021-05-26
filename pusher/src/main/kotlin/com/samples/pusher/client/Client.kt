@@ -35,6 +35,10 @@ class Client {
 
         // work through io
         val isOk = if (!pusherOptions.ioEvent.isNullOrBlank()) {
+          /**
+           * There is another way:
+           * val input = System.getenv("GITHUB_EVENT")
+           */
           val input = System.`in`.bufferedReader().use { it.readText() }
           val eventType = EventType.valueOf(pusherOptions.ioEvent ?: "")
           GitEventHandler(verifier, pusher, verifierOptions).process(eventType, input)
