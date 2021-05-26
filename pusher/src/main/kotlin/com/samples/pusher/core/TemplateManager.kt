@@ -1,5 +1,6 @@
 package com.samples.pusher.core
 
+import com.samples.pusher.core.utils.isHttpUrl
 import freemarker.cache.URLTemplateLoader
 import freemarker.template.Configuration
 import freemarker.template.TemplateExceptionHandler
@@ -17,13 +18,10 @@ class TemplateManager {
   private val cfgTemplates: Configuration = Configuration(Configuration.VERSION_2_3_31)
 
   fun configureTemplate(path: String) {
-    if (path.indexOf("http://", 0, true) == 0 ||
-      path.indexOf("https://", 0, true) == 0
-    ) {
+    if (path.isHttpUrl()) {
       cfgTemplates.templateLoader = object : URLTemplateLoader() {
         override fun getURL(name: String): URL? {
           return try {
-
             URL("$path/$name")
           } catch (e: MalformedURLException) {
             null
