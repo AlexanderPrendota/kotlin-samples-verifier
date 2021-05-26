@@ -173,16 +173,16 @@ class SamplesPusher(
 
   private fun createPR(res: CollectionOfRepository, badSnippets: List<Snippet>, headBranch: String) {
     val model = HashMap<String, Any>()
-    model.put("badSnippets", badSnippets)
-    model.put("src", res)
+    model["badSnippets"] = badSnippets
+    model["src"] = res
     val temp = templates.getTemplate("pr.md", model)
 
     val prServise = org.eclipse.egit.github.core.service.PullRequestService(ghClient)
     var pr = PullRequest()
-    pr.setTitle(temp.head)
-    pr.setBody(temp.body)
-    pr.setBase(PullRequestMarker().setLabel(configuraton.baseBranchPR))
-    pr.setHead(PullRequestMarker().setLabel(headBranch))
+    pr.title = temp.head
+    pr.body = temp.body
+    pr.base = PullRequestMarker().setLabel(configuraton.baseBranchPR)
+    pr.head = PullRequestMarker().setLabel(headBranch)
     //logger.debug("RepoId: " + RepositoryId.createFromUrl(url).generateId())
     pr = prServise.createPullRequest(RepositoryId.createFromUrl(url), pr)
     logger.info("The Push request is created, url: ${pr.htmlUrl}")
