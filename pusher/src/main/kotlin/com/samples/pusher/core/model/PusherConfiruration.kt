@@ -11,22 +11,10 @@ class PusherConfiruration {
 
   var severity: ProjectSeverity = ProjectSeverity.ERROR
 
-  /**
-   *  committer's  name and email
-   */
-  var committerName = "bot"
   var committerEmail = "bot@samples.kotlin.com"
-
-
-  /**
-   *  commit message
-   */
-  var commitMsg = "New samples"
-
-  /**
-   *     what branch will the pull request be created for
-   */
+  var committerName = "kotlin-samples-pusher-bot"
   var baseBranchPR = "master"
+  var commitMessage = "test(samples): add new samples"
 
 
   fun readFromFile(filename: String) {
@@ -45,7 +33,7 @@ class PusherConfiruration {
     val config = builder.configuration
     committerName = config.getString("committerName", committerName)
     committerEmail = config.getString("committerEmail", committerEmail)
-    commitMsg = config.getString("commitMsg", commitMsg)
+    commitMessage = config.getString("commitMsg", commitMessage)
     baseBranchPR = config.getString("baseBranchPR", baseBranchPR)
 
   }
