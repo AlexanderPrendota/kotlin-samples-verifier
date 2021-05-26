@@ -26,9 +26,11 @@ typealias CollectionSamples = Map<Code, ExecutionResult>
 data class Snippet(val code: Code, val res: ExecutionResult)
 
 class SamplesPusher(
-  val user: String, val password: String = "",
-  private val branch: String = "master",
-  private val url: String, val path: String,
+  val url: String,
+  val user: String,
+  val password: String = "",
+  val branch: String = "master",
+  val path: String,
   templatePath: String = "templates"
 ) {
   private val templates = TemplateManager()

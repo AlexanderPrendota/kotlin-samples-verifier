@@ -32,17 +32,15 @@ class Client {
         val verifier = helperCreateVerifier(verifierOptions)
         val pusher = helperCreatePusher(pusherOptions)
 
-        val isOk: Boolean
         // work through io
-        if (!pusherOptions.ioEvent.isNullOrBlank()) {
+        val isOk = if (!pusherOptions.ioEvent.isNullOrBlank()) {
           val input = System.`in`.bufferedReader().use { it.readText() }
           val eventType = EventType.valueOf(pusherOptions.ioEvent ?: "")
-          isOk = GitEventHandler(verifier, pusher, verifierOptions).process(eventType, input)
-
+          GitEventHandler(verifier, pusher, verifierOptions).process(eventType, input)
         } else { // work through cli arguments
           val repoSamples = collect(verifier, verifierOptions)
           pusher.push(repoSamples, pusherOptions.createIssue)
-          isOk = true // collect mode
+          true // collect mode
         }
 
         if (!isOk)
@@ -67,7 +65,7 @@ class Client {
 
     private fun helperCreatePusher(pusherOptions: PusherOptions): SamplesPusher {
       val pusher = SamplesPusher(
-        pusherOptions.repositoryUrl,
+        url = pusherOptions.repositoryUrl,
         path = pusherOptions.path,
         user = pusherOptions.username,
         password = pusherOptions.passw,
