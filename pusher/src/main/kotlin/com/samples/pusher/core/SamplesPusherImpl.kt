@@ -26,9 +26,9 @@ typealias CollectionSamples = Map<Code, ExecutionResult>
 data class Snippet(val code: Code, val res: ExecutionResult)
 
 class SamplesPusher(
-  val url: String, val path: String,
   val user: String, val password: String = "",
-  val branch: String = "master",
+  private val branch: String = "master",
+  private val url: String, val path: String,
   templatePath: String = "templates"
 ) {
   private val templates = TemplateManager()
@@ -152,7 +152,7 @@ class SamplesPusher(
     git.commit()
       .setAll(true)
       .setAllowEmpty(true)
-      .setMessage(configuraton.commitMsg)
+      .setMessage(configuraton.commitMessage)
       .setCommitter(configuraton.committerName, configuraton.committerEmail)
       .call()
 
@@ -195,14 +195,14 @@ class SamplesPusher(
     repositoryUrl: String = url
   ) {
     val model = HashMap<String, Any>()
-    model.put("snippets", badSnippets)
-    model.put("src", res)
+    model["snippets"] = badSnippets
+    model["src"] = res
     val temp = templates.getTemplate("issue.md", model)
 
     val issueServise = org.eclipse.egit.github.core.service.IssueService(ghClient)
     var issue = Issue()
-    issue.setTitle(temp.head)
-    issue.setBody(temp.body)
+    issue.title = temp.head
+    issue.body = temp.body
 
     issue = issueServise.createIssue(RepositoryId.createFromUrl(repositoryUrl), issue)
     logger.info("The Issue  is created, url: ${issue.htmlUrl}")
@@ -215,8 +215,8 @@ class SamplesPusher(
     repositoryUrl: String = url
   ) {
     val model = HashMap<String, Any>()
-    model.put("snippets", badSnippets)
-    model.put("src", res)
+    model["snippets"] = badSnippets
+    model["src"] = res
     val temp = templates.getTemplate("pr-comment.md", model)
 
     val issueServise = org.eclipse.egit.github.core.service.IssueService(ghClient)
