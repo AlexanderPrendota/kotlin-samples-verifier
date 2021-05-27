@@ -1,10 +1,6 @@
-import java.lang.Thread.sleep
-
 plugins {
     kotlin("jvm") version "1.5.10"
     kotlin("plugin.serialization") version "1.5.10"
-    id("com.palantir.docker") version "0.26.0"
-    id("com.palantir.docker-run") version "0.26.0"
     application
 }
 
@@ -53,26 +49,5 @@ tasks {
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
-    }
-}
-
-//Docker tasks
-val dockerImageName = "prendota/kotlin-compiler-server:latest"
-
-docker {
-    name = dockerImageName
-    pull(true)
-}
-
-dockerRun {
-    name = "kotlin-compiler-server"
-    image = dockerImageName
-    arguments("--network=host")
-    clean = false
-}
-
-tasks.dockerRun {
-    doLast {
-        Thread.sleep(10 * 1000)
     }
 }
