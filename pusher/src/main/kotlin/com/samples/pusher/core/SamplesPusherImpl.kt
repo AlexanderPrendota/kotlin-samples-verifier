@@ -3,6 +3,7 @@ package com.samples.pusher.core
 import com.samples.pusher.core.model.PusherConfiguration
 import com.samples.pusher.core.utils.cloneRepository
 import com.samples.pusher.core.utils.diffWorking
+import com.samples.pusher.core.utils.initRepository
 import com.samples.pusher.core.utils.pushRepo
 import com.samples.verifier.Code
 import com.samples.verifier.GitException
@@ -67,8 +68,13 @@ class SamplesPusherImpl(
     val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
 
     try {
-      logger.debug("Cloning the repository... ")
-      val git = cloneRepository(dir, url, branch)
+      val git = if(dir.exists()) {
+        logger.debug("Using exist repository... ")
+        initRepository(dir)
+      } else {
+        logger.debug("Cloning the repository... ")
+        cloneRepository(dir, url, branch)
+      }
       val dirSamples = prepareTargetPath(dir)
 
       val branchName = templates.getBranchName()
