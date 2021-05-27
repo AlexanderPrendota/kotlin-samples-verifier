@@ -26,6 +26,16 @@ internal fun cloneRepository(dir: File, repositoryURL: String, branch: String): 
   }
 }
 
+internal fun initRepository(dir: File): Git {
+  try {
+    return Git.init()
+      .setDirectory(dir)
+      .call()
+  } catch (e: Exception) {
+    throw GitException(e)
+  }
+}
+
 /**
  * @return diff between head and actual working file directory
  */
