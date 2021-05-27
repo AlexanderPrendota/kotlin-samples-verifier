@@ -7,14 +7,14 @@ import kotlin.io.path.createTempDirectory
 
 class SnippetMngTest {
   @Test
-  fun `additing new samples`() {
+  fun `adding new samples`() {
     val tempDir = createTempDirectory("test").toFile()
     val snippetMng = SnippetManager(tempDir)
 
     snippetMng.addSnippet("code1", "samples/test1.md")
     snippetMng.addSnippet("code2", "samples/test1.md")
 
-    Assertions.assertEquals("test1", tempDir.list().get(0))
+    Assertions.assertEquals("test1", tempDir.list()[0])
     Assertions.assertEquals(2, tempDir.resolve("test1").list().size)
 
     snippetMng.addSnippet("code3", "samples/test2.md")

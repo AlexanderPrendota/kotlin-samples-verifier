@@ -82,7 +82,7 @@ class SamplesPusherImpl(
 
       val mng = SnippetManager(dirSamples)
       val errors =
-        writeAndDeleteSnippets(mng, collection.snippets, collection.diff?.deletedFiles ?: emptyList<String>())
+        writeAndDeleteSnippets(mng, collection.snippets, collection.diff?.deletedFiles ?: emptyList())
       logger.debug(".kt files are  written")
 
       if (isCreateIssue && errors.isNotEmpty())
@@ -109,8 +109,8 @@ class SamplesPusherImpl(
 
   override fun filterBadSnippets(res: CollectionSamples): List<Snippet> {
     return res.filter {
-      it.value.errors.any {
-        greateOrEqualSeverity(it.severity)
+      it.value.errors.any { err ->
+        greterOrEqualSeverity(err.severity)
       }
     }.map { Snippet(it.key, it.value) }
   }
@@ -140,8 +140,8 @@ class SamplesPusherImpl(
         logger.error("Errors: \n${it.value.errors.joinToString("\n")}")
       }
 
-      if (it.value.errors.any {
-          greateOrEqualSeverity(it.severity)
+      if (it.value.errors.any { err ->
+          greterOrEqualSeverity(err.severity)
         }) {
         badSnippets.add(Snippet(it.key, it.value))
       } else {
@@ -151,7 +151,7 @@ class SamplesPusherImpl(
     return badSnippets
   }
 
-  private fun greateOrEqualSeverity(severity: ProjectSeverity): Boolean {
+  private fun greterOrEqualSeverity(severity: ProjectSeverity): Boolean {
     return severity >= configuraton.severity
   }
 
