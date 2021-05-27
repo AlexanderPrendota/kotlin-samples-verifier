@@ -17,9 +17,9 @@ class TemplatesTest {
     fun `templates test`() {
         val templates = TemplateManager()
         //templates.configureTemplate("https://raw.githubusercontent.com/vmishenev/kotlin-web-site/master/.github/workflows/")
-        templates.configureTemplate("templates")
+        templates.configureTemplate("src/test/resources/templates")
 
-        val res = CollectionOfRepository("url", "",
+        val res = CollectionOfRepository("https://github.com/AlexanderPrendota/kotlin-web-site", "",
             HashMap<Code, ExecutionResult>(), DiffOfRepository("", "dsf", listOf<String>()))
 
         val model = HashMap<String, Any>()
@@ -28,6 +28,6 @@ class TemplatesTest {
         model.put("snippets", listOf<Snippet>( Snippet("dfd", ExecutionResult( listOf<ErrorDescriptor>(), null, "kllkgdfg.md"  ) ) ))
 
         val temp = templates.getTemplate("pr.md", model)
-        Assertions.assertEquals(temp.head, "New samples from commit")
+        Assertions.assertEquals("New samples from kotlin-web-site", temp.head )
     }
 }
