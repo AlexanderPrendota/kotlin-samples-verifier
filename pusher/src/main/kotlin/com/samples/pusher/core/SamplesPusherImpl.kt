@@ -68,7 +68,7 @@ class SamplesPusherImpl(
     val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
 
     try {
-      val git = if(dir.exists()) {
+      val git = if (dir.exists()) {
         logger.debug("Using exist repository... ")
         initRepository(dir)
       } else {
