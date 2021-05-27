@@ -1,3 +1,5 @@
+![gradle workflow](https://github.com/AlexanderPrendota/kotlin-samples-pusher/actions/workflows/gradle.yml/badge.svg?branch=master)
+
 # Kotlin Samples Pusher
 
 It aims to handle snippets collection for their consistency in the repository.
