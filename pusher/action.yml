@@ -70,9 +70,17 @@ runs:
     #      uses: actions/setup-java@v1
     #      with:
     #      java-version: 15
-    - id: docker-run
+    - id: clone-compiler-server
       working-directory: ${{ github.action_path }}
-      run: ./gradlew dockerRun
+      run: git clone https://github.com/AlexanderPrendota/kotlin-compiler-server --branch master --single-branch
+      shell: bash
+    - id: build-compiler-server
+      working-directory: ${{ github.action_path }}/kotlin-compiler-server
+      run: chmod +x gradlew; ./gradlew build -x test
+      shell: bash
+    - id: run-compiler-server
+      working-directory: ${{ github.action_path }}/kotlin-compiler-server
+      run: java -jar build/libs/kotlin-compiler-server-*.jar &
       shell: bash
     - id: install-dist
       working-directory: ${{ github.action_path }}
