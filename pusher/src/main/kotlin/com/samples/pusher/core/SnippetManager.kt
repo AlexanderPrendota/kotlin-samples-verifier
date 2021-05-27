@@ -48,7 +48,7 @@ class SnippetManager(private val dirSamples: File) {
     val filename = path.substringAfterLast('/').substringBeforeLast('.')
     val hash = md5(path)
     val directory = dirSamples.resolve(filename)
-    if(!directory.exists())
+    if (!directory.exists())
       return
     val fileTree = directory.walkTopDown()
     for (file in fileTree) {

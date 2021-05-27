@@ -21,47 +21,58 @@ import java.util.HashMap
 
 class GitEventHandlerTest {
 
-	lateinit var pusher: SamplesPusher
-	lateinit var verifier: SamplesVerifier
+  lateinit var pusher: SamplesPusher
+  lateinit var verifier: SamplesVerifier
 
-	@BeforeEach
-	fun prepare() {
-		val res = CollectionOfRepository("url", "",
-			HashMap<Code, ExecutionResult>(), DiffOfRepository("", "dsf", listOf<String>())
-		)
-		pusher = mock<SamplesPusher> {
-			on { push(eq(res), any()) }.thenReturn(true)
-			on { filterBadSnippets(any()) } doReturn listOf<Snippet>()
-		}
+  @BeforeEach
+  fun prepare() {
+    val res = CollectionOfRepository(
+      "url", "",
+      HashMap<Code, ExecutionResult>(), DiffOfRepository("", "dsf", listOf<String>())
+    )
+    pusher = mock<SamplesPusher> {
+      on { push(eq(res), any()) }.thenReturn(true)
+      on { filterBadSnippets(any()) } doReturn listOf<Snippet>()
+    }
 
-		verifier = mock<SamplesVerifier> {
-			on { collect(baseUrl = any(), baseBranch = any(), headUrl = any(),
-				         headBranch = any(), type = any<FileType>()) } doReturn res
-			on { collect(url = any(), branch = any(), type = any<FileType>(),
-				         startCommit = any(), endCommit = any()) } doReturn res
-		}
-	}
+    verifier = mock<SamplesVerifier> {
+      on {
+        collect(
+          baseUrl = any(), baseBranch = any(), headUrl = any(),
+          headBranch = any(), type = any<FileType>()
+        )
+      } doReturn res
+      on {
+        collect(
+          url = any(), branch = any(), type = any<FileType>(),
+          startCommit = any(), endCommit = any()
+        )
+      } doReturn res
+    }
+  }
 
-	@Test
-	fun `pull request`() {
-		val handler = GitEventHandler(verifier, pusher, CheckOptions())
-		val res = handler.process(EventType.pull_request, File("src/test/resources/pr-event.json").readText())
-		inOrder(verifier,pusher) {
-			verify(verifier).collect(any(), any(), any(), any(), any<FileType>())
-			verify(pusher).filterBadSnippets(any())
-		}
-		Assertions.assertTrue(res)
-	}
+  @Test
+  fun `pull request`() {
+    val handler = GitEventHandler(verifier, pusher, CheckOptions())
+    val res = handler.process(EventType.pull_request, File("src/test/resources/pr-event.json").readText())
+    inOrder(verifier, pusher) {
+      verify(verifier).collect(any(), any(), any(), any(), any<FileType>())
+      verify(pusher).filterBadSnippets(any())
+    }
+    Assertions.assertTrue(res)
+  }
 
-	@Test
-	fun `push event`() {
-		val handler = GitEventHandler(verifier, pusher, CheckOptions())
-		val res = handler.process(EventType.push, File("src/test/resources/push-event.json").readText())
-		inOrder(verifier,pusher) {
-			verify(verifier).collect(url = any(), branch = any(), type = any<FileType>(),
-									 startCommit = any(), endCommit = any())
-			verify(pusher).push(any(), any())
-		}
-		Assertions.assertTrue(res)
-	}
+  @Test
+  fun `push event`() {
+    val handler = GitEventHandler(verifier, pusher, CheckOptions())
+    val res = handler.process(EventType.push, File("src/test/resources/push-event.json").readText())
+    inOrder(verifier, pusher) {
+      verify(verifier).collect(
+        url = any(), branch = any(), type = any<FileType>(),
+        startCommit = any(), endCommit = any()
+      )
+      verify(pusher).push(any(), any())
+    }
+    Assertions.assertTrue(res)
+  }
 }
