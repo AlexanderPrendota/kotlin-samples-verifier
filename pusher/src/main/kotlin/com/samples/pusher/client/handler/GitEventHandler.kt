@@ -1,5 +1,6 @@
-package com.samples.pusher.client
+package com.samples.pusher.client.handler
 
+import com.samples.pusher.client.CheckOptions
 import com.samples.pusher.client.handler.models.PullRequestEvent
 import com.samples.pusher.client.handler.models.PushEvent
 import com.samples.pusher.core.SamplesPusher
@@ -11,7 +12,7 @@ enum class EventType {
   push, pull_request, schedule
 }
 
-class GitEventHandler(val verifier: SamplesVerifier, val pusher: SamplesPusher, val options: CheckOptions) {
+class GitEventHandler(private val verifier: SamplesVerifier, private val pusher: SamplesPusher, private val options: CheckOptions) {
   private val format = Json { ignoreUnknownKeys = true }
 
   fun process(eventType: EventType, eventContent: String): Boolean {

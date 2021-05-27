@@ -1,10 +1,9 @@
 package com.samples.pusher
 
 import com.samples.pusher.client.CheckOptions
-import com.samples.pusher.client.EventType
-import com.samples.pusher.client.GitEventHandler
+import com.samples.pusher.client.handler.EventType
+import com.samples.pusher.client.handler.GitEventHandler
 import com.samples.pusher.core.SamplesPusher
-import com.samples.pusher.core.Snippet
 import com.samples.verifier.Code
 import com.samples.verifier.FileType
 import com.samples.verifier.SamplesVerifier
@@ -16,35 +15,35 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
 import java.io.File
-import java.util.HashMap
+import java.util.*
 
 
 class GitEventHandlerTest {
 
-  lateinit var pusher: SamplesPusher
-  lateinit var verifier: SamplesVerifier
+  private lateinit var pusher: SamplesPusher
+  private lateinit var verifier: SamplesVerifier
 
   @BeforeEach
   fun prepare() {
     val res = CollectionOfRepository(
       "url", "",
-      HashMap<Code, ExecutionResult>(), DiffOfRepository("", "dsf", listOf<String>())
+      HashMap<Code, ExecutionResult>(), DiffOfRepository("", "dsf", listOf())
     )
-    pusher = mock<SamplesPusher> {
+    pusher = mock {
       on { push(eq(res), any()) }.thenReturn(true)
-      on { filterBadSnippets(any()) } doReturn listOf<Snippet>()
+      on { filterBadSnippets(any()) } doReturn listOf()
     }
 
-    verifier = mock<SamplesVerifier> {
+    verifier = mock {
       on {
         collect(
           baseUrl = any(), baseBranch = any(), headUrl = any(),
-          headBranch = any(), type = any<FileType>()
+          headBranch = any(), type = any()
         )
       } doReturn res
       on {
         collect(
-          url = any(), branch = any(), type = any<FileType>(),
+          url = any(), branch = any(), type = any(),
           startCommit = any(), endCommit = any()
         )
       } doReturn res
@@ -68,7 +67,7 @@ class GitEventHandlerTest {
     val res = handler.process(EventType.push, File("src/test/resources/push-event.json").readText())
     inOrder(verifier, pusher) {
       verify(verifier).collect(
-        url = any(), branch = any(), type = any<FileType>(),
+        url = any(), branch = any(), type = any(),
         startCommit = any(), endCommit = any()
       )
       verify(pusher).push(any(), any())

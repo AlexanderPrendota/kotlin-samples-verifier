@@ -105,7 +105,7 @@ open class CheckOptions : ParseOptions() {
     description = "Considering only the changed files between two arbitrary commits \"commit1,commit2\"" +
       "or starting from \"commit1\" if commit2 on one side is omitted"
   )
-  var commits: Array<String?> = Array<String?>(2) { null }
+  var commits: Array<String?> = Array(2) { null }
 }
 
 open class ParseOptions : CompilerOptions() {

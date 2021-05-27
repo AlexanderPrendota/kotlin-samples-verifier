@@ -1,14 +1,13 @@
 package com.samples.pusher
 
 import com.samples.pusher.core.Snippet
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import com.samples.pusher.core.TemplateManager
 import com.samples.verifier.Code
 import com.samples.verifier.model.CollectionOfRepository
 import com.samples.verifier.model.DiffOfRepository
-import com.samples.verifier.model.ErrorDescriptor
 import com.samples.verifier.model.ExecutionResult
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import java.util.*
 
 class TemplatesTest {
@@ -20,19 +19,13 @@ class TemplatesTest {
 
     val res = CollectionOfRepository(
       "https://github.com/AlexanderPrendota/kotlin-web-site", "",
-      HashMap<Code, ExecutionResult>(), DiffOfRepository("", "dsf", listOf<String>())
+      HashMap<Code, ExecutionResult>(), DiffOfRepository("", "dsf", listOf())
     )
 
     val model = HashMap<String, Any>()
-    model.put("src", res)
-    model.put(
-      "badSnippets",
-      listOf<Snippet>(Snippet("dfd", ExecutionResult(listOf<ErrorDescriptor>(), null, "kllkgdfg.md")))
-    )
-    model.put(
-      "snippets",
-      listOf<Snippet>(Snippet("dfd", ExecutionResult(listOf<ErrorDescriptor>(), null, "kllkgdfg.md")))
-    )
+    model["src"] = res
+    model["badSnippets"] = listOf(Snippet("dfd", ExecutionResult(listOf(), null, "kllkgdfg.md")))
+    model["snippets"] = listOf(Snippet("dfd", ExecutionResult(listOf(), null, "kllkgdfg.md")))
 
     val temp = templates.getTemplate("pr.md", model)
     Assertions.assertEquals("New samples from kotlin-web-site", temp.head)

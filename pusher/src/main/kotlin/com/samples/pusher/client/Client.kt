@@ -1,5 +1,7 @@
 package com.samples.pusher.client
 
+import com.samples.pusher.client.handler.EventType
+import com.samples.pusher.client.handler.GitEventHandler
 import com.samples.pusher.core.SamplesPusher
 import com.samples.pusher.core.SamplesPusherImpl
 import com.samples.verifier.SamplesVerifier
@@ -63,13 +65,13 @@ class Client {
         options.repositoryUrl,
         options.branch,
         options.fileType,
-        if (commits.size > 0 && commits[0]?.isNotEmpty() == true) commits[0] else null,
+        if (commits.isNotEmpty() && commits[0]?.isNotEmpty() == true) commits[0] else null,
         if (commits.size == 2 && commits[1]?.isNotEmpty() == true) commits[1] else null
       )
     }
 
     private fun helperCreatePusher(pusherOptions: PusherOptions): SamplesPusher {
-      val pusher = SamplesPusherImpl(
+      return SamplesPusherImpl(
         url = pusherOptions.repositoryUrl,
         path = pusherOptions.path,
         user = pusherOptions.username,
@@ -80,7 +82,6 @@ class Client {
         .configure {
           severity = pusherOptions.severity
         }
-      return pusher
     }
 
     private fun helperCreateVerifier(options: CheckOptions): SamplesVerifier {
