@@ -42,7 +42,7 @@ class Client {
            * val input = System.getenv("GITHUB_EVENT")
            */
           val input = System.`in`.bufferedReader().use { it.readText() }
-          val eventType = EventType.valueOf(pusherOptions.ioEvent ?: "")
+          val eventType = EventType.valueOf((pusherOptions.ioEvent ?: "").uppercase())
           GitEventHandler(verifier, pusher, verifierOptions).process(eventType, input)
         } else { // work through cli arguments
           val repoSamples = collect(verifier, verifierOptions)

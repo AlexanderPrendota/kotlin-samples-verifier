@@ -9,19 +9,22 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 enum class EventType {
-  push, pull_request, schedule
+  PUSH, PULL_REQUEST, SCHEDULE
 }
 
-class GitEventHandler(private val verifier: SamplesVerifier, private val pusher: SamplesPusher, private val options: CheckOptions) {
+class GitEventHandler(
+  private val verifier: SamplesVerifier,
+  private val pusher: SamplesPusher,
+  private val options: CheckOptions
+) {
   private val format = Json { ignoreUnknownKeys = true }
 
   fun process(eventType: EventType, eventContent: String): Boolean {
     return when (eventType) {
-      EventType.push -> process(format.decodeFromString<PushEvent>(eventContent))
-      EventType.pull_request -> process(format.decodeFromString<PullRequestEvent>(eventContent))
-      EventType.schedule -> processSchedule()
+      EventType.PUSH -> process(format.decodeFromString<PushEvent>(eventContent))
+      EventType.PULL_REQUEST -> process(format.decodeFromString<PullRequestEvent>(eventContent))
+      EventType.SCHEDULE -> processSchedule()
     }
-
   }
 
   private fun processSchedule(): Boolean {

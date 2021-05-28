@@ -10,8 +10,14 @@ import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
 
+enum class TemplateType(val file: String) {
+  PR("pr.md"),
+  ISSUE("issue.md"),
+  PR_COMMENT("pr-comment.md"),
+}
 
 class TemplateManager {
+
   data class Template(val head: String, val body: String)
 
   private val cfgTemplates: Configuration = Configuration(Configuration.VERSION_2_3_31)
@@ -32,8 +38,8 @@ class TemplateManager {
     cfgTemplates.fallbackOnNullLoopVariable = false
   }
 
-  fun getTemplate(name: String, model: HashMap<String, Any>): Template {
-    val temp = cfgTemplates.getTemplate(name)
+  fun getTemplate(type: TemplateType, model: HashMap<String, Any>): Template {
+    val temp = cfgTemplates.getTemplate(type.file)
 
     val out = StringWriter()
     temp.process(model, out)
