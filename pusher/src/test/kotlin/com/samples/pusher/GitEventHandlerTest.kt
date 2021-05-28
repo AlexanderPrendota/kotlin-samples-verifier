@@ -53,7 +53,7 @@ class GitEventHandlerTest {
   @Test
   fun `pull request`() {
     val handler = GitEventHandler(verifier, pusher, CheckOptions())
-    val res = handler.process(EventType.pull_request, File("src/test/resources/pr-event.json").readText())
+    val res = handler.process(EventType.PULL_REQUEST, File("src/test/resources/pr-event.json").readText())
     inOrder(verifier, pusher) {
       verify(verifier).collect(any(), any(), any(), any(), any<FileType>())
       verify(pusher).filterBadSnippets(any())
@@ -64,7 +64,7 @@ class GitEventHandlerTest {
   @Test
   fun `push event`() {
     val handler = GitEventHandler(verifier, pusher, CheckOptions())
-    val res = handler.process(EventType.push, File("src/test/resources/push-event.json").readText())
+    val res = handler.process(EventType.PUSH, File("src/test/resources/push-event.json").readText())
     inOrder(verifier, pusher) {
       verify(verifier).collect(
         url = any(), branch = any(), type = any(),

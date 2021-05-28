@@ -56,9 +56,7 @@ class SamplesPusherImpl(
 
   private val ghClient: GitHubClient by lazy { createGHClient() }
 
-  /**
-   * @return true if all is ok
-   */
+
   override fun push(collection: CollectionOfRepository, isCreateIssue: Boolean): Boolean {
     if (collection.snippets.isEmpty() && collection.diff?.deletedFiles.isNullOrEmpty()) {
       logger.info("Nothing is to push")
@@ -183,7 +181,7 @@ class SamplesPusherImpl(
     val model = HashMap<String, Any>()
     model["badSnippets"] = badSnippets
     model["src"] = res
-    val temp = templates.getTemplate("pr.md", model)
+    val temp = templates.getTemplate(TemplateType.PR, model)
 
     val prServise = org.eclipse.egit.github.core.service.PullRequestService(ghClient)
     var pr = PullRequest()
@@ -205,7 +203,7 @@ class SamplesPusherImpl(
     val model = HashMap<String, Any>()
     model["snippets"] = badSnippets
     model["src"] = res
-    val temp = templates.getTemplate("issue.md", model)
+    val temp = templates.getTemplate(TemplateType.ISSUE, model)
 
     val issueService = org.eclipse.egit.github.core.service.IssueService(ghClient)
     var issue = Issue()
@@ -225,7 +223,7 @@ class SamplesPusherImpl(
     val model = HashMap<String, Any>()
     model["snippets"] = badSnippets
     model["src"] = res
-    val temp = templates.getTemplate("pr-comment.md", model)
+    val temp = templates.getTemplate(TemplateType.PR_COMMENT, model)
 
     val issueService = org.eclipse.egit.github.core.service.IssueService(ghClient)
 
