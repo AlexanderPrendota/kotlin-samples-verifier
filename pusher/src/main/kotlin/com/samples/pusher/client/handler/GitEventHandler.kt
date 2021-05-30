@@ -27,7 +27,7 @@ class GitEventHandler(
     }
   }
 
-  private fun processSchedule(): Boolean {
+  fun processSchedule(): Boolean {
     val collection = verifier.collect(
       options.repositoryUrl,
       options.branch,
