@@ -1,5 +1,5 @@
 name: 'Kotlin Samples Verifier'
-description: 'Extracts embedded code snippets from HTML and Markdown files from a remote git repository, runs them and collects results into a repository of samples. It creates a issue for failed snippets.'
+description: 'Extracts embedded code snippets from HTML and Markdown files from a remote git repository, runs them and collects results into a repository of samples.'
 inputs:
   #options for work through cli
   repository:
@@ -86,7 +86,7 @@ runs:
       working-directory: ${{ github.action_path }}
       run: ./gradlew installDist
       shell: bash
-    - working-directory: ${{ github.action_path }}
+    - working-directory: ${{ github.action_path }}/pusher
       env:
         GITHUB_EVENT: ${{ toJSON(github.event) }}
       run: echo "$GITHUB_EVENT" | ./build/install/kotlin-samples-pusher/bin/kotlin-samples-pusher -io-event '${{ inputs.io-event }}' -r ${{  inputs.repository }} -br ${{  inputs.verify-branch }} -snippet-flags '${{  inputs.snippet-flags }}' -tag-filter '${{  inputs.tag-filter }}' -ignore-tag-filter '${{  inputs.ignore-tag-filter }}' -push-repository ${{  inputs.push-repository }} -push-path '${{ inputs.push-path }}' -username ${{  inputs.username }} -passw '${{  inputs.password }}' -commits ${{  inputs.start-commit }},${{  inputs.end-commit }} -config-path '${{  inputs.config-path }}' -template-path '${{  inputs.template-path }}'
