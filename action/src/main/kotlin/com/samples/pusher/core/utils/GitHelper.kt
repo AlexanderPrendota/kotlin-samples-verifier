@@ -52,6 +52,16 @@ internal fun diffWorking(git: Git): List<DiffEntry> {
   }
 }
 
+internal fun getModifiedOrAddedFilenames(entryList: List<DiffEntry>): List<String> {
+  return entryList
+    .filter {
+      it.changeType == DiffEntry.ChangeType.ADD ||
+        it.changeType == DiffEntry.ChangeType.MODIFY ||
+        it.changeType == DiffEntry.ChangeType.RENAME
+    }
+    .map { it.newPath }
+}
+
 internal fun pushRepo(git: Git, url: String, credentialsProvider: CredentialsProvider) {
   val iterResult = git.push().setRemote(url).setCredentialsProvider(credentialsProvider).call().iterator()
   // check result
