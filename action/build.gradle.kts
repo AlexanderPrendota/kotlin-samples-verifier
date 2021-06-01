@@ -12,9 +12,6 @@ application {
 }
 
 repositories {
-    maven {
-        url = uri("https://s01.oss.sonatype.org/content/groups/staging")
-    }
     mavenCentral()
 }
 
@@ -37,7 +34,7 @@ dependencies {
     implementation("org.freemarker:freemarker:2.3.31")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1")
 
-    implementation(project(":core"))//implementation("io.github.alexanderprendota:kotlin-samples-verifier:1.1.4")
+    implementation(project(":kotlin-samples-verifier"))//implementation("io.github.alexanderprendota:kotlin-samples-verifier:1.1.4")
 }
 
 tasks.test {
@@ -46,9 +43,9 @@ tasks.test {
 
 tasks {
     compileKotlin {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "11"
     }
     compileTestKotlin {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "11"
     }
 }

@@ -22,7 +22,7 @@ dependencies {
   implementation("org.slf4j:slf4j-api:2.0.0-alpha1")
   implementation("org.slf4j:slf4j-log4j12:2.0.0-alpha1")
 
-  implementation(project(":core"))
+  implementation(project(":kotlin-samples-verifier"))
 }
 
 tasks {
