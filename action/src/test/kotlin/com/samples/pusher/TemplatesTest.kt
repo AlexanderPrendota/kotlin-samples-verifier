@@ -13,7 +13,7 @@ import java.util.*
 
 class TemplatesTest {
   @Test
-  fun `templates test`() {
+  fun `templates pr from commit test`() {
 
     val templates = TemplateManager()
     //templates.configureTemplate("https://raw.githubusercontent.com/vmishenev/kotlin-web-site/master/.github/workflows/")
@@ -28,6 +28,7 @@ class TemplatesTest {
     model["src"] = res
     model["badSnippets"] = listOf(Snippet("dfd", ExecutionResult(listOf(), null, "kllkgdfg.md")))
     model["snippets"] = listOf(Snippet("dfd", ExecutionResult(listOf(), null, "kllkgdfg.md")))
+    model["changedFiles"] = listOf("README.md")
 
     val temp = templates.getTemplate(TemplateType.PR, model)
     Assertions.assertEquals("New samples from kotlin-web-site", temp.head)
