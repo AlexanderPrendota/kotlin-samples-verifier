@@ -1,4 +1,4 @@
 rootProject.name = "kotlin-samples-verifier"
-include("core")
+include("kotlin-samples-verifier")
 include("client")
-include("pusher")
+include("action")
