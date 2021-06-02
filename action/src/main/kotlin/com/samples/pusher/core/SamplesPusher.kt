@@ -1,7 +1,6 @@
 package com.samples.pusher.core
 
 import com.samples.pusher.core.model.PusherConfiguration
-import com.samples.verifier.KotlinEnv
 import com.samples.verifier.model.CollectionOfRepository
 
 interface SamplesPusher {
@@ -11,7 +10,7 @@ interface SamplesPusher {
   /**
    * @return true if all is ok
    */
-  fun push(collection: CollectionOfRepository, kotlinEnv: KotlinEnv, isCreateIssue: Boolean = true): Boolean
+  fun push(collection: CollectionOfRepository, isCreateIssue: Boolean = true): Boolean
   fun filterBadSnippets(res: CollectionSamples): List<Snippet>
   fun createCommentPR(
     id: Long,

@@ -33,7 +33,7 @@ class GitEventHandler(
       options.branch,
       options.fileType
     )
-    return pusher.push(collection, options.kotlinEnv)
+    return pusher.push(collection)
   }
 
   fun process(event: PushEvent): Boolean {
@@ -44,7 +44,7 @@ class GitEventHandler(
       event.before,
       event.after
     )
-    return pusher.push(collection, options.kotlinEnv)
+    return pusher.push(collection)
   }
 
   fun process(event: PullRequestEvent): Boolean {

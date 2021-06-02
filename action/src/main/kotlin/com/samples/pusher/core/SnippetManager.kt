@@ -2,13 +2,12 @@ package com.samples.pusher.core
 
 import com.samples.pusher.core.utils.getFilenameFromPath
 import com.samples.pusher.core.utils.md5
-import com.samples.verifier.KotlinEnv
 import org.slf4j.LoggerFactory
 import java.io.File
 
 typealias EncodedPath = String
 
-class SnippetManager(private val dirSamples: File, private val kotlinEnv: KotlinEnv) {
+class SnippetManager(private val dirSamples: File) {
   private val logger = LoggerFactory.getLogger("Samples Pusher")
 
   data class PathEntity(var countSnippets: Int, var encodedPath: EncodedPath)
@@ -40,7 +39,7 @@ class SnippetManager(private val dirSamples: File, private val kotlinEnv: Kotlin
       PathEntity(0, encodedPath)
     }
     entity.countSnippets++
-    val newName = "${entity.encodedPath}.${entity.countSnippets}.${getExt()}"
+    val newName = "${entity.encodedPath}.${entity.countSnippets}.kt"
     val targetDir = dirSamples.resolve(filename)
     if (!targetDir.exists())
       if (!targetDir.mkdirs())
@@ -52,11 +51,6 @@ class SnippetManager(private val dirSamples: File, private val kotlinEnv: Kotlin
     return newName
   }
 
-  private fun getExt() = when (kotlinEnv) {
-    KotlinEnv.JVM -> "kt"
-    KotlinEnv.JS -> "js"
-  }
-
   fun removeAllSnippets(path: String) {
     val filename = getFilenameFromPath(path)
     val hash = md5(path)
@@ -66,7 +60,7 @@ class SnippetManager(private val dirSamples: File, private val kotlinEnv: Kotlin
     val fileTree = directory.walkTopDown()
     for (file in fileTree) {
 
-      if (file.name.startsWith(hash) && file.extension == getExt()) {
+      if (file.name.startsWith(hash)) {
         if (!file.delete()) {
           logger.error("Can't remove the snippet file: ${file.name}")
         }

@@ -10,7 +10,7 @@ class SnippetMngTest {
   @Test
   fun `adding new samples`() {
     val tempDir = createTempDirectory("test").toFile()
-    val snippetMng = SnippetManager(tempDir, kotlinEnv = KotlinEnv.JVM)
+    val snippetMng = SnippetManager(tempDir)
 
     snippetMng.addSnippet("code1", "samples/test1.md")
     snippetMng.addSnippet("code2", "samples/test1.md")
@@ -18,10 +18,11 @@ class SnippetMngTest {
 
 
     Assertions.assertEquals("test1", tempDir.list()[0])
-    Assertions.assertEquals(2, tempDir.resolve("test1").list().size)
+    val test1File = tempDir.resolve("test1")
+    Assertions.assertEquals(2, test1File.list().size)
 
     //check ext
-    Assertions.assertEquals("kt", tempDir.resolve("test1").listFiles()[0].extension )
+    Assertions.assertEquals("kt", test1File.listFiles()[0].extension )
 
     snippetMng.addSnippet("code3", "samples/test2.md")
     val filename = snippetMng.addSnippet("code4", "samples/test3.md")

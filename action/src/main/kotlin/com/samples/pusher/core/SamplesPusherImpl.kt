@@ -4,7 +4,6 @@ import com.samples.pusher.core.model.PusherConfiguration
 import com.samples.pusher.core.utils.*
 import com.samples.verifier.Code
 import com.samples.verifier.GitException
-import com.samples.verifier.KotlinEnv
 import com.samples.verifier.model.CollectionOfRepository
 import com.samples.verifier.model.ExecutionResult
 import com.samples.verifier.model.ProjectSeverity
@@ -55,7 +54,7 @@ class SamplesPusherImpl(
   private val ghClient: GitHubClient by lazy { createGHClient() }
 
 
-  override fun push(collection: CollectionOfRepository, kotlinEnv: KotlinEnv, isCreateIssue: Boolean): Boolean {
+  override fun push(collection: CollectionOfRepository, isCreateIssue: Boolean): Boolean {
     if (collection.snippets.isEmpty() && collection.diff?.deletedFiles.isNullOrEmpty()) {
       logger.info("Nothing is to push")
       return true
@@ -76,7 +75,7 @@ class SamplesPusherImpl(
       val branchName = templates.getBranchName()
       git.checkout().setCreateBranch(true).setName(branchName).call()
 
-      val mng = SnippetManager(dirSamples, kotlinEnv)
+      val mng = SnippetManager(dirSamples)
       val badSnippets =
         writeAndDeleteSnippets(mng, collection.snippets, collection.diff?.deletedFiles ?: emptyList())
       logger.debug("Snippet files are  written")

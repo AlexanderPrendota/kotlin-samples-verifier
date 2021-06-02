@@ -30,7 +30,7 @@ class GitEventHandlerTest {
       HashMap<Code, ExecutionResult>(), DiffOfRepository("", "dsf", listOf())
     )
     pusher = mock {
-      on { push(eq(res), any(), any()) }.thenReturn(true)
+      on { push(eq(res), any()) }.thenReturn(true)
       on { filterBadSnippets(any()) } doReturn listOf()
     }
 
@@ -71,7 +71,7 @@ class GitEventHandlerTest {
         url = any(), branch = any(), type = any(),
         startCommit = any(), endCommit = any()
       )
-      verify(pusher).push(any(), any(), any())
+      verify(pusher).push(any(), any())
     }
     Assertions.assertTrue(res)
   }
