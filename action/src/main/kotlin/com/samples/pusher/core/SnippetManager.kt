@@ -1,21 +1,22 @@
 package com.samples.pusher.core
 
+import com.samples.pusher.core.utils.getFilenameFromPath
+import com.samples.pusher.core.utils.md5
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.math.BigInteger
-import java.security.MessageDigest
 
-fun md5(input: String): String {
-  val md = MessageDigest.getInstance("MD5")
-  return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
-}
+typealias EncodedPath = String
 
 class SnippetManager(private val dirSamples: File) {
   private val logger = LoggerFactory.getLogger("Samples Pusher")
 
-  data class PathEntity(var countSnippets: Int, var hash: String)
+  data class PathEntity(var countSnippets: Int, var encodedPath: EncodedPath)
+
 
   private val mapPath = mutableMapOf<String, PathEntity>()
+
+  // md5(path) maps to path
+  private val decoderPath = mutableMapOf<EncodedPath, String>()
 
   var changed: Boolean = false
     private set
@@ -24,16 +25,21 @@ class SnippetManager(private val dirSamples: File) {
    * Create a snippet file in the folder dirSamples/FileName
    * Example: for snippet from "src/test.html"
    * It will create some .kt file in dirSamples/test
+   *
+   * @return name of created snippet file
    */
-  fun addSnippet(code: String, path: String) {
-    val filename = path.substringAfterLast('/').substringBeforeLast('.')
+  fun addSnippet(code: String, path: String): String {
+    val filename = getFilenameFromPath(path)
+
 
     val entity = mapPath.getOrPut(path) {
       removeAllSnippets(path)
-      PathEntity(0, md5(path))
+      val encodedPath = md5(path)
+      decoderPath[encodedPath] = path
+      PathEntity(0, encodedPath)
     }
     entity.countSnippets++
-    val newName = "${entity.hash}.${entity.countSnippets}.kt"
+    val newName = "${entity.encodedPath}.${entity.countSnippets}.kt"
     val targetDir = dirSamples.resolve(filename)
     if (!targetDir.exists())
       if (!targetDir.mkdirs())
@@ -42,10 +48,11 @@ class SnippetManager(private val dirSamples: File) {
     File(targetDir, newName).writeText(code)
     changed = true
     logger.info("Created a snippet file: $newName")
+    return newName
   }
 
   fun removeAllSnippets(path: String) {
-    val filename = path.substringAfterLast('/').substringBeforeLast('.')
+    val filename = getFilenameFromPath(path)
     val hash = md5(path)
     val directory = dirSamples.resolve(filename)
     if (!directory.exists())
@@ -65,4 +72,13 @@ class SnippetManager(private val dirSamples: File) {
     if (directory.listFiles().isEmpty())
       directory.delete()
   }
+
+  /**
+   * It only works within the framework of current SnippetManager instance
+   */
+  fun translateFilenameToAddedSnippetPath(filename: String): String {
+    val encodedPath = getFilenameFromPath(filename).substringBefore('.')
+    return decoderPath.getOrDefault(encodedPath, "")
+  }
 }
+

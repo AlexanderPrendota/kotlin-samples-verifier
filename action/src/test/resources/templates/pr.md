@@ -3,10 +3,17 @@ New samples<#if src.diff?has_content> from ${src.url[src.url?last_index_of("/")+
 New samples in a repository ${src.url}
 <#if src.diff?has_content>Commit: ${src.url}/commit/${src.diff.endRef}</#if>
 Files:
-<#list src.snippets as code, value>
- ${value.fileName}
-    <#--  ```${code}```  -->
-</#list>
+<#if src.diff?has_content>
+  <#list src.snippets as code, value>
+   ${value.fileName}
+      <#--  ```${code}```  -->
+  </#list>
+<#else>
+    <#list changedFiles as it>
+    ${src.url}/blob/${src.branch[src.branch?last_index_of("/")+1..]}/${it}
+    </#list>
+</#if>
+
 <#if badSnippets?has_content>
 Bad samples:
     <#list badSnippets as item>

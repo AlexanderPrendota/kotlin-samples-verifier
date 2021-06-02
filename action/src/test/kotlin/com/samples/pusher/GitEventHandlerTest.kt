@@ -63,7 +63,8 @@ class GitEventHandlerTest {
 
   @Test
   fun `push event`() {
-    val handler = GitEventHandler(verifier, pusher, CheckOptions())
+    val options = CheckOptions()
+    val handler = GitEventHandler(verifier, pusher, options)
     val res = handler.process(EventType.PUSH, File("src/test/resources/push-event.json").readText())
     inOrder(verifier, pusher) {
       verify(verifier).collect(

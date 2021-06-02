@@ -1,10 +1,7 @@
 package com.samples.pusher.core
 
 import com.samples.pusher.core.model.PusherConfiguration
-import com.samples.pusher.core.utils.cloneRepository
-import com.samples.pusher.core.utils.diffWorking
-import com.samples.pusher.core.utils.initRepository
-import com.samples.pusher.core.utils.pushRepo
+import com.samples.pusher.core.utils.*
 import com.samples.verifier.Code
 import com.samples.verifier.GitException
 import com.samples.verifier.model.CollectionOfRepository
@@ -79,20 +76,23 @@ class SamplesPusherImpl(
       git.checkout().setCreateBranch(true).setName(branchName).call()
 
       val mng = SnippetManager(dirSamples)
-      val errors =
+      val badSnippets =
         writeAndDeleteSnippets(mng, collection.snippets, collection.diff?.deletedFiles ?: emptyList())
-      logger.debug(".kt files are  written")
+      logger.debug("Snippet files are  written")
 
-      if (isCreateIssue && errors.isNotEmpty())
-        createIssue(errors, collection, collection.url)
+      if (isCreateIssue && badSnippets.isNotEmpty())
+        createIssue(badSnippets, collection, collection.url)
 
       val df = diffWorking(git)
       if (df.isNotEmpty()) {
         commitAndPush(git)
-        logger.debug(".kt are pushed into branch: $branchName")
-        createPR(collection, errors, branchName)
+        logger.debug("Snippets are pushed into branch: $branchName")
+
+        val changedFiles =
+          getModifiedOrAddedFilenames(df).mapTo(HashSet()) { mng.translateFilenameToAddedSnippetPath(it) }
+        createPR(collection, badSnippets, changedFiles.toList(), branchName)
       }
-      return errors.isEmpty()
+      return badSnippets.isEmpty()
     } catch (e: GitException) {
       logger.error("${e.message}")
     } finally {
@@ -177,10 +177,16 @@ class SamplesPusherImpl(
     return client
   }
 
-  private fun createPR(res: CollectionOfRepository, badSnippets: List<Snippet>, headBranch: String) {
+  private fun createPR(
+    res: CollectionOfRepository,
+    badSnippets: List<Snippet>,
+    changedFiles: List<String>,
+    headBranch: String
+  ) {
     val model = HashMap<String, Any>()
     model["badSnippets"] = badSnippets
     model["src"] = res
+    model["changedFiles"] = changedFiles
     val temp = templates.getTemplate(TemplateType.PR, model)
 
     val prServise = org.eclipse.egit.github.core.service.PullRequestService(ghClient)
