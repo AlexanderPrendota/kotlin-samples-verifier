@@ -73,7 +73,7 @@ private object BooleanGrammar : Grammar<BooleanExpression<Element>>() {
   val equ by regexToken("={1,2}")
   val id by regexToken("[A-Za-z][\\w-]*")
   val varname by regexToken("#[A-Za-z]\\w*")
-  val quote by regexToken("\"\\w*\"")
+  val quote by regexToken("\"[^\"]*\"")
   val lpar by literalToken("(")
   val rpar by literalToken(")")
   val not by literalToken("!")
