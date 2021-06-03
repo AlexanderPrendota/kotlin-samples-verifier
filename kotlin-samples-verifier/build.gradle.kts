@@ -2,7 +2,6 @@ import org.gradle.jvm.tasks.Jar
 import java.lang.Thread.sleep
 
 plugins {
-  kotlin("jvm") version "1.3.70"
   id("com.palantir.docker") version "0.26.0"
   id("com.palantir.docker-run") version "0.25.0"
   id("org.jetbrains.dokka") version "1.4.32"
@@ -21,10 +20,8 @@ dependencies {
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.2")
   testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
 
-  implementation(kotlin("stdlib-jdk8"))
   implementation("com.vladsch.flexmark:flexmark-all:0.62.2")
   implementation("org.jsoup:jsoup:1.13.1")
-  implementation("org.eclipse.jgit:org.eclipse.jgit:5.11.1.202105131744-r")
   implementation("org.apache.directory.studio:org.apache.commons.io:2.4")
 
   implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -34,9 +31,6 @@ dependencies {
   implementation("com.squareup.okhttp3:okhttp:4.9.1")
 
   implementation("com.github.h0tk3y.betterParse:better-parse:0.4.2")
-
-  implementation("org.slf4j:slf4j-api:2.0.0-alpha1")
-  implementation("org.slf4j:slf4j-log4j12:2.0.0-alpha1")
 }
 
 tasks {
