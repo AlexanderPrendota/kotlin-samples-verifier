@@ -58,6 +58,12 @@ class PusherOptions : CredentialsOption() {
     description = "Username or access token for push to a target repository"
   )
   var createIssue: Boolean = false
+
+  @set:Argument(
+    "head-branch",
+    description = "Head branch to push samples"
+  )
+  var headBranch: String = "verifier/new-samples"
 }
 
 open class CredentialsOption {

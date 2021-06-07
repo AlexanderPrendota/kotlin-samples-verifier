@@ -64,7 +64,7 @@ class GitEventHandler(
     )
     val badSamples = pusher.filterBadSnippets(collection.snippets)
     if (badSamples.isEmpty()) return true
-    pusher.createCommentPR(event.number, badSamples, collection, event.repository.htmlUrl)
+    pusher.createBadSamplesCommentPR(event.number, badSamples, collection, event.repository.htmlUrl)
     return false
   }
 }

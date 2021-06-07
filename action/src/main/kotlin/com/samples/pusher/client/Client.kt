@@ -74,6 +74,7 @@ class Client {
       return SamplesPusherImpl(
         url = pusherOptions.repositoryUrl,
         path = pusherOptions.path,
+        headBranch = pusherOptions.headBranch,
         user = pusherOptions.username,
         password = pusherOptions.passw,
         templatePath = pusherOptions.templatePath

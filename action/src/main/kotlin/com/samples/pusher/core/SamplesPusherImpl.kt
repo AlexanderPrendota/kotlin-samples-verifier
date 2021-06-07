@@ -12,6 +12,7 @@ import org.eclipse.egit.github.core.PullRequest
 import org.eclipse.egit.github.core.PullRequestMarker
 import org.eclipse.egit.github.core.RepositoryId
 import org.eclipse.egit.github.core.client.GitHubClient
+import org.eclipse.egit.github.core.service.IssueService
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.CredentialsProvider
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
@@ -27,8 +28,9 @@ class SamplesPusherImpl(
   val url: String,
   val user: String,
   val password: String = "",
-  val branch: String = "master",
-  val path: String,
+  val baseBranch: String = "master",
+  val headBranch: String = "verifier/new-samples",
+  val path: String = "",
   templatePath: String = "templates"
 ) : SamplesPusher {
   private val templates = TemplateManager()
@@ -60,20 +62,16 @@ class SamplesPusherImpl(
       return true
     }
 
-    val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
+    val existedPrId = getPR(baseBranch, headBranch)?.number // PR already created
+    val branch = if (existedPrId != null) headBranch else baseBranch
 
-    try {
-      val git = if (dir.exists()) {
-        logger.debug("Using exist repository... ")
-        initRepository(dir)
-      } else {
-        logger.debug("Cloning the repository... ")
-        cloneRepository(dir, url, branch)
-      }
-      val dirSamples = prepareTargetPath(dir)
+    return cloneOrInitRepositoryToDir(url, branch) { git ->
+      git.checkout()
+        .setCreateBranch(existedPrId == null)
+        .setName(headBranch)
+        .call()
 
-      val branchName = templates.getBranchName()
-      git.checkout().setCreateBranch(true).setName(branchName).call()
+      val dirSamples = prepareTargetPath(git.repository.workTree)
 
       val mng = SnippetManager(dirSamples)
       val badSnippets =
@@ -86,13 +84,35 @@ class SamplesPusherImpl(
       val df = diffWorking(git)
       if (df.isNotEmpty()) {
         commitAndPush(git)
-        logger.debug("Snippets are pushed into branch: $branchName")
+        logger.debug("Snippets are pushed into branch: $headBranch")
 
         val changedFiles =
           getModifiedOrAddedFilenames(df).mapTo(HashSet()) { mng.translateFilenameToAddedSnippetPath(it) }
-        createPR(collection, badSnippets, changedFiles.toList(), branchName)
+        if (existedPrId == null) {
+          createPR(collection, badSnippets, changedFiles.toList(), headBranch) // create bew PR
+        } else {
+          createNewSamplesCommentPR(existedPrId.toLong(), collection, badSnippets, changedFiles.toList())
+        }
       }
-      return badSnippets.isEmpty()
+      badSnippets.isEmpty()
+    } ?: true
+  }
+
+  private fun <T> cloneOrInitRepositoryToDir(
+    url: String,
+    branch: String,
+    cb: (Git) -> T
+  ): T? {
+    val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
+    try {
+      val git = if (dir.exists()) {
+        logger.debug("Using exist repository... ")
+        initRepository(dir)
+      } else {
+        logger.debug("Cloning the repository... ")
+        cloneRepository(dir, url, branch)
+      }
+      return git.use(cb)
     } catch (e: GitException) {
       logger.error("${e.message}")
     } finally {
@@ -102,15 +122,26 @@ class SamplesPusherImpl(
         dir.delete()
       }
     }
-    return true
+    return null
   }
 
   override fun filterBadSnippets(res: CollectionSamples): List<Snippet> {
     return res.filter {
       it.value.errors.any { err ->
-        greterOrEqualSeverity(err.severity)
+        greaterOrEqualSeverity(err.severity)
       }
     }.map { Snippet(it.key, it.value) }
+  }
+
+  fun getPR(baseBranch: String, headBranch: String): PullRequest? {
+    val prService = org.eclipse.egit.github.core.service.PullRequestService(ghClient)
+    val repoId = RepositoryId.createFromUrl(url)
+    val prs = prService.getPullRequests(repoId, "open") // GitHub API supports the filters
+    return prs.find {
+      it.base.ref == baseBranch
+        && it.head.ref == headBranch
+        && it.head.repo.id == it.base.repo.id /*the same repo*/
+    }
   }
 
   private fun prepareTargetPath(repoDir: File): File {
@@ -139,7 +170,7 @@ class SamplesPusherImpl(
       }
 
       if (it.value.errors.any { err ->
-          greterOrEqualSeverity(err.severity)
+          greaterOrEqualSeverity(err.severity)
         }) {
         badSnippets.add(Snippet(it.key, it.value))
       } else {
@@ -149,7 +180,7 @@ class SamplesPusherImpl(
     return badSnippets
   }
 
-  private fun greterOrEqualSeverity(severity: ProjectSeverity): Boolean {
+  private fun greaterOrEqualSeverity(severity: ProjectSeverity): Boolean {
     return severity >= configuraton.severity
   }
 
@@ -189,14 +220,14 @@ class SamplesPusherImpl(
     model["changedFiles"] = changedFiles
     val temp = templates.getTemplate(TemplateType.PR, model)
 
-    val prServise = org.eclipse.egit.github.core.service.PullRequestService(ghClient)
+    val prService = org.eclipse.egit.github.core.service.PullRequestService(ghClient)
     var pr = PullRequest()
     pr.title = temp.head
     pr.body = temp.body
     pr.base = PullRequestMarker().setLabel(configuraton.baseBranchPR)
     pr.head = PullRequestMarker().setLabel(headBranch)
     //logger.debug("RepoId: " + RepositoryId.createFromUrl(url).generateId())
-    pr = prServise.createPullRequest(RepositoryId.createFromUrl(url), pr)
+    pr = prService.createPullRequest(RepositoryId.createFromUrl(url), pr)
     logger.info("The Push request is created, url: ${pr.htmlUrl}")
   }
 
@@ -211,7 +242,7 @@ class SamplesPusherImpl(
     model["src"] = res
     val temp = templates.getTemplate(TemplateType.ISSUE, model)
 
-    val issueService = org.eclipse.egit.github.core.service.IssueService(ghClient)
+    val issueService = IssueService(ghClient)
     var issue = Issue()
     issue.title = temp.head
     issue.body = temp.body
@@ -220,7 +251,23 @@ class SamplesPusherImpl(
     logger.info("The Issue  is created, url: ${issue.htmlUrl}")
   }
 
-  override fun createCommentPR(
+  fun createNewSamplesCommentPR(
+    id: Long,
+    res: CollectionOfRepository,
+    badSnippets: List<Snippet>,
+    changedFiles: List<String>,
+    repositoryUrl: String = url
+  ) {
+    val model = HashMap<String, Any>()
+    model["badSnippets"] = badSnippets
+    model["src"] = res
+    model["changedFiles"] = changedFiles
+    val temp = templates.getTemplate(TemplateType.PR, model)
+
+    createCommentPR(repositoryUrl, id, temp)
+  }
+
+  override fun createBadSamplesCommentPR(
     id: Long,
     badSnippets: List<Snippet>,
     res: CollectionOfRepository,
@@ -231,8 +278,15 @@ class SamplesPusherImpl(
     model["src"] = res
     val temp = templates.getTemplate(TemplateType.PR_COMMENT, model)
 
-    val issueService = org.eclipse.egit.github.core.service.IssueService(ghClient)
+    createCommentPR(repositoryUrl, id, temp)
+  }
 
+  private fun createCommentPR(
+    repositoryUrl: String,
+    id: Long,
+    temp: TemplateManager.Template
+  ) {
+    val issueService = IssueService(ghClient)
     val comment = issueService.createComment(RepositoryId.createFromUrl(repositoryUrl), id.toInt(), temp.body)
     logger.info("The pr comment  is created, url: ${comment.url}")
   }
