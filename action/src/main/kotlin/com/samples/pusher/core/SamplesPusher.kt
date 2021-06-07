@@ -8,11 +8,11 @@ interface SamplesPusher {
   fun configure(fn: PusherConfiguration.() -> Unit): SamplesPusherImpl
 
   /**
-   * @return true if all is ok
+   * @return true if all is ok and bad samples are absent
    */
   fun push(collection: CollectionOfRepository, isCreateIssue: Boolean = true): Boolean
   fun filterBadSnippets(res: CollectionSamples): List<Snippet>
-  fun createCommentPR(
+  fun createBadSamplesCommentPR(
     id: Long,
     badSnippets: List<Snippet>,
     res: CollectionOfRepository,
