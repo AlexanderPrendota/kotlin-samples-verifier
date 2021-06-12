@@ -46,8 +46,7 @@ class Client {
           GitEventHandler(verifier, pusher, verifierOptions).process(eventType, input)
         } else { // work through cli arguments
           val repoSamples = collect(verifier, verifierOptions)
-          pusher.push(repoSamples, pusherOptions.createIssue)
-          true // collect mode
+          pusher.push(repoSamples, pusherOptions.createIssue) // collect mode
         }
 
         if (!isOk)

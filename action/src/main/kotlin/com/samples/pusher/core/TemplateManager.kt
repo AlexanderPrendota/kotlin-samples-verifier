@@ -7,8 +7,6 @@ import freemarker.template.TemplateExceptionHandler
 import java.io.File
 import java.io.StringWriter
 import java.net.URL
-import java.text.SimpleDateFormat
-import java.util.*
 
 enum class TemplateType(val file: String) {
   PR("pr.md"),
@@ -38,7 +36,7 @@ class TemplateManager {
     cfgTemplates.fallbackOnNullLoopVariable = false
   }
 
-  fun getTemplate(type: TemplateType, model: HashMap<String, Any>): Template {
+  fun getTemplate(type: TemplateType, model: Any): Template {
     val temp = cfgTemplates.getTemplate(type.file)
 
     val out = StringWriter()
@@ -52,12 +50,6 @@ class TemplateManager {
     if (body.length > MAX_BODY_LENGTH)
       body = body.substring(0, MAX_BODY_LENGTH - TOO_LONG.length) + TOO_LONG
     return Template(head, body)
-  }
-
-  fun getBranchName(): String {
-    val sdf = SimpleDateFormat("ddMMyyhhmmss")
-    val currentDate = sdf.format(Date())
-    return "new-samples-$currentDate"
   }
 
   companion object {

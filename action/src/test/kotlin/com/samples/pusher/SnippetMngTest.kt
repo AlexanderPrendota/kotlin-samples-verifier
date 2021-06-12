@@ -1,7 +1,6 @@
 package com.samples.pusher
 
 import com.samples.pusher.core.SnippetManager
-import com.samples.verifier.KotlinEnv
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import kotlin.io.path.createTempDirectory

@@ -45,6 +45,7 @@ class GitEventHandler(
       event.after
     )
     return pusher.push(collection)
+      && pusher.filterBadSnippets(collection.snippets).isEmpty()
   }
 
   fun process(event: PullRequestEvent): Boolean {
