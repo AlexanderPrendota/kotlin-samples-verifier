@@ -1,5 +1,7 @@
 package com.samples.pusher.core
 
+import com.samples.pusher.core.model.BadSamplesModel
+import com.samples.pusher.core.model.NewSamplesModel
 import com.samples.pusher.core.model.PusherConfiguration
 import com.samples.pusher.core.utils.*
 import com.samples.verifier.Code
@@ -7,12 +9,6 @@ import com.samples.verifier.GitException
 import com.samples.verifier.model.CollectionOfRepository
 import com.samples.verifier.model.ExecutionResult
 import com.samples.verifier.model.ProjectSeverity
-import org.eclipse.egit.github.core.Issue
-import org.eclipse.egit.github.core.PullRequest
-import org.eclipse.egit.github.core.PullRequestMarker
-import org.eclipse.egit.github.core.RepositoryId
-import org.eclipse.egit.github.core.client.GitHubClient
-import org.eclipse.egit.github.core.service.IssueService
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.CredentialsProvider
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
@@ -28,7 +24,6 @@ class SamplesPusherImpl(
   val url: String,
   val user: String,
   val password: String = "",
-  val baseBranch: String = "master",
   val headBranch: String = "verifier/new-samples",
   val path: String = "",
   templatePath: String = "templates"
@@ -52,17 +47,15 @@ class SamplesPusherImpl(
     return this
   }
 
-
-  private val ghClient: GitHubClient by lazy { createGHClient() }
-
+  private val ghService = GitHubService(user, password)
 
   override fun push(collection: CollectionOfRepository, isCreateIssue: Boolean): Boolean {
     if (collection.snippets.isEmpty() && collection.diff?.deletedFiles.isNullOrEmpty()) {
       logger.info("Nothing is to push")
       return true
     }
-
-    val existedPrId = getPR(baseBranch, headBranch)?.number // PR already created
+    val baseBranch = configuraton.baseBranchPR
+    val existedPrId = ghService.getPR(url, baseBranch, headBranch)?.number // PR already created
     val branch = if (existedPrId != null) headBranch else baseBranch
 
     return cloneOrInitRepositoryToDir(url, branch) { git ->
@@ -94,8 +87,8 @@ class SamplesPusherImpl(
           createNewSamplesCommentPR(existedPrId.toLong(), collection, badSnippets, changedFiles.toList())
         }
       }
-      badSnippets.isEmpty()
-    } ?: true
+      true
+    } ?: false
   }
 
   private fun <T> cloneOrInitRepositoryToDir(
@@ -133,16 +126,6 @@ class SamplesPusherImpl(
     }.map { Snippet(it.key, it.value) }
   }
 
-  fun getPR(baseBranch: String, headBranch: String): PullRequest? {
-    val prService = org.eclipse.egit.github.core.service.PullRequestService(ghClient)
-    val repoId = RepositoryId.createFromUrl(url)
-    val prs = prService.getPullRequests(repoId, "open") // GitHub API supports the filters
-    return prs.find {
-      it.base.ref == baseBranch
-        && it.head.ref == headBranch
-        && it.head.repo.id == it.base.repo.id /*the same repo*/
-    }
-  }
 
   private fun prepareTargetPath(repoDir: File): File {
     val dirSamples = repoDir.resolve(path)
@@ -197,16 +180,6 @@ class SamplesPusherImpl(
     pushRepo(git, url, credentialsProvider)
   }
 
-  // GitHub helpers
-  private fun createGHClient(): GitHubClient {
-    val client = GitHubClient()
-
-    if (password.isEmpty())
-      client.setOAuth2Token(user)
-    else
-      client.setCredentials(user, password)
-    return client
-  }
 
   private fun createPR(
     res: CollectionOfRepository,
@@ -214,21 +187,10 @@ class SamplesPusherImpl(
     changedFiles: List<String>,
     headBranch: String
   ) {
-    val model = HashMap<String, Any>()
-    model["badSnippets"] = badSnippets
-    model["src"] = res
-    model["changedFiles"] = changedFiles
+    val model = NewSamplesModel(src = res, changedFiles = changedFiles, badSnippets = badSnippets)
     val temp = templates.getTemplate(TemplateType.PR, model)
 
-    val prService = org.eclipse.egit.github.core.service.PullRequestService(ghClient)
-    var pr = PullRequest()
-    pr.title = temp.head
-    pr.body = temp.body
-    pr.base = PullRequestMarker().setLabel(configuraton.baseBranchPR)
-    pr.head = PullRequestMarker().setLabel(headBranch)
-    //logger.debug("RepoId: " + RepositoryId.createFromUrl(url).generateId())
-    pr = prService.createPullRequest(RepositoryId.createFromUrl(url), pr)
-    logger.info("The Push request is created, url: ${pr.htmlUrl}")
+    ghService.createPr(url, configuraton.baseBranchPR, headBranch, temp)
   }
 
 
@@ -237,34 +199,23 @@ class SamplesPusherImpl(
     res: CollectionOfRepository,
     repositoryUrl: String = url
   ) {
-    val model = HashMap<String, Any>()
-    model["snippets"] = badSnippets
-    model["src"] = res
+    val model = BadSamplesModel(src = res, snippets = badSnippets)
     val temp = templates.getTemplate(TemplateType.ISSUE, model)
 
-    val issueService = IssueService(ghClient)
-    var issue = Issue()
-    issue.title = temp.head
-    issue.body = temp.body
-
-    issue = issueService.createIssue(RepositoryId.createFromUrl(repositoryUrl), issue)
-    logger.info("The Issue  is created, url: ${issue.htmlUrl}")
+    ghService.createIssue(repositoryUrl, temp)
   }
 
-  fun createNewSamplesCommentPR(
+  private fun createNewSamplesCommentPR(
     id: Long,
     res: CollectionOfRepository,
     badSnippets: List<Snippet>,
     changedFiles: List<String>,
     repositoryUrl: String = url
   ) {
-    val model = HashMap<String, Any>()
-    model["badSnippets"] = badSnippets
-    model["src"] = res
-    model["changedFiles"] = changedFiles
+    val model = NewSamplesModel(src = res, changedFiles = changedFiles, badSnippets = badSnippets)
     val temp = templates.getTemplate(TemplateType.PR, model)
 
-    createCommentPR(repositoryUrl, id, temp)
+    ghService.createCommentPR(repositoryUrl, id, temp)
   }
 
   override fun createBadSamplesCommentPR(
@@ -273,22 +224,10 @@ class SamplesPusherImpl(
     res: CollectionOfRepository,
     repositoryUrl: String
   ) {
-    val model = HashMap<String, Any>()
-    model["snippets"] = badSnippets
-    model["src"] = res
+    val model = BadSamplesModel(src = res, snippets = badSnippets)
     val temp = templates.getTemplate(TemplateType.PR_COMMENT, model)
 
-    createCommentPR(repositoryUrl, id, temp)
-  }
-
-  private fun createCommentPR(
-    repositoryUrl: String,
-    id: Long,
-    temp: TemplateManager.Template
-  ) {
-    val issueService = IssueService(ghClient)
-    val comment = issueService.createComment(RepositoryId.createFromUrl(repositoryUrl), id.toInt(), temp.body)
-    logger.info("The pr comment  is created, url: ${comment.url}")
+    ghService.createCommentPR(repositoryUrl, id, temp)
   }
 
 }
