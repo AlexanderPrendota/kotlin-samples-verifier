@@ -4,13 +4,12 @@ New samples in a repository ${src.url}
 <#if src.diff?has_content>Commit: ${src.url}/commit/${src.diff.endRef}</#if>
 Files:
 <#if src.diff?has_content>
-  <#list src.snippets as code, value>
-   ${value.fileName}
-      <#--  ```${code}```  -->
-  </#list>
+    <#list changedFiles as it>
+    [${it}](${src.url}/blob/${src.diff.endRef}/${it})
+    </#list>
 <#else>
     <#list changedFiles as it>
-    ${src.url}/blob/${src.branch[src.branch?last_index_of("/")+1..]}/${it}
+    [${it}](${src.url}/blob/${src.branch[src.branch?last_index_of("/")+1..]}/${it})
     </#list>
 </#if>
 
