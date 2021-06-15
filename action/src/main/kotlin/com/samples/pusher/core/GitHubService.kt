@@ -22,16 +22,19 @@ class GitHubService(
   private fun createGHClient(): GitHubClient {
     val client = GitHubClient()
 
-    if (password.isEmpty())
+    if (password.isEmpty()) {
       client.setOAuth2Token(user)
-    else
+    } else {
       client.setCredentials(user, password)
+    }
     return client
   }
 
-  fun getPR(repositoryUrl: String,
-            baseBranch: String,
-            headBranch: String): PullRequest? {
+  fun getPR(
+    repositoryUrl: String,
+    baseBranch: String,
+    headBranch: String
+  ): PullRequest? {
     val repoId = RepositoryId.createFromUrl(repositoryUrl)
     val prs = prService.getPullRequests(repoId, "open") // GitHub API supports the filters
     return prs.find {
