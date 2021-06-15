@@ -31,7 +31,6 @@ class SnippetManager(private val dirSamples: File) {
   fun addSnippet(code: String, path: String): String {
     val filename = getFilenameFromPath(path)
 
-
     val entity = mapPath.getOrPut(path) {
       removeAllSnippets(path)
       val encodedPath = md5(path)
@@ -41,9 +40,11 @@ class SnippetManager(private val dirSamples: File) {
     entity.countSnippets++
     val newName = "${entity.encodedPath}.${entity.countSnippets}.kt"
     val targetDir = dirSamples.resolve(filename)
-    if (!targetDir.exists())
-      if (!targetDir.mkdirs())
+    if (!targetDir.exists()) {
+      if (!targetDir.mkdirs()) {
         throw Exception("Can't make dirs to ${targetDir.path}")
+      }
+    }
 
     File(targetDir, newName).writeText(code)
     changed = true
@@ -55,11 +56,11 @@ class SnippetManager(private val dirSamples: File) {
     val filename = getFilenameFromPath(path)
     val hash = md5(path)
     val directory = dirSamples.resolve(filename)
-    if (!directory.exists())
+    if (!directory.exists()) {
       return
+    }
     val fileTree = directory.walkTopDown()
     for (file in fileTree) {
-
       if (file.name.startsWith(hash)) {
         if (!file.delete()) {
           logger.error("Can't remove the snippet file: ${file.name}")
@@ -69,8 +70,9 @@ class SnippetManager(private val dirSamples: File) {
       }
     }
 
-    if (directory.listFiles().isEmpty())
+    if (directory.listFiles()?.isEmpty() == true) {
       directory.delete()
+    }
   }
 
   /**

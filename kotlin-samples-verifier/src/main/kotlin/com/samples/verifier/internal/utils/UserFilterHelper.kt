@@ -90,14 +90,11 @@ private object BooleanGrammar : Grammar<BooleanExpression<Element>>() {
 
 
   val atom: Parser<BooleanExpression<Element>> by
-    (variable * -equ * quote).map { (v, e) -> CompareVarOp(v, e.text.substring(1, e.text.length - 1)) } or
+  (variable * -equ * quote).map { (v, e) -> CompareVarOp(v, e.text.substring(1, e.text.length - 1)) } or
     (attr * -equ * quote).map { (v, e) -> CompareAttrOp(v, e.text.substring(1, e.text.length - 1)) } or
     attr
 
-  val term: Parser<BooleanExpression<Element>> by
-    atom or
-    negation or
-    bracedExpression
+  val term: Parser<BooleanExpression<Element>> by atom or negation or bracedExpression
 
   val andChain by leftAssociative(term, and) { a, _, b -> And(a, b) }
   val orChain by leftAssociative(andChain, or) { a, _, b -> Or(a, b) }
