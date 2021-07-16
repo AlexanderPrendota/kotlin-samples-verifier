@@ -3,7 +3,7 @@ import java.lang.Thread.sleep
 
 plugins {
   id("com.palantir.docker") version "0.26.0"
-  id("com.palantir.docker-run") version "0.25.0"
+  id("com.palantir.docker-run") version "0.27.0"
   id("org.jetbrains.dokka") version "1.5.0"
   `maven-publish`
   signing
