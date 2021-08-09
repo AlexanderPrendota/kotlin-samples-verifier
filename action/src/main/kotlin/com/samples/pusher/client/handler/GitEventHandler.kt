@@ -17,7 +17,10 @@ class GitEventHandler(
   private val pusher: SamplesPusher,
   private val options: CheckOptions
 ) {
-  private val format = Json { ignoreUnknownKeys = true }
+  private val format = Json {
+    ignoreUnknownKeys = true
+    coerceInputValues = true
+  }
 
   fun process(eventType: EventType, eventContent: String): Boolean {
     return when (eventType) {

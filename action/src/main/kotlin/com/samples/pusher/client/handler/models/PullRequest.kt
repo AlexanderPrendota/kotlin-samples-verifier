@@ -7,7 +7,7 @@ data class PullRequest(
   var url: String = "",
   var id: Long = 0,
   var user: User = User(),
-  var body: String = "",
+  var body: String? = "",
   var title: String = "",
   var base: PullRequestMarker = PullRequestMarker(),
   var head: PullRequestMarker = PullRequestMarker()
