@@ -17,7 +17,7 @@ repositories {
 dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:3.2.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
 
     implementation("com.github.spullara.cli-parser:cli-parser:1.1.5")
     implementation("org.eclipse.mylyn.github:org.eclipse.egit.github.core:2.1.5")
