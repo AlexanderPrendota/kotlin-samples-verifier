@@ -25,7 +25,7 @@ subprojects {
   dependencies {
     val implementation by configurations
     implementation(kotlin("stdlib-jdk8"))
-    implementation("org.slf4j:slf4j-api:2.0.0-alpha1")
+    implementation("org.slf4j:slf4j-api:2.0.0-alpha6")
     implementation("org.slf4j:slf4j-log4j12:2.0.0-alpha5")
     implementation("org.eclipse.jgit:org.eclipse.jgit:6.0.0.202111291000-r")
   }
