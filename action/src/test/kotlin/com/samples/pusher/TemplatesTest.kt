@@ -3,7 +3,6 @@ package com.samples.pusher
 import com.samples.pusher.core.Snippet
 import com.samples.pusher.core.TemplateManager
 import com.samples.pusher.core.TemplateType
-import com.samples.verifier.Code
 import com.samples.verifier.model.CollectionOfRepository
 import com.samples.verifier.model.DiffOfRepository
 import com.samples.verifier.model.ExecutionResult
@@ -21,7 +20,7 @@ class TemplatesTest {
 
     val res = CollectionOfRepository(
       "https://github.com/AlexanderPrendota/kotlin-web-site", "",
-      HashMap<Code, ExecutionResult>(), DiffOfRepository("", "dsf", listOf())
+      emptyMap(), DiffOfRepository("", "dsf", listOf())
     )
 
     val model = HashMap<String, Any>()

@@ -1,11 +1,11 @@
 package com.samples.verifier.model
 
-import com.samples.verifier.Code
+import com.samples.verifier.CodeSnippet
 
 data class CollectionOfRepository(
   var url: String,
   var branch: String,
-  var snippets: Map<Code, ExecutionResult>,
+  var snippets: Map<CodeSnippet, ExecutionResult>,
   var diff: DiffOfRepository? = null
 )
 

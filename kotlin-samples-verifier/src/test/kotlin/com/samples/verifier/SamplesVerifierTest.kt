@@ -120,7 +120,7 @@ class SamplesVerifierTest {
       codeSnippetsFromRepo.filter { it.contains("4") || it.contains("5") }.sorted().map { it to it }
     Assertions.assertEquals(
       listOf(1, 2).map { expectedResult },
-      snippets.map { it.sortedBy { it.first } }
+      snippets.map { it.sortedBy { it.first.code } }
     )
 
     Assertions.assertEquals(

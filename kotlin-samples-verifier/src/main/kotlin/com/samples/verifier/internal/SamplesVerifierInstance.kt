@@ -40,14 +40,14 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
       CollectionOfRepository(
         url = url,
         branch = branch,
-        snippets = changes.snippets.associate { it.code to executionHelper.executeCode(it) },
+        snippets = changes.snippets.associateWith { executionHelper.executeCode(it) },
         diff = changes.diff
       )
     } else {
       val snippets = processRepository(url, branch, type)
       CollectionOfRepository(url = url,
         branch = branch,
-        snippets = snippets.associate { it.code to executionHelper.executeCode(it) }
+        snippets = snippets.associateWith { executionHelper.executeCode(it) }
       )
     }
   }
@@ -64,7 +64,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     return CollectionOfRepository(
       url = baseUrl,
       branch = baseBranch,
-      snippets = changes.snippets.associate { it.code to executionHelper.executeCode(it) },
+      snippets = changes.snippets.associateWith { executionHelper.executeCode(it) },
       diff = changes.diff
     )
   }

@@ -4,18 +4,15 @@ import com.samples.pusher.client.CheckOptions
 import com.samples.pusher.client.handler.EventType
 import com.samples.pusher.client.handler.GitEventHandler
 import com.samples.pusher.core.SamplesPusher
-import com.samples.verifier.Code
 import com.samples.verifier.FileType
 import com.samples.verifier.SamplesVerifier
 import com.samples.verifier.model.CollectionOfRepository
 import com.samples.verifier.model.DiffOfRepository
-import com.samples.verifier.model.ExecutionResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
 import java.io.File
-import java.util.*
 
 
 class GitEventHandlerTest {
@@ -27,7 +24,7 @@ class GitEventHandlerTest {
   fun prepare() {
     val res = CollectionOfRepository(
       "url", "",
-      HashMap<Code, ExecutionResult>(), DiffOfRepository("", "dsf", listOf())
+      emptyMap(), DiffOfRepository("", "dsf", listOf())
     )
     pusher = mock {
       on { push(eq(res), any()) }.thenReturn(true)

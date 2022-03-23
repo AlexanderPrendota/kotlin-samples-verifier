@@ -5,6 +5,7 @@ import com.samples.pusher.core.model.NewSamplesModel
 import com.samples.pusher.core.model.PusherConfiguration
 import com.samples.pusher.core.utils.*
 import com.samples.verifier.Code
+import com.samples.verifier.CodeSnippet
 import com.samples.verifier.GitException
 import com.samples.verifier.model.CollectionOfRepository
 import com.samples.verifier.model.ExecutionResult
@@ -16,7 +17,7 @@ import org.slf4j.LoggerFactory
 import java.io.File
 
 
-typealias CollectionSamples = Map<Code, ExecutionResult>
+typealias CollectionSamples = Map<CodeSnippet, ExecutionResult>
 
 data class Snippet(val code: Code, val res: ExecutionResult)
 
@@ -123,7 +124,7 @@ class SamplesPusherImpl(
       it.value.errors.any { err ->
         greaterOrEqualSeverity(err.severity)
       }
-    }.map { Snippet(it.key, it.value) }
+    }.map { Snippet(it.key.code, it.value) }
   }
 
 
@@ -155,9 +156,9 @@ class SamplesPusherImpl(
       if (it.value.errors.any { err ->
           greaterOrEqualSeverity(err.severity)
         }) {
-        badSnippets.add(Snippet(it.key, it.value))
+        badSnippets.add(Snippet(it.key.code, it.value))
       } else {
-        manager.addSnippet(it.key, it.value.fileName)
+        manager.addSnippet(it.key.code, it.key.filename)
       }
     }
     return badSnippets
