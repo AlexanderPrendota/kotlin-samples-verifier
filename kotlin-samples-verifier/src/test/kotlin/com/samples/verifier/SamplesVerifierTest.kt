@@ -115,7 +115,7 @@ class SamplesVerifierTest {
       "core/src/main/kotlin/com/samples/verifier/internal/SamplesExecutorInstance.kt",
       "core/src/main/kotlin/com/samples/verifier/internal/SamplesParserInstance.kt").sorted()
 
-    val snippets = results.map { it.snippets.map { it.key to it.key } }
+    val snippets = results.map { it.snippets.map { it.key.code to it.key.code } }
     val expectedResult =
       codeSnippetsFromRepo.filter { it.contains("4") || it.contains("5") }.sorted().map { it to it }
     Assertions.assertEquals(
