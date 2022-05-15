@@ -21,7 +21,7 @@ dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
 
   implementation("com.vladsch.flexmark:flexmark-all:0.64.0")
-  implementation("org.jsoup:jsoup:1.14.3")
+  implementation("org.jsoup:jsoup:1.15.1")
   implementation("org.apache.directory.studio:org.apache.commons.io:2.4")
 
   implementation("com.squareup.retrofit2:retrofit:2.9.0")
