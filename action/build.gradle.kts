@@ -19,7 +19,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
 
-    implementation("com.github.spullara.cli-parser:cli-parser:1.1.5")
+    implementation("com.github.spullara.cli-parser:cli-parser:1.1.6")
     implementation("org.eclipse.mylyn.github:org.eclipse.egit.github.core:2.1.5")
     implementation("org.apache.commons:commons-configuration2:2.7")
     implementation("commons-beanutils:commons-beanutils:1.9.4")
