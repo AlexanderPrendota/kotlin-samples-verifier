@@ -27,6 +27,6 @@ subprojects {
     implementation(kotlin("stdlib-jdk8"))
     implementation("org.slf4j:slf4j-api:2.0.0-alpha6")
     implementation("org.slf4j:slf4j-log4j12:2.0.0-alpha5")
-    implementation("org.eclipse.jgit:org.eclipse.jgit:6.1.0.202203080745-r")
+    implementation("org.eclipse.jgit:org.eclipse.jgit:6.2.0.202206071550-r")
   }
 }
