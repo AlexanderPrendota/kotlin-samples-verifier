@@ -30,7 +30,7 @@ dependencies {
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.3")
   implementation("com.squareup.okhttp3:okhttp:4.10.0")
 
-  implementation("com.github.h0tk3y.betterParse:better-parse:0.4.3")
+  implementation("com.github.h0tk3y.betterParse:better-parse:0.4.4")
 }
 
 tasks {
