@@ -24,7 +24,7 @@ dependencies {
     implementation("org.apache.commons:commons-configuration2:2.8.0")
     implementation("commons-beanutils:commons-beanutils:1.9.4")
     implementation("org.freemarker:freemarker:2.3.31")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
 
     implementation(project(":kotlin-samples-verifier"))//implementation("io.github.alexanderprendota:kotlin-samples-verifier:1.1.4")
 }
