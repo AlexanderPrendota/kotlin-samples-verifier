@@ -1,6 +1,6 @@
 plugins {
   id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
-  kotlin("jvm") version "1.7.20" apply false
+  kotlin("jvm") version "1.7.21" apply false
 }
 
 subprojects {
