@@ -14,7 +14,7 @@ repositories {
 
 dependencies {
   implementation("com.github.spullara.cli-parser:cli-parser:1.1.6")
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.0")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.1")
 
   implementation(project(":kotlin-samples-verifier"))
 }
