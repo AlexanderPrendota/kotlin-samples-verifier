@@ -117,7 +117,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
       val repo = git.repository
       if (filenames == null) processFiles(repo.workTree, type)
       else processFiles(repo.workTree, filenames, type)
-    } ?: emptyList()
+    }
   }
 
   private fun processDiffBranches(
@@ -138,7 +138,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         val commonAncestor = mergeBase(git, baseBranch, newName)
         val headCommit = getCommit(git.repository, newName)
         processDiff(git, commonAncestor, headCommit, emptyList(), type)
-    } ?: RepoChanges(null, emptyList())
+    }
   }
 
   private fun <T> cloneRepositoryToDir(
@@ -146,25 +146,24 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     branch: String,
     bare: Boolean = false,
     cb: (Git) -> T
-  ): T? {
+  ): T {
     val dir = File(url.substringAfterLast('/').substringBeforeLast('.'))
     try {
       logger.info("Cloning repository...")
       return cloneRepository(dir, url, branch, bare).use(cb)
     } catch (e: GitException) {
       logger.error("Git: ${e.message}")
+      throw e
     } catch (e: IOException) {
       logger.error("IO: ${e.message}")
-    } catch (e: Exception) {
-      logger.error("${e.message}")
-    } finally {
+      throw e
+    }  finally {
       if (dir.isDirectory) {
         FileUtils.deleteDirectory(dir)
       } else {
         dir.delete()
       }
     }
-    return null
   }
 
   private fun processDiffCommits(
@@ -180,7 +179,7 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
         val st = if (startCommitName == null) null else getCommit(git.repository, startCommitName)
         val end = getCommit(git.repository, endCommitName ?: "HEAD")
         processDiff(git, st, end, filenames, type)
-      } ?: RepoChanges(null, emptyList())
+      }
   }
 
   private fun processDiff(

@@ -60,9 +60,9 @@ class GitEventHandler(
       return true*/
 
     val collection = verifier.collect(
-      event.pullRequest.base.repo.gitUrl,
+      event.pullRequest.base.repo.htmlUrl,
       event.pullRequest.base.ref,
-      event.pullRequest.head.repo.gitUrl,
+      event.pullRequest.head.repo.htmlUrl,
       event.pullRequest.head.ref,
       options.fileType
     )
