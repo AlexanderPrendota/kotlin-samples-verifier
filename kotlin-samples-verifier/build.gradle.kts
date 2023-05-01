@@ -20,7 +20,7 @@ dependencies {
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
   testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
 
-  implementation("com.vladsch.flexmark:flexmark-all:0.64.0")
+  implementation("com.vladsch.flexmark:flexmark-all:0.64.2")
   implementation("org.jsoup:jsoup:1.16.1")
   implementation("org.apache.directory.studio:org.apache.commons.io:2.4")
 
