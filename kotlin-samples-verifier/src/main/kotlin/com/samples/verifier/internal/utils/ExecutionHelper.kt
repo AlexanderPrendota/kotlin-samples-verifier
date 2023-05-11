@@ -56,7 +56,7 @@ internal class ExecutionHelper(baseUrl: String, private val kotlinEnv: KotlinEnv
     } else throw CallException(response.errorBody()!!.string())
   }
 
-  private fun executeCodeJS(codeSnippet: CodeSnippet): ExecutionResult {
+  private fun executeCodeJS(@Suppress("UNUSED_PARAMETER") codeSnippet: CodeSnippet): ExecutionResult {
     TODO("Not yet implemented")
   }
 }
