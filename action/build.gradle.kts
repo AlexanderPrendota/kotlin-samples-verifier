@@ -33,6 +33,10 @@ tasks.test {
     useJUnitPlatform()
 }
 
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+}
+
 tasks {
     compileKotlin {
         kotlinOptions.jvmTarget = "11"

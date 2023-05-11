@@ -5,7 +5,7 @@ plugins {
 version = "unspecified"
 
 application {
-  mainClassName = "com.samples.verifier.client.Client"
+  getMainClass().set("com.samples.verifier.client.Client")
 }
 
 repositories {
@@ -19,11 +19,15 @@ dependencies {
   implementation(project(":kotlin-samples-verifier"))
 }
 
+java {
+  toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+}
+
 tasks {
   compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
   }
   compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
   }
 }
