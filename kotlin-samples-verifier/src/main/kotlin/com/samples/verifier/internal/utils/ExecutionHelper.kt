@@ -1,5 +1,6 @@
 package com.samples.verifier.internal.utils
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.samples.verifier.CallException
 import com.samples.verifier.CodeSnippet
@@ -48,7 +49,7 @@ internal class ExecutionHelper(baseUrl: String, private val kotlinEnv: KotlinEnv
     return if (response!!.isSuccessful) {
       val r = response.body()!!
       ExecutionResult(
-        r.errors["filename.kt"] ?: error("unexpected response structure"),
+        r.errors["filename.kt"] ?: listOf(),
         r.exception,
         r.text,
         codeSnippet.filename
@@ -61,6 +62,7 @@ internal class ExecutionHelper(baseUrl: String, private val kotlinEnv: KotlinEnv
   }
 }
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 internal data class ExecutionResponse(
   val errors: Map<String, List<ErrorDescriptor>>,
   val exception: ExceptionDescriptor?,

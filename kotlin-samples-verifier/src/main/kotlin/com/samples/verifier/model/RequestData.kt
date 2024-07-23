@@ -32,6 +32,7 @@ data class StackTraceElement(
   val lineNumber: Int = 0
 )
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class ExecutionResult(
   val errors: List<ErrorDescriptor>,
   val exception: ExceptionDescriptor?,

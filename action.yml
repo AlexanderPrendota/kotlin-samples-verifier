@@ -72,7 +72,7 @@ runs:
     #      java-version: 15
     - id: clone-compiler-server
       working-directory: ${{ github.action_path }}
-      run: git clone https://github.com/JetBrains/kotlin-compiler-server --branch master --single-branch kotlin-compiler-server-build
+      run: git clone https://github.com/JetBrains/kotlin-compiler-server --branch 2.0.0 --single-branch kotlin-compiler-server-build
       shell: bash
     - id: build-compiler-server
       working-directory: ${{ github.action_path }}/kotlin-compiler-server-build
