@@ -2,7 +2,7 @@ import org.gradle.jvm.tasks.Jar
 import java.lang.Thread.sleep
 
 plugins {
-  id("com.palantir.docker") version "0.34.0"
+  id("com.palantir.docker") version "0.36.0"
   id("com.palantir.docker-run") version "0.35.0"
   id("org.jetbrains.dokka") version "1.9.20"
   `maven-publish`
