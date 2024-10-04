@@ -17,8 +17,8 @@ repositories {
 }
 
 dependencies {
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.1")
-  testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.1")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.2")
+  testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.2")
 
   implementation("com.vladsch.flexmark:flexmark-all:0.64.8")
   implementation("org.jsoup:jsoup:1.18.1")
