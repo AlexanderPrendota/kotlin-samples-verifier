@@ -27,7 +27,7 @@ dependencies {
   implementation("com.squareup.retrofit2:retrofit:2.11.0")
   implementation("com.squareup.retrofit2:converter-jaxb:2.11.0")
   implementation("com.squareup.retrofit2:converter-jackson:2.11.0")
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.1")
   implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
   implementation("com.github.h0tk3y.betterParse:better-parse:0.4.4")
