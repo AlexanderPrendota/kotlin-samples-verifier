@@ -21,7 +21,7 @@ dependencies {
 
     implementation("com.github.spullara.cli-parser:cli-parser:1.1.6")
     implementation("org.eclipse.mylyn.github:org.eclipse.egit.github.core:2.1.5")
-    implementation("org.apache.commons:commons-configuration2:2.11.0")
+    implementation("org.apache.commons:commons-configuration2:2.12.0")
     implementation("commons-beanutils:commons-beanutils:1.10.1")
     implementation("org.freemarker:freemarker:2.3.34")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
