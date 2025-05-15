@@ -24,9 +24,9 @@ dependencies {
   implementation("org.jsoup:jsoup:1.19.1")
   implementation("org.apache.directory.studio:org.apache.commons.io:2.4")
 
-  implementation("com.squareup.retrofit2:retrofit:2.11.0")
-  implementation("com.squareup.retrofit2:converter-jaxb:2.11.0")
-  implementation("com.squareup.retrofit2:converter-jackson:2.11.0")
+  implementation("com.squareup.retrofit2:retrofit:2.12.0")
+  implementation("com.squareup.retrofit2:converter-jaxb:2.12.0")
+  implementation("com.squareup.retrofit2:converter-jackson:2.12.0")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.3")
   implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
