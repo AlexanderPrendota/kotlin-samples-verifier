@@ -62,7 +62,8 @@ dependencies {
   |-repository (-r) | [String] | Git repository URL with samples to execute| n/a |
   |-tag-filter | [String] | User filter for tag containing snippet  like so: (#tag=\"name\" & attr1=\"val\"). It also supports !, &, / operations | "" |
   |-ignore-tag-filter | [String] | User filter for ignoring of tag including inners tags | "" |
-  
+  | -report-error-only | [Boolean] | Failed only on errors | false |
+
 #### Only for collect:
 | Name (alias) | Format | Description | Default |
 | ------------- |:-------------:| :-----:|:-------------:|

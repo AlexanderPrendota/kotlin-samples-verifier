@@ -3,6 +3,8 @@ package com.samples.verifier
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import kotlin.collections.map
 
 class SamplesVerifierTest {
   private val samplesVerifier = SamplesVerifierFactory.create().configure {
@@ -157,5 +159,45 @@ class SamplesVerifierTest {
       results.snippets.size,
       2
     )
+  }
+
+  @Test
+  fun `warning test with default`() {
+    assertThrows<SamplesVerifierExceptions> {
+      samplesVerifier.check(
+        "https://github.com/zoobestik/kotlin-samples-verifier.git",
+        "test-warning",
+        FileType.MD,
+      )
+    }
+  }
+
+  @Test
+  fun `warning test with reportErrorOnly=false`() {
+    samplesVerifier.configure {
+      reportErrorOnly = false
+    }
+    assertThrows<SamplesVerifierExceptions> {
+      samplesVerifier.check(
+        "https://github.com/zoobestik/kotlin-samples-verifier.git",
+        "test-warning",
+        FileType.MD,
+      )
+    }
+  }
+
+  @Test
+  fun `warning test with reportErrorOnly=true`() {
+    samplesVerifier.configure {
+      reportErrorOnly = true
+    }
+    assertTrue {
+      samplesVerifier.check(
+        "https://github.com/zoobestik/kotlin-samples-verifier.git",
+        "test-warning",
+        FileType.MD,
+      )
+      true
+    }
   }
 }

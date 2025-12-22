@@ -44,6 +44,18 @@ class ParseConfiguration() {
    */
   var ignoreTagFilter: String = ""
 
+
+  /**
+   * Indicates whether only errors with severity level `ERROR` should be considered
+   * during the verification process.
+   *
+   * If set to `true`, all other severities such as `INFO` and `WARNING` will be ignored.
+   * This ensures that only critical issues affecting the execution context are reported.
+   *
+   * By default, this is set to `false`, which means errors of all severities are processed.
+   */
+  var reportErrorOnly: Boolean = false
+
   constructor(block: ParseConfiguration.() -> Unit) : this() {
     this.block()
   }
