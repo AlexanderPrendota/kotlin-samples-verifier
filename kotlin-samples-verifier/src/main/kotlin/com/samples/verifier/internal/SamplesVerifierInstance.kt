@@ -6,6 +6,7 @@ import com.samples.verifier.model.CollectionOfRepository
 import com.samples.verifier.model.DiffOfRepository
 import com.samples.verifier.model.ExecutionResult
 import com.samples.verifier.model.ParseConfiguration
+import com.samples.verifier.model.ProjectSeverity
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.eclipse.jgit.api.Git
@@ -77,7 +78,12 @@ internal class SamplesVerifierInstance(compilerUrl: String, kotlinEnv: KotlinEnv
     val snippets = processRepository(url, branch, type)
     for (codeSnippet in snippets) {
       val result = executionHelper.executeCode(codeSnippet)
-      val errors = result.errors
+      var errors = result.errors
+
+      if (configuration.reportErrorOnly) {
+        errors = errors.filter { it.severity == ProjectSeverity.ERROR }
+      }
+
       if (errors.isNotEmpty()) {
         fail = true
         logger.error("Filename: ${codeSnippet.filename}")

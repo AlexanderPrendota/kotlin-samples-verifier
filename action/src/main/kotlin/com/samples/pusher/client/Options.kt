@@ -169,6 +169,9 @@ open class ParseOptions : CompilerOptions() {
 
   @set:Argument("file-type", description = "MD or HTML (type of files to be processed)")
   var fileType: FileType = FileType.MD
+
+  @set:Argument("report-error-only", description = "Failed only on errors")
+  var reportErrorOnly: Boolean = false
 }
 
 open class CompilerOptions {

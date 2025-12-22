@@ -106,6 +106,7 @@ class Client {
           parseTags = options.parseTags?.toHashSet()
           tagFilter = options.tagFilter
           ignoreTagFilter = options.ignoreTagFilter
+          reportErrorOnly = options.reportErrorOnly
         }
     }
 
