@@ -58,6 +58,10 @@ inputs:
     description: 'Create issue and do not push if the snippet has errors equals or greater the severity'
     required: false
     default: 'ERROR'
+  report-error-only:
+    description: 'Report only errors in the output, excluding warnings and other severity levels'
+    required: false
+    default: 'false'
 
   io-event:
     description: 'The default is the event name (automatic mode). It needs to process the github events'
